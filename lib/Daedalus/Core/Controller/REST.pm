@@ -1,8 +1,16 @@
 package Daedalus::Core::Controller::REST;
+
+use strict;
+use warnings;
 use Moose;
 use namespace::autoclean;
+use JSON;
+use base qw(Catalyst::Controller::REST);
 
-BEGIN { extends 'Catalyst::Controller'; }
+__PACKAGE__->config( default => 'application/json' );
+__PACKAGE__->config( json_options => { relaxed => 1 } );
+
+BEGIN { extends 'Catalyst::Controller::REST' }
 
 =head1 NAME
 
@@ -10,7 +18,7 @@ Daedalus::Core::Controller::REST - Catalyst Controller
 
 =head1 DESCRIPTION
 
-Catalyst Controller.
+Daedalus::Core REST Controller.
 
 =head1 METHODS
 
@@ -20,10 +28,23 @@ Catalyst Controller.
 
 =cut
 
-sub index : Path : Args(0) {
+sub begin : ActionClass('Deserialize') {
+    my ( $self, $c ) = @_;
+}
+
+sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 
-    $c->response->body('Matched Daedalus::Core::Controller::REST in REST.');
+}
+
+sub ping_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status => "pong",
+        },
+    );
 }
 
 =encoding utf8
