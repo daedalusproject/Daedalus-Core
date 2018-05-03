@@ -17,10 +17,10 @@ use Catalyst::Runtime 5.80;
 #                 directory
 
 use Catalyst qw/
-    -Debug
-    ConfigLoader
-    Static::Simple
-/;
+  -Debug
+  ConfigLoader
+  Static::Simple
+  /;
 
 extends 'Catalyst';
 
@@ -35,11 +35,18 @@ our $VERSION = '0.01';
 # with an external configuration file acting as an override for
 # local deployment.
 
+if ( $ENV{APP_TEST} ) {
+    __PACKAGE__->config( 'Plugin::ConfigLoader' =>
+          { file => __PACKAGE__->path_to('t/lib/daedalus_core_testing.conf') }
+    );
+}
+
 __PACKAGE__->config(
     name => 'Daedalus::Core',
+
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
-    enable_catalyst_header => 1, # Send X-Catalyst header
+    enable_catalyst_header                      => 1,   # Send X-Catalyst header
 );
 
 # Start the application
@@ -69,8 +76,7 @@ L<Daedalus::Core::Controller::Root>, L<Catalyst>
 
 =head1 LICENSE
 
-This library is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
+This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
 
 =cut
 
