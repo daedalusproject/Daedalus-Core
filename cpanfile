@@ -11,6 +11,7 @@ requires 'Catalyst::Plugin::Authorization::Roles';
 requires 'Catalyst::Plugin::Session::Store::FastMmap';
 requires 'Catalyst::Authentication::Store::DBIx::Class';
 requires 'Catalyst::Authentication::Credential::HTTP';
+requires 'Catalyst::Controller::REST';
 requires 'DBIx::Class::EncodedColumn';
 requires 'Moose';
 requires 'MooseX::NonMoose';
