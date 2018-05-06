@@ -48,7 +48,14 @@ __PACKAGE__->table("organization_share_project");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 organization_id
+=head2 organization_project_owner_id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 organization_to_manage_proect_id
 
   data_type: 'bigint'
   extra: {unsigned => 1}
@@ -59,14 +66,18 @@ __PACKAGE__->table("organization_share_project");
 
   data_type: 'bigint'
   extra: {unsigned => 1}
-  is_foreign_key: 1
   is_nullable: 0
 
-=head2 role_id
+=head2 created_at
 
-  data_type: 'integer'
-  extra: {unsigned => 1}
-  is_foreign_key: 1
+  data_type: 'timestamp'
+  datetime_undef_if_invalid: 1
+  is_nullable: 0
+
+=head2 modified_at
+
+  data_type: 'timestamp'
+  datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =cut
@@ -79,7 +90,14 @@ __PACKAGE__->add_columns(
         is_auto_increment => 1,
         is_nullable       => 0,
     },
-    "organization_id",
+    "organization_project_owner_id",
+    {
+        data_type      => "bigint",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
+    },
+    "organization_to_manage_proect_id",
     {
         data_type      => "bigint",
         extra          => { unsigned => 1 },
@@ -87,18 +105,18 @@ __PACKAGE__->add_columns(
         is_nullable    => 0,
     },
     "project_id",
+    { data_type => "bigint", extra => { unsigned => 1 }, is_nullable => 0 },
+    "created_at",
     {
-        data_type      => "bigint",
-        extra          => { unsigned => 1 },
-        is_foreign_key => 1,
-        is_nullable    => 0,
+        data_type                 => "timestamp",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 0,
     },
-    "role_id",
+    "modified_at",
     {
-        data_type      => "integer",
-        extra          => { unsigned => 1 },
-        is_foreign_key => 1,
-        is_nullable    => 0,
+        data_type                 => "timestamp",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 0,
     },
 );
 
@@ -116,53 +134,53 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 organization
+=head2 organization_project_owner
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization",
-    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
-    { id            => "organization_id" },
+    "organization_project_owner",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject",
+    { id            => "organization_project_owner_id" },
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-=head2 project
+=head2 organization_share_project_roles
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProjectRole>
+
+=cut
+
+__PACKAGE__->has_many(
+    "organization_share_project_roles",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProjectRole",
+    { "foreign.organization_share_project" => "self.id" },
+    { cascade_copy                         => 0, cascade_delete => 0 },
+);
+
+=head2 organization_to_manage_proect
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Project>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "project",
-    "Daedalus::Core::Schema::CoreRealms::Result::Project",
-    { id            => "project_id" },
+    "organization_to_manage_proect",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject",
+    { id            => "organization_to_manage_proect_id" },
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-=head2 role
-
-Type: belongs_to
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role>
-
-=cut
-
-__PACKAGE__->belongs_to(
-    "role",
-    "Daedalus::Core::Schema::CoreRealms::Result::Role",
-    { id            => "role_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
-);
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-03 07:05:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KGMlJjdJm585ZH7e3yEioA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 21:50:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:v8BqBR9SQxz9pOi6BltkWw
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

@@ -141,6 +141,36 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
+=head2 organization_share_project_organization_project_owners
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject>
+
+=cut
+
+__PACKAGE__->has_many(
+    "organization_share_project_organization_project_owners",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
+    { "foreign.organization_project_owner_id" => "self.id" },
+    { cascade_copy                            => 0, cascade_delete => 0 },
+);
+
+=head2 organization_share_project_organization_to_manage_proects
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject>
+
+=cut
+
+__PACKAGE__->has_many(
+    "organization_share_project_organization_to_manage_proects",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
+    { "foreign.organization_to_manage_proect_id" => "self.id" },
+    { cascade_copy                               => 0, cascade_delete => 0 },
+);
+
 =head2 project
 
 Type: belongs_to
@@ -156,8 +186,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-03 07:05:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nlJiyIyi585hoTqsIDHf3g
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 21:50:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:q6/SyNab8CfCZeFc0C9FUg
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
