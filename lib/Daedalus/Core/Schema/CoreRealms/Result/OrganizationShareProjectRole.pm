@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::UserOrganization;
+package Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProjectRole;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::UserOrganization
+Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProjectRole
 
 =cut
 
@@ -33,11 +33,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<user_organization>
+=head1 TABLE: C<organization_share_project_roles>
 
 =cut
 
-__PACKAGE__->table("user_organization");
+__PACKAGE__->table("organization_share_project_roles");
 
 =head1 ACCESSORS
 
@@ -48,17 +48,16 @@ __PACKAGE__->table("user_organization");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 organization_id
+=head2 organization_share_project
 
   data_type: 'bigint'
-  default_value: 0
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 user_id
+=head2 role_id
 
-  data_type: 'bigint'
+  data_type: 'integer'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
@@ -85,17 +84,16 @@ __PACKAGE__->add_columns(
         is_auto_increment => 1,
         is_nullable       => 0,
     },
-    "organization_id",
+    "organization_share_project",
     {
         data_type      => "bigint",
-        default_value  => 0,
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
     },
-    "user_id",
+    "role_id",
     {
-        data_type      => "bigint",
+        data_type      => "integer",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
@@ -128,38 +126,38 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 organization
+=head2 organization_share_project
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization",
-    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
-    { id            => "organization_id" },
+    "organization_share_project",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
+    { id            => "organization_share_project" },
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-=head2 user
+=head2 role
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "user",
-    "Daedalus::Core::Schema::CoreRealms::Result::User",
-    { id            => "user_id" },
+    "role",
+    "Daedalus::Core::Schema::CoreRealms::Result::Role",
+    { id            => "role_id" },
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 21:50:43
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:URdNN9LrIMBYU0ymBVhKEA
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MeZmggV0XY4AOzjfb6EGxg
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
