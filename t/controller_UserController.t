@@ -5,5 +5,7 @@ use Test::More;
 use Catalyst::Test 'Daedalus::Core';
 use Daedalus::Core::Controller::UserController;
 
-ok( request('/usercontroller')->is_success, 'Request should succeed' );
+Daedalus::Core::Controller::UserController->createUser(
+    { email => 'foo@domain.com' } );
+
 done_testing();

@@ -120,12 +120,6 @@ __PACKAGE__->table("users");
   data_type: 'tinyint'
   is_nullable: 0
 
-=head2 auth_token
-
-  data_type: 'varchar'
-  is_nullable: 1
-  size: 64
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -205,8 +199,6 @@ __PACKAGE__->add_columns(
     },
     "active",
     { data_type => "tinyint", is_nullable => 0 },
-    "auth_token",
-    { data_type => "varchar", is_nullable => 1, size => 64 },
 );
 
 =head1 PRIMARY KEY
@@ -222,6 +214,21 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
+
+=head2 user_auth_tokens
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken>
+
+=cut
+
+__PACKAGE__->has_many(
+    "user_auth_tokens",
+    "Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken",
+    { "foreign.user_id" => "self.id" },
+    { cascade_copy      => 0, cascade_delete => 0 },
+);
 
 =head2 user_organizations
 
@@ -253,8 +260,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 22:40:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QKW9J1ChUbdpJXewoFlIMA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-07 06:47:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OkkHTJefnHrEeaMuIGF/hQ
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

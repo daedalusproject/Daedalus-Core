@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::UserRole;
+package Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::UserRole
+Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken
 
 =cut
 
@@ -33,17 +33,17 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<user_role>
+=head1 TABLE: C<user_auth_tokens>
 
 =cut
 
-__PACKAGE__->table("user_role");
+__PACKAGE__->table("user_auth_tokens");
 
 =head1 ACCESSORS
 
 =head2 id
 
-  data_type: 'integer'
+  data_type: 'bigint'
   extra: {unsigned => 1}
   is_auto_increment: 1
   is_nullable: 0
@@ -55,31 +55,25 @@ __PACKAGE__->table("user_role");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 role_id
+=head2 active
 
-  data_type: 'integer'
+  data_type: 'tinyint'
   extra: {unsigned => 1}
-  is_foreign_key: 1
   is_nullable: 0
 
-=head2 created_at
+=head2 auth_token
 
-  data_type: 'timestamp'
-  datetime_undef_if_invalid: 1
+  data_type: 'varchar'
+  default_value: (empty string)
   is_nullable: 0
-
-=head2 modified_at
-
-  data_type: 'timestamp'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
+  size: 32
 
 =cut
 
 __PACKAGE__->add_columns(
     "id",
     {
-        data_type         => "integer",
+        data_type         => "bigint",
         extra             => { unsigned => 1 },
         is_auto_increment => 1,
         is_nullable       => 0,
@@ -91,24 +85,14 @@ __PACKAGE__->add_columns(
         is_foreign_key => 1,
         is_nullable    => 0,
     },
-    "role_id",
+    "active",
+    { data_type => "tinyint", extra => { unsigned => 1 }, is_nullable => 0 },
+    "auth_token",
     {
-        data_type      => "integer",
-        extra          => { unsigned => 1 },
-        is_foreign_key => 1,
-        is_nullable    => 0,
-    },
-    "created_at",
-    {
-        data_type                 => "timestamp",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
-    },
-    "modified_at",
-    {
-        data_type                 => "timestamp",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
+        data_type     => "varchar",
+        default_value => "",
+        is_nullable   => 0,
+        size          => 32
     },
 );
 
@@ -126,21 +110,6 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 role
-
-Type: belongs_to
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role>
-
-=cut
-
-__PACKAGE__->belongs_to(
-    "role",
-    "Daedalus::Core::Schema::CoreRealms::Result::Role",
-    { id            => "role_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
-);
-
 =head2 user
 
 Type: belongs_to
@@ -157,7 +126,7 @@ __PACKAGE__->belongs_to(
 );
 
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-07 06:47:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8xnS3MmZ4hRtcSANSccjbw
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:s6XmaU8w/ThengxGpAgaPQ
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

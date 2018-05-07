@@ -20,6 +20,27 @@ All methods are private, public request comes from REST controller.
 
 =cut
 
+=head2 createUser
+
+Creates a new user
+
+=cut
+
+sub createUser : Private {
+    my ( $self, $c, $user_info ) = @_;
+
+    # Check if user already exists
+    my $user = $c->model('Daedalus::Core::CoreRealms::User')
+      ->find( { email => $user_info->{email} } );
+
+    if ($user) {
+        die("user exists.\n");
+    }
+    else {
+        die("User does not exist\n");
+    }
+}
+
 =head2 confirmUserRegistration
 
 Users are invited by Daedalus Organization, users will recive an e-mail contianing an URL like
