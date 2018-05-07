@@ -7,6 +7,8 @@ use namespace::autoclean;
 use JSON;
 use base qw(Catalyst::Controller::REST);
 
+use Daedalus::Core::Controller::UserController qw(confirmUserRegistration);
+
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
 
@@ -24,7 +26,9 @@ Daedalus::Core REST Controller.
 
 =cut
 
-=head2 index
+=head2 ping
+
+Returns "pong"
 
 =cut
 
@@ -38,6 +42,31 @@ sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
 }
 
 sub ping_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status => "pong",
+        },
+    );
+}
+
+=head2 confrimRegister
+
+Receives Auth token, if that token is owned by unactive user, user is registered.
+
+=cut
+
+sub confrimRegister : Path('/confirmuserregistration') : Args(1) :
+  ActionClass('REST') {
+    my ( $self, $c, $auth_token ) = @_;
+    my ( $status, @user_info ) =
+      Daedalus::Core::Controller::UserController->confirmUserRegistration( $c,
+        $auth_token );
+    die("Stop");
+}
+
+sub confrimRegister_POST {
     my ( $self, $c ) = @_;
     return $self->status_ok(
         $c,
