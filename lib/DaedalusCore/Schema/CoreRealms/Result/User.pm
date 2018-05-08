@@ -99,19 +99,19 @@ __PACKAGE__->table("users");
 
 =head2 created_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 modified_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 expires
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
@@ -182,19 +182,19 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "modified_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "expires",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
@@ -275,8 +275,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 19:01:43
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+9q4oqEe8Wq/bTsFN6zhyg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 20:50:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:S8TftrrKJ96NP5TBj2YQOg
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
