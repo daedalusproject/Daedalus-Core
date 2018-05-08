@@ -30,8 +30,8 @@ sub createUser : Private {
     my ( $self, $c, $user_info ) = @_;
 
     # Check if user already exists
-    my $user = $c->model('Daedalus::Core::CoreRealms::User')
-      ->find( { email => $user_info->{email} } );
+    my $user =
+      $c->model('CoreRealms::User')->find( { email => $user_info->{email} } );
 
     if ($user) {
         die("user exists.\n");
