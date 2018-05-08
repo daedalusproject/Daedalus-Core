@@ -26,7 +26,6 @@ if ( $ENV{APP_TEST} ) {
 else {
     $config_filename = file( $Bin, '..', 'daedalus_core.conf' )->stringify;
 }
-print "$config_filename\n";
 my $config      = Config::ZOMG->new( file => $config_filename );
 my $config_hash = $config->load;
 my $dsn         = $config_hash->{'Model::CoreRealms'}->{'connect_info'};
@@ -44,7 +43,7 @@ $schema->resultset('User')->create(
     {
         name     => "Name",
         surname  => "Sur Name",
-        email    => $email,
+        email    => "$email",
         apikey   => "awwqwjdkgajdgs27389ghjsadjghdsa",
         password => "test",
         salt     => "test",

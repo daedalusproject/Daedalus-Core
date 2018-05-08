@@ -99,25 +99,26 @@ __PACKAGE__->table("users");
 
 =head2 created_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 modified_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 expires
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 active
 
   data_type: 'tinyint'
+  default_value: 1
   is_nullable: 0
 
 =cut
@@ -181,24 +182,24 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "modified_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "expires",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "active",
-    { data_type => "tinyint", is_nullable => 0 },
+    { data_type => "tinyint", default_value => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -212,6 +213,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_email>
+
+=over 4
+
+=item * L</email>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "unique_email", ["email"] );
 
 =head1 RELATIONS
 
@@ -260,9 +275,28 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-07 06:47:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OkkHTJefnHrEeaMuIGF/hQ
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xPMeS+ax19BQ9JbaR+SKbg
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
+);
+
+__PACKAGE__->add_columns(
+    'modified_at',
+    {
+        %{ __PACKAGE__->column_info('modified_at') },
+        set_on_create => 1,
+        set_on_update => 1
+    }
+);
+
 __PACKAGE__->meta->make_immutable;
 1;

@@ -57,13 +57,13 @@ __PACKAGE__->table("organizations");
 
 =head2 created_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 modified_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
@@ -86,13 +86,13 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "modified_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
@@ -142,8 +142,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-07 06:47:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XW9iwqXyy3I843vK+P/e7g
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Wkja3j3BZxKkf7pe/IdB+Q
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
