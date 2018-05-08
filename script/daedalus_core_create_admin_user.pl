@@ -16,7 +16,17 @@ use lib dir( $Bin, '..', 'lib' )->stringify;
 use Daedalus::Core::Schema::CoreRealms;
 use Config::ZOMG;
 
-my $config_filename = file( $Bin, '..', 'daedalus_core.conf' )->stringify;
+my $config_filename;
+
+if ( $ENV{APP_TEST} ) {
+
+    $config_filename =
+      file( $Bin, '..', 't', 'lib', 'daedalus_core_testing.conf' )->stringify;
+}
+else {
+    $config_filename = file( $Bin, '..', 'daedalus_core.conf' )->stringify;
+}
+print "$config_filename\n";
 my $config      = Config::ZOMG->new( file => $config_filename );
 my $config_hash = $config->load;
 my $dsn         = $config_hash->{'Model::CoreRealms'}->{'connect_info'};
@@ -30,5 +40,16 @@ my $email = <STDIN>;
 
 chomp $email;
 
-#Daedalus::Core::Model::CoreRealms->new({email => $email});
+$schema->resultset('User')->create(
+    {
+        name     => "Name",
+        surname  => "Sur Name",
+        email    => $email,
+        apikey   => "awwqwjdkgajdgs27389ghjsadjghdsa",
+        password => "test",
+        salt     => "test",
+        expires  => "0000-00-00",
+        active   => "1",
+    }
+);
 
