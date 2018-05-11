@@ -1,4 +1,5 @@
 use utf8;
+
 package Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup;
 
 # Created by DBIx::Class::Schema::Loader
@@ -30,7 +31,7 @@ extends 'DBIx::Class::Core';
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
 =head1 TABLE: C<orgaization_users_groups>
 
@@ -70,33 +71,33 @@ __PACKAGE__->table("orgaization_users_groups");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
-  {
-    data_type => "bigint",
-    extra => { unsigned => 1 },
-    is_auto_increment => 1,
-    is_nullable => 0,
-  },
-  "user_id",
-  {
-    data_type => "bigint",
-    extra => { unsigned => 1 },
-    is_foreign_key => 1,
-    is_nullable => 0,
-  },
-  "group_id",
-  {
-    data_type => "bigint",
-    extra => { unsigned => 1 },
-    is_foreign_key => 1,
-    is_nullable => 0,
-  },
-  "created_at",
-  {
-    data_type => "datetime",
-    datetime_undef_if_invalid => 1,
-    is_nullable => 0,
-  },
+    "id",
+    {
+        data_type         => "bigint",
+        extra             => { unsigned => 1 },
+        is_auto_increment => 1,
+        is_nullable       => 0,
+    },
+    "user_id",
+    {
+        data_type      => "bigint",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
+    },
+    "group_id",
+    {
+        data_type      => "bigint",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
+    },
+    "created_at",
+    {
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 0,
+    },
 );
 
 =head1 PRIMARY KEY
@@ -122,10 +123,10 @@ Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup>
 =cut
 
 __PACKAGE__->belongs_to(
-  "group",
-  "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
-  { id => "group_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    "group",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
+    { id            => "group_id" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
 =head2 user
@@ -137,17 +138,25 @@ Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User>
 =cut
 
 __PACKAGE__->belongs_to(
-  "user",
-  "Daedalus::Core::Schema::CoreRealms::Result::User",
-  { id => "user_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    "user",
+    "Daedalus::Core::Schema::CoreRealms::Result::User",
+    { id            => "user_id" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
-
 
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:An5vAFOXVOEEzIDGdIQ6eg
 
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
+);
+
 __PACKAGE__->meta->make_immutable;
 1;
