@@ -156,14 +156,5 @@ __PACKAGE__->add_columns(
     }
 );
 
-__PACKAGE__->add_columns(
-    'modified_at',
-    {
-        %{ __PACKAGE__->column_info('modified_at') },
-        set_on_create => 1,
-        set_on_update => 1
-    }
-);
-
 __PACKAGE__->meta->make_immutable;
 1;
