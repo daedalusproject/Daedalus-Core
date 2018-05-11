@@ -39,7 +39,7 @@ my $email = <STDIN>;
 
 chomp $email;
 
-$schema->resultset('User')->create(
+$schema->resultset('User')->test01(
     {
         name     => "Name",
         surname  => "Sur Name",

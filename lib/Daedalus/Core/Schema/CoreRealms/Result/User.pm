@@ -277,6 +277,8 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:48:28
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:76OCV5bgmsGhLs8CzPnzBQ
 
+use Email::Valid;
+
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
 __PACKAGE__->add_columns(
@@ -297,5 +299,14 @@ __PACKAGE__->add_columns(
     }
 );
 
-__PACKAGE__->meta->make_immutable;
-1;
+sub {
+    my ( $class, $args ) = @_;
+    if ( !Email::Valid->address( $args->{email} ) ) {
+        die 'Email invalid';
+
+    }
+    return $class->next::method($args);
+  }
+
+  __PACKAGE__->meta->make_immutable;
+1
