@@ -68,12 +68,6 @@ __PACKAGE__->table("organization_project");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 modified_at
-
-  data_type: 'datetime'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -99,12 +93,6 @@ __PACKAGE__->add_columns(
         is_nullable    => 0,
     },
     "created_at",
-    {
-        data_type                 => "datetime",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
-    },
-    "modified_at",
     {
         data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
@@ -186,8 +174,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:icnHv0uk/rwdSI06Rh0XhA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UFqtAW6eOZcEQFjm/YwWyA
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

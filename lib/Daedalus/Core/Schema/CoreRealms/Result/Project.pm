@@ -142,23 +142,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-=head2 organization_role_groups_projects
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_role_groups_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject",
-    { "foreign.project_id" => "self.id" },
-    { cascade_copy         => 0, cascade_delete => 0 },
-);
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:tNM+LPtE/bmYuZC5VSIbkA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/rJRF1W+v6GBOWD0s7JONA
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

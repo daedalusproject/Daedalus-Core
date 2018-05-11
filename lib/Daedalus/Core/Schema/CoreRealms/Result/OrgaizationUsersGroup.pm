@@ -1,12 +1,12 @@
 use utf8;
-package Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken;
+package Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken
+Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup
 
 =cut
 
@@ -32,11 +32,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
-=head1 TABLE: C<user_auth_tokens>
+=head1 TABLE: C<orgaization_users_groups>
 
 =cut
 
-__PACKAGE__->table("user_auth_tokens");
+__PACKAGE__->table("orgaization_users_groups");
 
 =head1 ACCESSORS
 
@@ -54,18 +54,18 @@ __PACKAGE__->table("user_auth_tokens");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 active
+=head2 group_id
 
-  data_type: 'tinyint'
+  data_type: 'bigint'
   extra: {unsigned => 1}
+  is_foreign_key: 1
   is_nullable: 0
 
-=head2 auth_token
+=head2 created_at
 
-  data_type: 'varchar'
-  default_value: (empty string)
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
   is_nullable: 0
-  size: 32
 
 =cut
 
@@ -84,10 +84,19 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable => 0,
   },
-  "active",
-  { data_type => "tinyint", extra => { unsigned => 1 }, is_nullable => 0 },
-  "auth_token",
-  { data_type => "varchar", default_value => "", is_nullable => 0, size => 32 },
+  "group_id",
+  {
+    data_type => "bigint",
+    extra => { unsigned => 1 },
+    is_foreign_key => 1,
+    is_nullable => 0,
+  },
+  "created_at",
+  {
+    data_type => "datetime",
+    datetime_undef_if_invalid => 1,
+    is_nullable => 0,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -103,6 +112,21 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
+
+=head2 group
+
+Type: belongs_to
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "group",
+  "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
+  { id => "group_id" },
+  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+);
 
 =head2 user
 
@@ -120,8 +144,9 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:znc36smfNhqUJF07v7CvEQ
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:An5vAFOXVOEEzIDGdIQ6eg
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

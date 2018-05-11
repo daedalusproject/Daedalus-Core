@@ -112,17 +112,17 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 organization_role_groups
+=head2 organization_groups
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup>
 
 =cut
 
 __PACKAGE__->has_many(
-    "organization_role_groups",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup",
+    "organization_groups",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
     { "foreign.organization_id" => "self.id" },
     { cascade_copy              => 0, cascade_delete => 0 },
 );
@@ -142,8 +142,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Wkja3j3BZxKkf7pe/IdB+Q
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aJZ0DDp8tsOHEA2Gm6SBUg
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

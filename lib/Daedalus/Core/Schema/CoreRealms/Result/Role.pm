@@ -112,17 +112,17 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 organization_role_groups
+=head2 organization_group_roles
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole>
 
 =cut
 
 __PACKAGE__->has_many(
-    "organization_role_groups",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup",
+    "organization_group_roles",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole",
     { "foreign.role_id" => "self.id" },
     { cascade_copy      => 0, cascade_delete => 0 },
 );
@@ -142,23 +142,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-=head2 user_roles
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::UserRole>
-
-=cut
-
-__PACKAGE__->has_many(
-    "user_roles",
-    "Daedalus::Core::Schema::CoreRealms::Result::UserRole",
-    { "foreign.role_id" => "self.id" },
-    { cascade_copy      => 0, cascade_delete => 0 },
-);
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IxtqKyGbhnyk/M7j12At1Q
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:07XY+J9/qF0DGv7SJ50/aw
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

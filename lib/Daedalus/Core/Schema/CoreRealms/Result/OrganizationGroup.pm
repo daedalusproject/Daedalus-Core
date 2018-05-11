@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup;
+package Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup
+Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup
 
 =cut
 
@@ -33,11 +33,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<organization_role_groups>
+=head1 TABLE: C<organization_groups>
 
 =cut
 
-__PACKAGE__->table("organization_role_groups");
+__PACKAGE__->table("organization_groups");
 
 =head1 ACCESSORS
 
@@ -62,11 +62,10 @@ __PACKAGE__->table("organization_role_groups");
   is_nullable: 0
   size: 255
 
-=head2 role_id
+=head2 created_at
 
-  data_type: 'integer'
-  extra: {unsigned => 1}
-  is_foreign_key: 1
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =cut
@@ -93,12 +92,11 @@ __PACKAGE__->add_columns(
         is_nullable   => 0,
         size          => 255
     },
-    "role_id",
+    "created_at",
     {
-        data_type      => "integer",
-        extra          => { unsigned => 1 },
-        is_foreign_key => 1,
-        is_nullable    => 0,
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 0,
     },
 );
 
@@ -116,6 +114,21 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
+=head2 orgaization_users_groups
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup>
+
+=cut
+
+__PACKAGE__->has_many(
+    "orgaization_users_groups",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup",
+    { "foreign.group_id" => "self.id" },
+    { cascade_copy       => 0, cascade_delete => 0 },
+);
+
 =head2 organization
 
 Type: belongs_to
@@ -131,38 +144,23 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-=head2 organization_role_groups_projects
+=head2 organization_group_roles
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole>
 
 =cut
 
 __PACKAGE__->has_many(
-    "organization_role_groups_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject",
-    { "foreign.organization_manager_id" => "self.organization_id" },
-    { cascade_copy                      => 0, cascade_delete => 0 },
+    "organization_group_roles",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole",
+    { "foreign.group_id" => "self.id" },
+    { cascade_copy       => 0, cascade_delete => 0 },
 );
 
-=head2 role
-
-Type: belongs_to
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role>
-
-=cut
-
-__PACKAGE__->belongs_to(
-    "role",
-    "Daedalus::Core::Schema::CoreRealms::Result::Role",
-    { id            => "role_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
-);
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rho++lcRWB4C5IuY9M/vmw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:r26S0OfRPpThOpuKntiBcg
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

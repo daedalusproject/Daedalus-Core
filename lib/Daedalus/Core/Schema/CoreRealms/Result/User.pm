@@ -121,6 +121,13 @@ __PACKAGE__->table("users");
   default_value: 1
   is_nullable: 0
 
+=head2 auth_token
+
+  data_type: 'varchar'
+  default_value: (empty string)
+  is_nullable: 0
+  size: 64
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -200,6 +207,13 @@ __PACKAGE__->add_columns(
     },
     "active",
     { data_type => "tinyint", default_value => 1, is_nullable => 0 },
+    "auth_token",
+    {
+        data_type     => "varchar",
+        default_value => "",
+        is_nullable   => 0,
+        size          => 64
+    },
 );
 
 =head1 PRIMARY KEY
@@ -230,17 +244,17 @@ __PACKAGE__->add_unique_constraint( "unique_email", ["email"] );
 
 =head1 RELATIONS
 
-=head2 user_auth_tokens
+=head2 orgaization_users_groups
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup>
 
 =cut
 
 __PACKAGE__->has_many(
-    "user_auth_tokens",
-    "Daedalus::Core::Schema::CoreRealms::Result::UserAuthToken",
+    "orgaization_users_groups",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup",
     { "foreign.user_id" => "self.id" },
     { cascade_copy      => 0, cascade_delete => 0 },
 );
@@ -260,23 +274,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-=head2 user_roles
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::UserRole>
-
-=cut
-
-__PACKAGE__->has_many(
-    "user_roles",
-    "Daedalus::Core::Schema::CoreRealms::Result::UserRole",
-    { "foreign.user_id" => "self.id" },
-    { cascade_copy      => 0, cascade_delete => 0 },
-);
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-08 21:15:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xPMeS+ax19BQ9JbaR+SKbg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:21:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:T1ndnsu5O0AXMHMsax6agw
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
