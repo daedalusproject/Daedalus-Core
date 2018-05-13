@@ -32,6 +32,7 @@ requires 'DBIx::Class::TimeStamp';
 requires 'DBIx::Class::Validation';
 requires 'Term::ReadKey';
 requires 'String::Random';
+requires 'Data::Password::Check';
 
 recommends 'Pod::Usage';
 
