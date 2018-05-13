@@ -140,7 +140,7 @@ my $name = fill_field(
         field_name   => 'name',
         field_type   => 'name',
         secret       => 0,
-        message      => 'Enter your Name',
+        message      => "Enter your Name",
         confirmation => 0,
     }
 );
@@ -150,29 +150,27 @@ my $surname = fill_field(
         field_name   => 'name',
         field_type   => 'name',
         secret       => 0,
-        message      => 'Enter your Surname',
+        message      => "Enter your Surname",
         confirmation => 0,
     }
 );
 
 my $email = fill_field(
     {
-        field_name => 'e-mail',
-        field_type => 'email',
-        secret     => 0,
-        message    => 'Enter your e-mail
-address',
+        field_name   => 'e-mail',
+        field_type   => 'email',
+        secret       => 0,
+        message      => "Enter your e-mail address",
         confirmation => 1,
     }
 );
 
 my $password = fill_field(
     {
-        field_name => 'password',
-        field_type => 'password',
-        secret     => 1,
-        message    => 'Enter your
-password',
+        field_name   => 'password',
+        field_type   => 'password',
+        secret       => 1,
+        message      => "Enter your password",
         confirmation => 1,
     }
 );
@@ -199,7 +197,8 @@ $schema->resultset('User')->create(
         salt       => $salt,
         expires    => "3000-01-01",
         active     => "1",
-        auth_token => $auth_token;
+        auth_token => $auth_token,
+        is_admin   => 1,
     }
 );
 

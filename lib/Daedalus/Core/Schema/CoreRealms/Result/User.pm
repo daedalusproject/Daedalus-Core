@@ -128,6 +128,12 @@ __PACKAGE__->table("users");
   is_nullable: 1
   size: 64
 
+=head2 is_admin
+
+  data_type: 'tinyint'
+  default_value: 0
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -214,6 +220,8 @@ __PACKAGE__->add_columns(
         is_nullable   => 1,
         size          => 64
     },
+    "is_admin",
+    { data_type => "tinyint", default_value => 0, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -274,8 +282,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-13 17:10:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:p51HONdynGZh3dHF3FUIBw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-13 17:31:17
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DOWnbcG8W/lBNP4H5nFZhg
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
