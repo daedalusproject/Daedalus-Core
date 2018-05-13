@@ -27,14 +27,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::Validation>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
-    "Validation" );
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
 =head1 TABLE: C<roles>
 
@@ -133,8 +130,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-12 18:41:01
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kVjW5NEfMFmwLmKi9e+Q7Q
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-13 17:10:28
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iGRet8f1eYKL4CxaTf5YMw
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

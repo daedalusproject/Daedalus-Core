@@ -27,14 +27,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
-=item * L<DBIx::Class::Validation>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
-    "Validation" );
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
 =head1 TABLE: C<users>
 
@@ -91,7 +88,7 @@ __PACKAGE__->table("users");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 64
+  size: 128
 
 =head2 salt
 
@@ -181,7 +178,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => "",
         is_nullable   => 0,
-        size          => 64
+        size          => 128
     },
     "salt",
     {
@@ -277,8 +274,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-12 18:41:01
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OA0FzmCMB4YngAeI0weh2g
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-13 17:10:28
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:p51HONdynGZh3dHF3FUIBw
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
