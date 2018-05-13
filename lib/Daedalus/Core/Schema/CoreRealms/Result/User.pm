@@ -27,11 +27,14 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::Validation>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation" );
 
 =head1 TABLE: C<users>
 
@@ -119,13 +122,13 @@ __PACKAGE__->table("users");
 
   data_type: 'tinyint'
   default_value: 1
-  is_nullable: 0
+  is_nullable: 1
 
 =head2 auth_token
 
   data_type: 'varchar'
   default_value: (empty string)
-  is_nullable: 0
+  is_nullable: 1
   size: 64
 
 =cut
@@ -206,12 +209,12 @@ __PACKAGE__->add_columns(
         is_nullable               => 0,
     },
     "active",
-    { data_type => "tinyint", default_value => 1, is_nullable => 0 },
+    { data_type => "tinyint", default_value => 1, is_nullable => 1 },
     "auth_token",
     {
         data_type     => "varchar",
         default_value => "",
-        is_nullable   => 0,
+        is_nullable   => 1,
         size          => 64
     },
 );
@@ -274,12 +277,11 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:48:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:76OCV5bgmsGhLs8CzPnzBQ
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-12 18:41:01
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OA0FzmCMB4YngAeI0weh2g
 
-use Email::Valid;
-
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
 
 __PACKAGE__->add_columns(
     'created_at',
@@ -299,14 +301,5 @@ __PACKAGE__->add_columns(
     }
 );
 
-sub {
-    my ( $class, $args ) = @_;
-    if ( !Email::Valid->address( $args->{email} ) ) {
-        die 'Email invalid';
-
-    }
-    return $class->next::method($args);
-  }
-
-  __PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable;
 1

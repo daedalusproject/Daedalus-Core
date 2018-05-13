@@ -29,6 +29,9 @@ requires 'Config::ZOMG';
 requires 'Catalyst::Plugin::Authentication';
 requires 'Catalyst::Helper::Model::DBI';
 requires 'DBIx::Class::TimeStamp';
+requires 'DBIx::Class::Validation';
+requires 'Term::ReadKey';
+requires 'String::Random';
 
 recommends 'Pod::Usage';
 

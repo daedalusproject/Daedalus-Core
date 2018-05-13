@@ -27,11 +27,14 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::TimeStamp>
 
+=item * L<DBIx::Class::Validation>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation" );
 
 =head1 TABLE: C<organization_share_project_roles>
 
@@ -144,8 +147,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-11 18:48:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:N0HZAtBppbfqY34jCBAKnw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-12 18:41:01
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3dfLWiqg0H8ZBX21d3v1fw
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
