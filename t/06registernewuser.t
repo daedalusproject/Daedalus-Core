@@ -10,9 +10,9 @@ use JSON::XS 'decode_json';
 my $registerGETcontent = get('/registernewuser');
 
 is_deeply(
-    $registerGETcontent,
+    decode_json($registerGETcontent),
     {
-        status  => 'failed',
+        status  => 'Failed',
         message => "This method does not support GET requests."
     }
 );

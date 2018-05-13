@@ -57,6 +57,22 @@ Admin users are able to create new users.
 
 =cut
 
+sub registeruser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+
+}
+
+sub registeruser_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
 =head2 confrimRegister
 
 Receives Auth token, if that token is owned by unactive user, user is registered.
