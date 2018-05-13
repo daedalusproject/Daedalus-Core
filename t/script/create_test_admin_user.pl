@@ -1,0 +1,65 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+=head1 NAME
+daedalus_core_create_admin_user.perl - Creates Daedalus Manager Users
+=cut
+
+use Cwd 'abs_path';
+use FindBin qw($Bin);
+use Path::Class;
+use lib dir( $Bin, '../../', 'lib' )->stringify;
+
+use Daedalus::Core::Schema::CoreRealms;
+use Config::ZOMG;
+use Email::Valid;
+use Term::ReadKey;
+use Data::Password::Check;
+use Carp;
+use String::Random;
+use Digest::SHA qw(sha512_base64);
+
+use Data::Dumper;
+
+my $config_filename;
+
+# Call the schema
+
+$config_filename =
+  file( $Bin, '..', 'lib', 'daedalus_core_testing.conf' )->stringify;
+
+my $config      = Config::ZOMG->new( file => $config_filename );
+my $config_hash = $config->load;
+my $dsn         = $config_hash->{'Model::CoreRealms'}->{'connect_info'};
+$dsn = $dsn =~ s/__HOME__/$Bin\/..\/../r;
+
+my $schema = Daedalus::Core::Schema::CoreRealms->connect($dsn)
+  or die "Failed to connect to database at $dsn";
+
+my $name     = 'Admin';
+my $surname  = 'User';
+my $email    = 'admin@daedalus-project.io';
+my $password = 'this_is_a_Test_1234';
+my $apikey   = 'lTuuauLEKCtXhbBVyxfpVHpdodiBaJb';
+my $auth_token =
+  'gqYyhZWMfPFm9WK6q/XYUVcqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5p';
+my $salt =
+'lec6bQeaUiJoFQ3zPZiNzfz7D2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
+$password = sha512_base64("$salt$password");
+
+$schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        apikey     => $apikey,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => "1",
+        auth_token => $auth_token,
+        is_admin   => 1,
+    }
+);
+

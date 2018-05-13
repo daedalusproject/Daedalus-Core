@@ -117,8 +117,6 @@ sub fill_field {
 
 my $config_filename;
 
-my $pwcheck;
-
 # Call the schema
 
 if ( $ENV{APP_TEST} ) {
