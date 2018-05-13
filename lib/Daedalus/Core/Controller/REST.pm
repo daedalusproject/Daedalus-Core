@@ -51,6 +51,12 @@ sub ping_GET {
     );
 }
 
+=head2 registerNewUser
+
+Admin users are able to create new users.
+
+=cut
+
 =head2 confrimRegister
 
 Receives Auth token, if that token is owned by unactive user, user is registered.
