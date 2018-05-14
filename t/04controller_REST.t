@@ -33,7 +33,7 @@ is_deeply(
 my $failed_login_user_post_content = request POST '/login',
   {
     auth => {
-        user     => 'admin@nodomain.io',
+        email    => 'admin@nodomain.io',
         password => 'this_is_a_Test_1234',
     }
   };
@@ -54,7 +54,7 @@ is_deeply(
 my $failed_login_password_post_content = request POST '/login',
   {
     auth => {
-        user     => 'admin@daedalus-project.io',
+        email    => 'admin@daedalus-project.io',
         password => 'this_is_a_Failed_password',
     },
   };
@@ -72,7 +72,7 @@ is_deeply(
 
 my $login_post_content = request POST '/login', {
     auth => {
-        user     => 'admin@daedalus-project.io',
+        email    => 'admin@daedalus-project.io',
         password => 'this_is_a_Test_1234',
 
     },
