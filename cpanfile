@@ -24,6 +24,7 @@ requires 'Catalyst::Controller::FormBuilder';
 requires 'Catalyst::Plugin::Session';
 requires 'Catalyst::Plugin::Session::State::Cookie';
 requires 'Catalyst::Plugin::Session::Store::DBIC';
+requires 'Catalyst::Plugin::Session::Store::Redis ';
 requires 'Text::CSV_XS';
 requires 'Config::ZOMG';
 requires 'Catalyst::Plugin::Authentication';

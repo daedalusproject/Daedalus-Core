@@ -5,6 +5,7 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON;
+use Data::Dumper;
 use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Core::Controller::UserController qw(confirmUserRegistration);
@@ -38,7 +39,6 @@ sub begin : ActionClass('Deserialize') {
 
 sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
-
 }
 
 sub ping_GET {
