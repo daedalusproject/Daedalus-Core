@@ -76,14 +76,24 @@ sub loginUser_POST {
     my ( $self, $c ) = @_;
     my $request = $c->req;
 
-    my $parameters = $request->parameters;
+    my $parameters = $request->data;
+    my $auth       = $parameters->{auth};
+
+    #Check paramms first
+
+    # Check user
+
+    my $user =
+      $c->model('CoreRealms::User')->find( { email => $auth->{username} } );
+
+    die Dumper($user);
 
     return $self->status_ok(
         $c,
         entity => {
             status     => 'Failed',
-            message    => 'This method does not support GET requests.',
-            parameters => $parameters,
+            message    => 'WOOOO',
+            parameters => $parameters->{auth},
         },
     );
 }
