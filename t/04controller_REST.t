@@ -32,8 +32,10 @@ is_deeply(
 
 my $failed_login_user_post_content = request POST '/login',
   {
-    user     => 'admin@nodomain.io',
-    password => 'this_is_a_Test_1234',
+    auth => {
+        user     => 'admin@nodomain.io',
+        password => 'this_is_a_Test_1234',
+    }
   };
 
 my $failed_login_user_post_content_json =
@@ -42,15 +44,19 @@ my $failed_login_user_post_content_json =
 is_deeply(
     $failed_login_user_post_content_json,
     {
-        status  => 'Failed',
-        message => "Wrong username or password."
+        auth => {
+            status  => 'Failed',
+            message => "Wrong username or password."
+        },
     }
 );
 
 my $failed_login_password_post_content = request POST '/login',
   {
-    user     => 'admin@daedalus-project.io',
-    password => 'this_is_a_Failed_password',
+    auth => {
+        user     => 'admin@daedalus-project.io',
+        password => 'this_is_a_Failed_password',
+    },
   };
 
 my $failed_login_password_post_content_json =
@@ -64,11 +70,13 @@ is_deeply(
     }
 );
 
-my $login_post_content = request POST '/login',
-  {
-    user     => 'admin@daedalus-project.io',
-    password => 'this_is_a_Test_1234',
-  };
+my $login_post_content = request POST '/login', {
+    auth => {
+        user     => 'admin@daedalus-project.io',
+        password => 'this_is_a_Test_1234',
+
+    },
+};
 
 my $login_post_content_json = decode_json($login_post_content);
 

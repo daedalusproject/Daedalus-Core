@@ -51,6 +51,43 @@ sub ping_GET {
     );
 }
 
+=head2 loginUser
+
+Login user
+
+=cut
+
+sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub loginUser_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub loginUser_POST {
+    my ( $self, $c ) = @_;
+    my $request = $c->req;
+
+    my $parameters = $request->parameters;
+
+    return $self->status_ok(
+        $c,
+        entity => {
+            status     => 'Failed',
+            message    => 'This method does not support GET requests.',
+            parameters => $parameters,
+        },
+    );
+}
+
 =head2 registerNewUser
 
 Admin users are able to create new users.
