@@ -39,15 +39,13 @@ my $failed_login_user_post_content = request POST '/login',
   };
 
 my $failed_login_user_post_content_json =
-  decode_json($failed_login_user_post_content);
+  decode_json( $failed_login_user_post_content->content );
 
 is_deeply(
     $failed_login_user_post_content_json,
     {
-        auth => {
-            status  => 'Failed',
-            message => "Wrong username or password."
-        },
+        status  => 'Failed',
+        message => "Wrong e-mail or password."
     }
 );
 

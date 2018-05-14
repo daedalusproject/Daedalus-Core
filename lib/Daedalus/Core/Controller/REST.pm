@@ -6,9 +6,11 @@ use Moose;
 use namespace::autoclean;
 use JSON;
 use Data::Dumper;
+
 use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Core::Controller::UserController qw(confirmUserRegistration);
+use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -82,20 +84,15 @@ sub loginUser_POST {
     #Check paramms first
 
     # Check user
-
-    my $user =
-      $c->model('CoreRealms::User')->find( { email => $auth->{username} } );
-
-    die Dumper($user);
-
-    return $self->status_ok(
-        $c,
-        entity => {
-            status     => 'Failed',
-            message    => 'WOOOO',
-            parameters => $parameters->{auth},
-        },
+    my $response = Daedalus::Users::Manager::auth_user_using_model(
+        {
+            request => $request->data,
+            model   => $c->model('CoreRealms::User'),
+        }
     );
+
+    return $self->status_ok( $c, entity => $response, );
+
 }
 
 =head2 registerNewUser
