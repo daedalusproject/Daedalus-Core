@@ -12,11 +12,52 @@ use strict;
 use warnings;
 use Moose;
 
+use Digest::SHA qw(sha512_base64);
 use Data::Dumper;
 
 use namespace::clean -except => 'meta';
 
+=head1 NAME
+
+Daedalus::Core::Users::Manager
+
+=cut
+
+=head1 DESCRIPTION
+
+Daedalus::Core Users Manager
+
+=head1 METHODS
+
+=cut
+
+=head2 check_user_passwrd
+
+Checks user password, this methods receives submitted user,
+user salt and stored password.
+
+=cut
+
+sub check_user_passwrd {
+
+    my $submitted_password = shift;
+    my $user_salt          = shift;
+    my $user_password      = shift;
+
+    my $password = sha512_base64("$user_salt$submitted_password");
+
+    return $user_password eq $password;
+
+}
+
+=head2 auth_user_using_model
+
+Auths user, returns auth data if submitted credentials match
+with database info.
+=cut
+
 sub auth_user_using_model {
+
     my ($data) = shift;
 
     my $auth = $data->{request}->{auth};
@@ -27,14 +68,26 @@ sub auth_user_using_model {
     $response{data}    => {};
 
     # Get user from model
-    my $user = $data->{model}->find( { email => $auth->{username} } );
+    my $user = $data->{model}->find( { email => $auth->{email} } );
 
     if ( !$user ) {
         $response{status}  = 'Failed';
         $response{message} = 'Wrong e-mail or password.';
     }
     else {
-
+        if (
+            !check_user_passwrd(
+                $auth->{password}, $user->salt, $user->password
+            )
+          )
+        {
+            $response{status}  = 'Failed';
+            $response{message} = 'Wrong e-mail or password.';
+        }
+        else {
+            $response{status}  = 'Success';
+            $response{message} = 'Auth Successful.';
+        }
     }
     return \%response;
 }

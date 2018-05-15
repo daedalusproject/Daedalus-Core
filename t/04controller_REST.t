@@ -8,6 +8,8 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS 'decode_json';
 use HTTP::Request::Common;
 
+use Data::Dumper;
+
 ok( request('/ping')->is_success, 'Request should succeed' );
 
 my $content      = get('/ping');
@@ -64,17 +66,17 @@ is_deeply(
     $failed_login_password_post_content_json,
     {
         status  => 'Failed',
-        message => "Wrong username or password."
+        message => "Wrong e-mail or password."
     }
 );
 
-my $login_post_content = request POST '/login', {
+my $login_post_content = request POST '/login',
+  {
     auth => {
         email    => 'admin@daedalus-project.io',
         password => 'this_is_a_Test_1234',
-
     },
-};
+  };
 
 my $login_post_content_json = decode_json( $login_post_content->content );
 
