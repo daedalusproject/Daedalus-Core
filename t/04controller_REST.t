@@ -58,7 +58,7 @@ my $failed_login_password_post_content = request POST '/login',
   };
 
 my $failed_login_password_post_content_json =
-  decode_json($failed_login_password_post_content);
+  decode_json( $failed_login_password_post_content->content );
 
 is_deeply(
     $failed_login_password_post_content_json,
@@ -76,7 +76,7 @@ my $login_post_content = request POST '/login', {
     },
 };
 
-my $login_post_content_json = decode_json($login_post_content);
+my $login_post_content_json = decode_json( $login_post_content->content );
 
 is_deeply( $login_post_content_json->{status}, 'Success', );
 

@@ -31,7 +31,7 @@ sub auth_user_using_model {
 
     if ( !$user ) {
         $response{status}  = 'Failed';
-        $response{message} = 'Wrong e-mail or password';
+        $response{message} = 'Wrong e-mail or password.';
     }
     else {
 
