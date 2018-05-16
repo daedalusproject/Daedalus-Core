@@ -46,7 +46,8 @@ sub check_user_passwrd {
 
     my $password = sha512_base64("$user_salt$submitted_password");
 
-    return $user_password eq $password;
+    return 1 if ( $password eq $user_password );
+    return 0;
 
 }
 
@@ -58,9 +59,9 @@ with database info.
 
 sub auth_user_using_model {
 
-    my ($data) = shift;
-
-    my $auth = $data->{request}->{auth};
+    my $request = shift;
+    my $auth    = $request->{request}->{data}->{auth};
+    my $model   = $request->{model};
 
     my %response;
     $response{status}  => "";
@@ -68,16 +69,14 @@ sub auth_user_using_model {
     $response{data}    => {};
 
     # Get user from model
-    my $user = $data->{model}->find( { email => $auth->{email} } );
+    my $user = $model->find( { email => $auth->{email} } );
 
-    if ( !$user ) {
-        $response{status}  = 'Failed';
-        $response{message} = 'Wrong e-mail or password.';
-    }
-    else {
+    if ($user) {
         if (
-            !check_user_passwrd(
-                $auth->{password}, $user->salt, $user->password
+            !(
+                check_user_passwrd(
+                    $auth->{password}, $user->salt, $user->password
+                )
             )
           )
         {
@@ -88,6 +87,10 @@ sub auth_user_using_model {
             $response{status}  = 'Success';
             $response{message} = 'Auth Successful.';
         }
+    }
+    else {
+        $response{status}  = 'Failed';
+        $response{message} = 'Wrong e-mail or password.';
     }
     return \%response;
 }

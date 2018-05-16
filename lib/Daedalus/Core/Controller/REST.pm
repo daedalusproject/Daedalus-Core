@@ -76,22 +76,16 @@ sub loginUser_GET {
 
 sub loginUser_POST {
     my ( $self, $c ) = @_;
-    my $request = $c->req;
-
-    my $parameters = $request->data;
-    my $auth       = $parameters->{auth};
-
-    #Check paramms first
 
     # Check user
     my $response = Daedalus::Users::Manager::auth_user_using_model(
         {
-            request => $request->data,
+            request => $c->req,
             model   => $c->model('CoreRealms::User'),
         }
     );
 
-    return $self->status_ok( $c, entity => $response, );
+    return $self->status_ok( $c, entity => $response );
 
 }
 
@@ -103,7 +97,6 @@ Admin users are able to create new users.
 
 sub registeruser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
-
 }
 
 sub registeruser_GET {

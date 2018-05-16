@@ -3,9 +3,10 @@ use warnings;
 use Test::More;
 
 use Catalyst::Test 'Daedalus::Core';
-use Daedalus::Core::Controller::REST;
 
-use JSON::XS 'decode_json';
+#æuse Daedalus::Core::Controller::REST;
+
+use JSON::XS;
 use HTTP::Request::Common;
 
 use Data::Dumper;
@@ -32,13 +33,18 @@ is_deeply(
     }
 );
 
-my $failed_login_user_post_content = request POST '/login',
-  {
-    auth => {
-        email    => 'admin@nodomain.io',
-        password => 'this_is_a_Test_1234',
-    }
-  };
+my $failed_login_user_post_content = request(
+    POST '/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@nodomain.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
 
 my $failed_login_user_post_content_json =
   decode_json( $failed_login_user_post_content->content );
@@ -46,18 +52,23 @@ my $failed_login_user_post_content_json =
 is_deeply(
     $failed_login_user_post_content_json,
     {
-        status  => 'Failed',
-        message => "Wrong e-mail or password."
+        'status'  => 'Failed',
+        'message' => 'Wrong e-mail or password.',
     }
 );
 
-my $failed_login_password_post_content = request POST '/login',
-  {
-    auth => {
-        email    => 'admin@daedalus-project.io',
-        password => 'this_is_a_Failed_password',
-    },
-  };
+my $failed_login_password_post_content = request(
+    POST '/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Failed_password',
+            }
+        }
+    )
+);
 
 my $failed_login_password_post_content_json =
   decode_json( $failed_login_password_post_content->content );
@@ -65,21 +76,26 @@ my $failed_login_password_post_content_json =
 is_deeply(
     $failed_login_password_post_content_json,
     {
-        status  => 'Failed',
-        message => "Wrong e-mail or password."
+        'status'  => 'Failed',
+        'message' => 'Wrong e-mail or password.',
     }
 );
 
-my $login_post_content = request POST '/login',
-  {
-    auth => {
-        email    => 'admin@daedalus-project.io',
-        password => 'this_is_a_Test_1234',
-    },
-  };
+my $login_post_success = request(
+    POST '/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
 
-my $login_post_content_json = decode_json( $login_post_content->content );
+my $login_post_success_json = decode_json( $login_post_success->content );
 
-is_deeply( $login_post_content_json->{status}, 'Success', );
+is_deeply( $login_post_success_json->{status}, 'Success', );
 
 done_testing();
