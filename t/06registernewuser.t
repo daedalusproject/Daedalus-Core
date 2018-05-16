@@ -6,6 +6,7 @@ use Catalyst::Test 'Daedalus::Core';
 use Daedalus::Core::Controller::REST;
 
 use JSON::XS 'decode_json';
+use HTTP::Request::Common;
 
 my $registerGETcontent = get('/registernewuser');
 

@@ -5,9 +5,12 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON;
+use Data::Dumper;
+
 use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Core::Controller::UserController qw(confirmUserRegistration);
+use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -38,7 +41,6 @@ sub begin : ActionClass('Deserialize') {
 
 sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
-
 }
 
 sub ping_GET {
@@ -51,6 +53,42 @@ sub ping_GET {
     );
 }
 
+=head2 loginUser
+
+Login user
+
+=cut
+
+sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub loginUser_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub loginUser_POST {
+    my ( $self, $c ) = @_;
+
+    # Check user
+    my $response = Daedalus::Users::Manager::auth_user_using_model(
+        {
+            request => $c->req,
+            model   => $c->model('CoreRealms::User'),
+        }
+    );
+
+    return $self->status_ok( $c, entity => $response );
+
+}
+
 =head2 registerNewUser
 
 Admin users are able to create new users.
@@ -59,7 +97,6 @@ Admin users are able to create new users.
 
 sub registeruser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
-
 }
 
 sub registeruser_GET {
