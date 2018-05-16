@@ -46,9 +46,7 @@ sub check_user_passwrd {
 
     my $password = sha512_base64("$user_salt$submitted_password");
 
-    return 1 if ( $password eq $user_password );
-    return 0;
-
+    return $password eq $user_password;
 }
 
 =head2 auth_user_using_model
