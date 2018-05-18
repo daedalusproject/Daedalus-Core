@@ -37,6 +37,8 @@ $dsn = $dsn =~ s/__HOME__/$Bin\/..\/../r;
 my $schema = Daedalus::Core::Schema::CoreRealms->connect($dsn)
   or die "Failed to connect to database at $dsn";
 
+# Admin user
+
 my $name     = 'Admin';
 my $surname  = 'User';
 my $email    = 'admin@daedalus-project.io';
@@ -62,4 +64,33 @@ $schema->resultset('User')->create(
         is_admin   => 1,
     }
 );
+
+# No admin user
+
+$name     = 'NoAdmin';
+$surname  = 'User';
+$email    = 'notanadmin@daedalus-project.io';
+$password = 'Test_is_th1s_123';
+$apikey   = 'lTluauLErCtXhbBdyxfpVHpdodiBaJb';
+$auth_token =
+  'gqYyhZWMfPFm9WK6q/XYUVcqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
+$salt =
+'1ec6bQeaUiJoFQ3zPZiNzfz7D2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
+$password = sha512_base64("$salt$password");
+
+$schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        apikey     => $apikey,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => "1",
+        auth_token => $auth_token,
+        is_admin   => 0,
+    }
+);
+
 
