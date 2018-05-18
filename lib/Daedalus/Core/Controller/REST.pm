@@ -88,6 +88,42 @@ sub loginUser_POST {
 
 }
 
+=head2 imAdmin
+
+Check if logged user is Admin
+
+=cut
+
+sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub imAdmin_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub imAdmin_POST {
+    my ( $self, $c ) = @_;
+
+    # Check user
+    my $user_login_response = Daedalus::Users::Manager::auth_user_using_model(
+        {
+            request => $c->req,
+            model   => $c->model('CoreRealms::User'),
+        }
+    );
+
+    return $self->status_ok( $c, entity => {} );
+
+}
+
 =head2 registerNewUser
 
 Admin users are able to create new users.
