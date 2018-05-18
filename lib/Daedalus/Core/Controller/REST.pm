@@ -9,7 +9,6 @@ use Data::Dumper;
 
 use base qw(Catalyst::Controller::REST);
 
-use Daedalus::Core::Controller::UserController qw(confirmUserRegistration);
 use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
