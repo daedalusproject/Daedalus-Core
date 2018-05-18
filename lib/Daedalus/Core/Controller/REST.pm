@@ -110,6 +110,18 @@ sub registeruser_GET {
     );
 }
 
+sub registeruser_POST {
+    my ( $self, $c ) = @_;
+
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'Not implemented.',
+        },
+    );
+}
+
 =head2 confrimRegister
 
 Receives Auth token, if that token is owned by unactive user, user is registered.
