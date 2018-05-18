@@ -76,7 +76,7 @@ __PACKAGE__->table("users");
   is_nullable: 1
   size: 22
 
-=head2 apikey
+=head2 api_key
 
   data_type: 'varchar'
   default_value: (empty string)
@@ -172,7 +172,7 @@ __PACKAGE__->add_columns(
         is_nullable   => 1,
         size          => 22
     },
-    "apikey",
+    "api_key",
     {
         data_type     => "varchar",
         default_value => "",
@@ -282,8 +282,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-13 17:31:17
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DOWnbcG8W/lBNP4H5nFZhg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Sqi/q+jhlc6pR0CusxhRDA
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

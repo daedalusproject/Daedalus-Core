@@ -130,8 +130,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-13 17:31:17
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8z+4d7Clk4pyOUQWNl9Hvw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8k35dAsNoG260d2vRd3f3A
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
