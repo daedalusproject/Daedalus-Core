@@ -84,6 +84,15 @@ sub auth_user_using_model {
         else {
             $response{status}  = 'Success';
             $response{message} = 'Auth Successful.';
+            $response{data}    = {
+                email   => $user->email,
+                name    => $user->name,
+                surname => $user->surname,
+                phone   => $user->phone,
+                apikey  => $user->apikey,
+                email   => $user->email,
+                isadmin => $user->isadmin,
+            };
         }
     }
     else {

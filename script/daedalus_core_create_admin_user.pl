@@ -180,7 +180,7 @@ my $patern64 =
 my $patern256 =
 "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 
-my $apikey     = $pass->randpattern($patern32);
+my $api_key    = $pass->randpattern($patern32);
 my $auth_token = $pass->randpattern($patern64);
 my $salt       = $pass->randpattern($patern256);
 $password = sha512_base64("$salt$password");
@@ -190,7 +190,7 @@ $schema->resultset('User')->create(
         name       => $name,
         surname    => $surname,
         email      => $email,
-        apikey     => $apikey,
+        api_key    => $api_key,
         password   => $password,
         salt       => $salt,
         expires    => "3000-01-01",
