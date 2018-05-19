@@ -76,16 +76,7 @@ sub loginUser_GET {
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
-    # Check user
-    my $response = Daedalus::Users::Manager::authUserUsingModel(
-        {
-            request => $c->req,
-            model   => $c->model('CoreRealms::User'),
-        }
-    );
-
-    return $self->status_ok( $c, entity => $response );
-
+    return $self->status_ok( $c, entity => authUser($c) );
 }
 
 =head2 imAdmin
@@ -154,13 +145,45 @@ sub registeruser_GET {
 }
 
 sub registeruser_POST {
-    my ( $self, $c ) = @_;
+    my ( $self, $c ) = shift;
 
     return $self->status_ok(
         $c,
         entity => {
             status  => 'Failed',
             message => 'Not implemented.',
+        },
+    );
+}
+
+=head2 createOrganization
+
+Create Organization
+
+=cut
+
+sub createOrganization : Path('/createorganization') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub createOrganization_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub createOrganization_POST {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status => "Failed",
         },
     );
 }
@@ -188,6 +211,25 @@ sub confrimRegister_POST {
             status => "pong",
         },
     );
+}
+
+=head1 Common functions
+
+Common functions
+
+=cut
+
+sub authUser {
+
+    my $c = shift;
+
+    return Daedalus::Users::Manager::authUserUsingModel(
+        {
+            request => $c->req,
+            model   => $c->model('CoreRealms::User'),
+        }
+    );
+
 }
 
 =encoding utf8

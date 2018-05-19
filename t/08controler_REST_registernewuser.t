@@ -18,21 +18,21 @@ is_deeply(
     }
 );
 
-my $failed_because_no_auth = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json( {} ),
-);
-
-my $failed_because_no_auth_json =
-  decode_json( $failed_because_no_auth->content );
-
-is_deeply(
-    $failed_because_no_auth_json,
-    {
-        'status'  => 'Failed',
-        'message' => 'Not implemented.',
-    }
-);
+#my $failed_because_no_auth = request(
+#    POST '/registernewuser',
+#    Content_Type => 'application/json',
+#    Content      => encode_json( {} ),
+#);
+#
+#my $failed_because_no_auth_json =
+#  decode_json( $failed_because_no_auth->content );
+#
+#is_deeply(
+#    $failed_because_no_auth_json,
+#    {
+#        'status'  => 'Failed',
+#        'message' => 'Not implemented.',
+#    }
+#);
 
 done_testing();
