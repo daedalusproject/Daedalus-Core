@@ -106,12 +106,7 @@ sub imAdmin_POST {
     my $response;
 
     # Check user
-    my $user_login_response = Daedalus::Users::Manager::authUserUsingModel(
-        {
-            request => $c->req,
-            model   => $c->model('CoreRealms::User'),
-        }
-    );
+    my $user_login_response = authUser($c);
 
     if ( $user_login_response->{status} eq "Failed" ) {
         $response = $user_login_response;
