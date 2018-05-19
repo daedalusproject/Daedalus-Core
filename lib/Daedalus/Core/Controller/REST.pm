@@ -106,6 +106,39 @@ sub imAdmin_POST {
     return $self->status_ok( $c, entity => isAdmin($c) );
 }
 
+=head2 createOrganization
+
+Create Organization
+
+=cut
+
+sub createOrganization : Path('/createorganization') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub createOrganization_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub createOrganization_POST {
+    my ( $self, $c ) = @_;
+
+    return $self->status_ok(
+        $c,
+        entity => {
+            status => "Failed",
+        },
+    );
+}
+
 =head2 registerNewUser
 
 Admin users are able to create new users.
@@ -135,38 +168,6 @@ sub registeruser_POST {
         entity => {
             status  => 'Failed',
             message => 'Not implemented.',
-        },
-    );
-}
-
-=head2 createOrganization
-
-Create Organization
-
-=cut
-
-sub createOrganization : Path('/createorganization') : Args(0) :
-  ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub createOrganization_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
-sub createOrganization_POST {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status => "Failed",
         },
     );
 }
