@@ -50,12 +50,8 @@ my $failed_no_admin = request(
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $imadmin_post_failed_no_admin_json->{status}, 'Failed', );
-is(
-    $imadmin_post_failed_no_admin_json->{message},
-    'You are not an admin user.',
-);
-is( $imadmin_post_failed_no_admin_json->{imadmin}, 'False', );
+is( $failed_no_admin_json->{status},  'Failed', );
+is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
 my $failed_no_data = request(
     POST '/createorganization',
