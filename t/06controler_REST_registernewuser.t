@@ -41,7 +41,8 @@ is_deeply(
     $failed_because_no_auth_json,
     {
         'status'  => 'Failed',
-        'message' => 'Wrong e-mail or password.',
+        'message' => 'Not implemented.',
     }
 );
 
+done_testing();

@@ -112,6 +112,8 @@ sub imAdmin_GET {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
+    my $response;
+
     # Check user
     my $user_login_response = Daedalus::Users::Manager::auth_user_using_model(
         {
@@ -120,8 +122,24 @@ sub imAdmin_POST {
         }
     );
 
-    return $self->status_ok( $c, entity => {} );
+    if ( $user_login_response->{status} eq "Failed" ) {
+        $response = $user_login_response;
+    }
+    else {
+        $response = {
+            status  => "Failed",
+            message => "You are not an admin user.",
+            imadmin => "False",
+        };
 
+        # Check if logged user is admin
+        if ( $user_login_response->{data}->{is_admin} == 1 ) {
+            $response->{status}  = "Success";
+            $response->{message} = "You are an admin user.";
+            $response->{imadmin} = 'True',;
+        }
+    }
+    return $self->status_ok( $c, entity => $response );
 }
 
 =head2 registerNewUser

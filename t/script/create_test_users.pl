@@ -88,7 +88,7 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => "1",
         auth_token => $auth_token,
-        isadmin    => 0,
+        is_admin   => 0,
     }
 );
 

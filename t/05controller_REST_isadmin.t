@@ -89,12 +89,9 @@ my $imadmin_post_success = request(
 
 my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 
-is_ok( $imadmin_post_success_json->{status}, 'Success', );
-is_ok(
-    $imadmin_post_failed_no_admin_json->{message},
-    'You are an admin user.',
-);
-is_ok( $imadmin_post_success_json->{imadmin}, 'True', );
+is( $imadmin_post_success_json->{status},  'Success', );
+is( $imadmin_post_success_json->{message}, 'You are an admin user.', );
+is( $imadmin_post_success_json->{imadmin}, 'True', );
 
 my $imadmin_post_failed_no_admin = request(
     POST '/imadmin',
@@ -112,11 +109,11 @@ my $imadmin_post_failed_no_admin = request(
 my $imadmin_post_failed_no_admin_json =
   decode_json( $imadmin_post_failed_no_admin->content );
 
-is_ok( $imadmin_post_failed_no_admin_json->{status}, 'Failed', );
-is_ok(
+is( $imadmin_post_failed_no_admin_json->{status}, 'Failed', );
+is(
     $imadmin_post_failed_no_admin_json->{message},
     'You are not an admin user.',
 );
-is_ok( $imadmin_post_failed_no_admin_json->{imadmin}, 'False', );
+is( $imadmin_post_failed_no_admin_json->{imadmin}, 'False', );
 
 done_testing();
