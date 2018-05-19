@@ -65,13 +65,7 @@ __PACKAGE__->table("user_organization");
 
 =head2 created_at
 
-  data_type: 'timestamp'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 modified_at
-
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
@@ -102,13 +96,7 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
-    },
-    "modified_at",
-    {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
@@ -158,9 +146,18 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 22:40:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9FvNhneCmpL7yx9GAlmI4A
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WPwAioT7xxhPcn24RffSFA
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
+);
 __PACKAGE__->meta->make_immutable;
 1;

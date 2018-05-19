@@ -76,7 +76,7 @@ __PACKAGE__->table("users");
   is_nullable: 1
   size: 22
 
-=head2 apikey
+=head2 api_key
 
   data_type: 'varchar'
   default_value: (empty string)
@@ -88,7 +88,7 @@ __PACKAGE__->table("users");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 64
+  size: 128
 
 =head2 salt
 
@@ -99,32 +99,40 @@ __PACKAGE__->table("users");
 
 =head2 created_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 modified_at
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 expires
 
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =head2 active
 
   data_type: 'tinyint'
-  is_nullable: 0
+  default_value: 1
+  is_nullable: 1
 
 =head2 auth_token
 
   data_type: 'varchar'
+  default_value: (empty string)
   is_nullable: 1
   size: 64
+
+=head2 is_admin
+
+  data_type: 'tinyint'
+  default_value: 0
+  is_nullable: 0
 
 =cut
 
@@ -164,7 +172,7 @@ __PACKAGE__->add_columns(
         is_nullable   => 1,
         size          => 22
     },
-    "apikey",
+    "api_key",
     {
         data_type     => "varchar",
         default_value => "",
@@ -176,7 +184,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => "",
         is_nullable   => 0,
-        size          => 64
+        size          => 128
     },
     "salt",
     {
@@ -187,26 +195,33 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "modified_at",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "expires",
     {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
     "active",
-    { data_type => "tinyint", is_nullable => 0 },
+    { data_type => "tinyint", default_value => 1, is_nullable => 1 },
     "auth_token",
-    { data_type => "varchar", is_nullable => 1, size => 64 },
+    {
+        data_type     => "varchar",
+        default_value => "",
+        is_nullable   => 1,
+        size          => 64
+    },
+    "is_admin",
+    { data_type => "tinyint", default_value => 0, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -221,7 +236,36 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_email>
+
+=over 4
+
+=item * L</email>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "unique_email", ["email"] );
+
 =head1 RELATIONS
+
+=head2 orgaization_users_groups
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup>
+
+=cut
+
+__PACKAGE__->has_many(
+    "orgaization_users_groups",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup",
+    { "foreign.user_id" => "self.id" },
+    { cascade_copy      => 0, cascade_delete => 0 },
+);
 
 =head2 user_organizations
 
@@ -238,24 +282,29 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-=head2 user_roles
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Sqi/q+jhlc6pR0CusxhRDA
 
-Type: has_many
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::UserRole>
-
-=cut
-
-__PACKAGE__->has_many(
-    "user_roles",
-    "Daedalus::Core::Schema::CoreRealms::Result::UserRole",
-    { "foreign.user_id" => "self.id" },
-    { cascade_copy      => 0, cascade_delete => 0 },
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 22:40:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QKW9J1ChUbdpJXewoFlIMA
+__PACKAGE__->add_columns(
+    'modified_at',
+    {
+        %{ __PACKAGE__->column_info('modified_at') },
+        set_on_create => 1,
+        set_on_update => 1
+    }
+);
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
-1;
+1

@@ -4,7 +4,7 @@ perl:
     - '5.24'
     - '5.22'
     - '5.20'
-script: perl Makefile.PL ; make ; make test
+script: rm -f /var/tmp/daedalus_core_realms.db && perl script/deploy.pl SQLite /var/tmp/daedalus_core_realms.db && perl t/script/create_test_users.pl &&  perl Makefile.PL && make && make test
 after_success:
     - cover -test
     - cover -report codecov

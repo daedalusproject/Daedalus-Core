@@ -57,13 +57,7 @@ __PACKAGE__->table("roles");
 
 =head2 created_at
 
-  data_type: 'timestamp'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 modified_at
-
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
@@ -86,13 +80,7 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
-    },
-    "modified_at",
-    {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
@@ -112,17 +100,17 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 organization_role_groups
+=head2 organization_group_roles
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole>
 
 =cut
 
 __PACKAGE__->has_many(
-    "organization_role_groups",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup",
+    "organization_group_roles",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole",
     { "foreign.role_id" => "self.id" },
     { cascade_copy      => 0, cascade_delete => 0 },
 );
@@ -142,23 +130,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-=head2 user_roles
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::UserRole>
-
-=cut
-
-__PACKAGE__->has_many(
-    "user_roles",
-    "Daedalus::Core::Schema::CoreRealms::Result::UserRole",
-    { "foreign.role_id" => "self.id" },
-    { cascade_copy      => 0, cascade_delete => 0 },
-);
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 22:40:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7VXgi4Pj05ibEk41ctN9tg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8k35dAsNoG260d2vRd3f3A
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

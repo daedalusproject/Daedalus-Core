@@ -5,7 +5,11 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON;
+use Data::Dumper;
+
 use base qw(Catalyst::Controller::REST);
+
+use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -24,7 +28,9 @@ Daedalus::Core REST Controller.
 
 =cut
 
-=head2 index
+=head2 ping
+
+Returns "pong"
 
 =cut
 
@@ -34,10 +40,157 @@ sub begin : ActionClass('Deserialize') {
 
 sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
-
 }
 
 sub ping_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status => "pong",
+        },
+    );
+}
+
+=head2 loginUser
+
+Login user
+
+=cut
+
+sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub loginUser_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub loginUser_POST {
+    my ( $self, $c ) = @_;
+
+    # Check user
+    my $response = Daedalus::Users::Manager::auth_user_using_model(
+        {
+            request => $c->req,
+            model   => $c->model('CoreRealms::User'),
+        }
+    );
+
+    return $self->status_ok( $c, entity => $response );
+
+}
+
+=head2 imAdmin
+
+Check if logged user is Admin
+
+=cut
+
+sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub imAdmin_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub imAdmin_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+
+    # Check user
+    my $user_login_response = Daedalus::Users::Manager::auth_user_using_model(
+        {
+            request => $c->req,
+            model   => $c->model('CoreRealms::User'),
+        }
+    );
+
+    if ( $user_login_response->{status} eq "Failed" ) {
+        $response = $user_login_response;
+    }
+    else {
+        $response = {
+            status  => "Failed",
+            message => "You are not an admin user.",
+            imadmin => "False",
+        };
+
+        # Check if logged user is admin
+        if ( $user_login_response->{data}->{is_admin} == 1 ) {
+            $response->{status}  = "Success";
+            $response->{message} = "You are an admin user.";
+            $response->{imadmin} = 'True',;
+        }
+    }
+    return $self->status_ok( $c, entity => $response );
+}
+
+=head2 registerNewUser
+
+Admin users are able to create new users.
+
+=cut
+
+sub registeruser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub registeruser_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub registeruser_POST {
+    my ( $self, $c ) = @_;
+
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'Not implemented.',
+        },
+    );
+}
+
+=head2 confrimRegister
+
+Receives Auth token, if that token is owned by unactive user, user is registered.
+
+=cut
+
+sub confrimRegister : Path('/confirmuserregistration') : Args(1) :
+  ActionClass('REST') {
+    my ( $self, $c, $auth_token ) = @_;
+    my ( $status, @user_info ) =
+      Daedalus::Core::Controller::UserController->confirmUserRegistration( $c,
+        $auth_token );
+    die("Stop");
+}
+
+sub confrimRegister_POST {
     my ( $self, $c ) = @_;
     return $self->status_ok(
         $c,

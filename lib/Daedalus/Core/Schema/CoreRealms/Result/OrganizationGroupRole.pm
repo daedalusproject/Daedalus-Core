@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup;
+package Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroup
+Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole
 
 =cut
 
@@ -33,11 +33,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<organization_role_groups>
+=head1 TABLE: C<organization_group_roles>
 
 =cut
 
-__PACKAGE__->table("organization_role_groups");
+__PACKAGE__->table("organization_group_roles");
 
 =head1 ACCESSORS
 
@@ -48,25 +48,24 @@ __PACKAGE__->table("organization_role_groups");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 organization_id
+=head2 group_id
 
   data_type: 'bigint'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 group_name
-
-  data_type: 'varchar'
-  default_value: (empty string)
-  is_nullable: 0
-  size: 255
-
 =head2 role_id
 
   data_type: 'integer'
   extra: {unsigned => 1}
   is_foreign_key: 1
+  is_nullable: 0
+
+=head2 created_at
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =cut
@@ -79,19 +78,12 @@ __PACKAGE__->add_columns(
         is_auto_increment => 1,
         is_nullable       => 0,
     },
-    "organization_id",
+    "group_id",
     {
         data_type      => "bigint",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
-    },
-    "group_name",
-    {
-        data_type     => "varchar",
-        default_value => "",
-        is_nullable   => 0,
-        size          => 255
     },
     "role_id",
     {
@@ -99,6 +91,12 @@ __PACKAGE__->add_columns(
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
+    },
+    "created_at",
+    {
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 0,
     },
 );
 
@@ -116,34 +114,19 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 organization
+=head2 group
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization",
-    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
-    { id            => "organization_id" },
+    "group",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
+    { id            => "group_id" },
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
-);
-
-=head2 organization_role_groups_projects
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_role_groups_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject",
-    { "foreign.organization_manager_id" => "self.organization_id" },
-    { cascade_copy                      => 0, cascade_delete => 0 },
 );
 
 =head2 role
@@ -161,9 +144,18 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 22:40:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kl/jFZdY0AJGWTbItx/asA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ivVr9Drbmn1sZ35tKtLVWw
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
+);
 __PACKAGE__->meta->make_immutable;
 1;

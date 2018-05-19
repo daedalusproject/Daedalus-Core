@@ -57,13 +57,7 @@ __PACKAGE__->table("projects");
 
 =head2 created_at
 
-  data_type: 'timestamp'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 modified_at
-
-  data_type: 'timestamp'
+  data_type: 'datetime'
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
@@ -86,13 +80,7 @@ __PACKAGE__->add_columns(
     },
     "created_at",
     {
-        data_type                 => "timestamp",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
-    },
-    "modified_at",
-    {
-        data_type                 => "timestamp",
+        data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
@@ -142,24 +130,18 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-=head2 organization_role_groups_projects
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BhUMPSAK3h7H5q0kqde8FQ
 
-Type: has_many
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_role_groups_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationRoleGroupsProject",
-    { "foreign.project_id" => "self.id" },
-    { cascade_copy         => 0, cascade_delete => 0 },
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
 );
-
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-06 22:40:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vPZsUUHFo5rBkL8ac0NRqA
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
