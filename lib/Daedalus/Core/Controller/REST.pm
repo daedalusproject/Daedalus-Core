@@ -103,19 +103,7 @@ sub imAdmin_GET {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    my $response;
-
-    # Check user
-    my $user_login_response = authUser($c);
-
-    if ( $user_login_response->{status} eq "Failed" ) {
-        $response = $user_login_response;
-    }
-    else {
-        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
-    }
-
-    return $self->status_ok( $c, entity => $response );
+    return $self->status_ok( $c, entity => isAdmin($c) );
 }
 
 =head2 registerNewUser
@@ -224,7 +212,24 @@ sub authUser {
             model   => $c->model('CoreRealms::User'),
         }
     );
+}
 
+sub isAdmin {
+    my $c = shift;
+
+    my $response;
+
+    # Check user
+    my $user_login_response = authUser($c);
+
+    if ( $user_login_response->{status} eq "Failed" ) {
+        $response = $user_login_response;
+    }
+    else {
+        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
+    }
+
+    return $response;
 }
 
 =encoding utf8
