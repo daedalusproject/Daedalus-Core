@@ -77,7 +77,7 @@ sub loginUser_POST {
     my ( $self, $c ) = @_;
 
     # Check user
-    my $response = Daedalus::Users::Manager::auth_user_using_model(
+    my $response = Daedalus::Users::Manager::authUserUsingModel(
         {
             request => $c->req,
             model   => $c->model('CoreRealms::User'),
@@ -115,7 +115,7 @@ sub imAdmin_POST {
     my $response;
 
     # Check user
-    my $user_login_response = Daedalus::Users::Manager::auth_user_using_model(
+    my $user_login_response = Daedalus::Users::Manager::authUserUsingModel(
         {
             request => $c->req,
             model   => $c->model('CoreRealms::User'),
@@ -126,19 +126,9 @@ sub imAdmin_POST {
         $response = $user_login_response;
     }
     else {
-        $response = {
-            status  => "Failed",
-            message => "You are not an admin user.",
-            imadmin => "False",
-        };
-
-        # Check if logged user is admin
-        if ( $user_login_response->{data}->{is_admin} == 1 ) {
-            $response->{status}  = "Success";
-            $response->{message} = "You are an admin user.";
-            $response->{imadmin} = 'True',;
-        }
+        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
     }
+
     return $self->status_ok( $c, entity => $response );
 }
 

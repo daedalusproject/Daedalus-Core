@@ -55,7 +55,7 @@ Auths user, returns auth data if submitted credentials match
 with database info.
 =cut
 
-sub auth_user_using_model {
+sub authUserUsingModel {
 
     my $request = shift;
     my $auth    = $request->{request}->{data}->{auth};
@@ -100,6 +100,34 @@ sub auth_user_using_model {
         $response{message} = 'Wrong e-mail or password.';
     }
     return \%response;
+}
+
+=head2 isAdmin
+
+Return if required user is admin.
+
+=cut
+
+sub isAdmin {
+
+    my $user_login_response = shift;
+    my $response;
+
+    $response = {
+        status  => "Failed",
+        message => "You are not an admin user.",
+        imadmin => "False",
+    };
+
+    # Check if logged user is admin
+    if ( $user_login_response->{data}->{is_admin} == 1 ) {
+        $response->{status}  = "Success";
+        $response->{message} = "You are an admin user.";
+        $response->{imadmin} = 'True',;
+    }
+
+    return $response;
+
 }
 
 __PACKAGE__->meta->make_immutable;
