@@ -10,6 +10,7 @@ use Data::Dumper;
 use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Users::Manager;
+use Daedalus::Organizations::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -119,6 +120,7 @@ sub createOrganization : Path('/createorganization') : Args(0) :
 
 sub createOrganization_GET {
     my ( $self, $c ) = @_;
+
     return $self->status_ok(
         $c,
         entity => {
@@ -131,12 +133,18 @@ sub createOrganization_GET {
 sub createOrganization_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok(
-        $c,
-        entity => {
-            status => "Failed",
-        },
-    );
+    my $is_admin = isAdmin($c);
+
+    my $response;
+
+    if ( $is_admin->{status} eq "Failed" ) {
+        $response = $is_admin;
+    }
+    else {
+        $response = Daedalus::Organizations::Manager::createOrganization($c);
+    }
+
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 registerNewUser

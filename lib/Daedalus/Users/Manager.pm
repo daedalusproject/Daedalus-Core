@@ -19,13 +19,13 @@ use namespace::clean -except => 'meta';
 
 =head1 NAME
 
-Daedalus::Core::Users::Manager
+Daedalus::Users::Manager
 
 =cut
 
 =head1 DESCRIPTION
 
-Daedalus::Core Users Manager
+Daedalus Users Manager
 
 =head1 METHODS
 

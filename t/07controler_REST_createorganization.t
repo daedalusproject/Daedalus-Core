@@ -80,7 +80,7 @@ my $failed_invalid_data = request(
                 email    => 'admin@daedalus-project.io',
                 password => 'this_is_a_Test_1234',
             },
-            data => {
+            organization_data => {
                 'name'        => 'Windmaker',
                 'extra_stuff' => 'stuff',
             },
@@ -102,7 +102,7 @@ my $correct_data = request(
                 email    => 'admin@daedalus-project.io',
                 password => 'this_is_a_Test_1234',
             },
-            data => {
+            organization_data => {
                 'name' => 'Windmaker',
             },
         }
@@ -123,7 +123,7 @@ my $duplicated_organization = request(
                 email    => 'admin@daedalus-project.io',
                 password => 'this_is_a_Test_1234',
             },
-            data => {
+            organization_data => {
                 'name' => 'Windmaker',
             },
         }
