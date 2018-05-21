@@ -144,7 +144,7 @@ sub createOrganization_POST {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
             $response = {
                 status  => 'Failed',
-                message => 'There is no organization data.'
+                message => 'Invalid organization data.'
             };
         }
         else {

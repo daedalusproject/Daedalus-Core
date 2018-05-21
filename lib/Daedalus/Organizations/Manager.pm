@@ -41,6 +41,8 @@ sub createOrganization {
     my $request         = shift;
     my $admin_user_data = shift;
 
+    my $response;
+
     my $organization_data = $request->{request}->{data}->{organization_data};
 
     # Get organization_master role id
@@ -79,7 +81,19 @@ sub createOrganization {
             role_id  => $organization_master_role_id,
         }
       );
-    die Dumper( $organization_groups->id );
+
+    $response = {
+        status       => 'Success',
+        message      => 'Organization created.',
+        _hidden_data => {
+            organization_id            => $organization->id,
+            user_organization_id       => $user_organization->id,
+            organization_group_id      => $organization_group->id,
+            organization_group_role_id => $organization_group_role->id,
+        },
+    };
+
+    return $response;
 }
 __PACKAGE__->meta->make_immutable;
 1;

@@ -69,7 +69,7 @@ my $failed_no_data = request(
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
 is( $failed_no_data_json->{status},  'Failed', );
-is( $failed_no_data_json->{message}, 'There is no organization data.', );
+is( $failed_no_data_json->{message}, 'Invalid organization data.', );
 
 my $failed_invalid_data = request(
     POST '/createorganization',
@@ -133,7 +133,8 @@ my $duplicated_organization = request(
 my $duplicated_organization_json =
   decode_json( $duplicated_organization->content );
 
-is( $correct_data_json->{status},    'Failed', );
-is( $failed_no_data_json->{message}, 'Duplicated organization name.', );
+is( $duplicated_organization_json->{status}, 'Failed', );
+is( $duplicated_organization_json->{message}, 'Duplicated organization name.',
+);
 
 done_testing();
