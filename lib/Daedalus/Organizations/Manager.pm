@@ -44,7 +44,6 @@ sub createOrganization {
     my $organization_data = $request->{request}->{data}->{organization_data};
 
     # Create Organization
-
     $request->model('CoreRealms::Organization')
       ->create( { name => $organization_data->{name} } );
 

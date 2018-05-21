@@ -61,6 +61,12 @@ __PACKAGE__->table("organizations");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 modified_at
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -79,6 +85,12 @@ __PACKAGE__->add_columns(
         size          => 100
     },
     "created_at",
+    {
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 0,
+    },
+    "modified_at",
     {
         data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
@@ -130,10 +142,11 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-18 16:36:31
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/5KRCFLXYsOwdcCiy/G4IA
-
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-21 06:08:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yAOUIg52CZ8jd0163KAxCw
+#
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
 
 __PACKAGE__->add_columns(
     'created_at',
@@ -141,6 +154,15 @@ __PACKAGE__->add_columns(
         %{ __PACKAGE__->column_info('created_at') },
         set_on_create => 1,
         set_on_update => 0
+    }
+);
+
+__PACKAGE__->add_columns(
+    'modified_at',
+    {
+        %{ __PACKAGE__->column_info('modified_at') },
+        set_on_create => 1,
+        set_on_update => 1
     }
 );
 

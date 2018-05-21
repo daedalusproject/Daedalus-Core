@@ -141,7 +141,17 @@ sub createOrganization_POST {
         $response = $is_admin;
     }
     else {
-        $response = Daedalus::Organizations::Manager::createOrganization($c);
+        if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
+            $response = {
+                status  => 'Failed',
+                message => 'There is no organization data.'
+            };
+        }
+        else {
+
+            $response =
+              Daedalus::Organizations::Manager::createOrganization($c);
+        }
     }
 
     return $self->status_ok( $c, entity => $response, );
