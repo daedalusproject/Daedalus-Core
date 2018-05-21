@@ -41,9 +41,12 @@ sub createOrganization {
     my $request         = shift;
     my $admin_user_data = shift;
 
-    my $model = $request->{model};
-
     my $organization_data = $request->{request}->{data}->{organization_data};
+
+    # Get organization_master role id
+
+    my $organization_master_role_id = $request->model('CoreRealms::Role')
+      ->find( { 'role_name' => 'organization_master' } )->id;
 
     # Create Organization
 
@@ -59,7 +62,24 @@ sub createOrganization {
         }
       );
 
-    die Dumper( $organization->id );
+    # Create an organization admin group
+    my $organization_group =
+      $request->model('CoreRealms::OrganizationGroup')->create(
+        {
+            organization_id => $organization->id,
+            group_name      => "$organization_data->{name}" . "_administrators",
+        }
+      );
+
+    # This group has orgaization_master role
+    my $organization_group_role =
+      $request->model('CoreRealms::OrganizationGroupRole')->create(
+        {
+            group_id => $organization_group->id,
+            role_id  => $organization_master_role_id,
+        }
+      );
+    die Dumper( $organization_groups->id );
 }
 __PACKAGE__->meta->make_immutable;
 1;

@@ -92,3 +92,49 @@ $schema->resultset('User')->create(
     }
 );
 
+# Create Roles
+$schema->resultset('Role')->create(
+    {
+        role_name => "organization_master",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "project_caretaker",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "health_watcher",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "expenses_watcher",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "expenses_watcher",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "maze_master",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "fireman",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "fireman_commando",
+    }
+);
+$schema->resultset('Role')->create(
+    {
+        role_name => "daedalus_manager",
+    }
+);
