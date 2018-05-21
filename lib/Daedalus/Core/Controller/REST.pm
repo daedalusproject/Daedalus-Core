@@ -77,7 +77,7 @@ sub loginUser_GET {
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => authUser($c) );
+    return $self->status_ok( $c, entity => processResponse( authUser($c) ) );
 }
 
 =head2 imAdmin
@@ -104,7 +104,7 @@ sub imAdmin_GET {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => isAdmin($c) );
+    return $self->status_ok( $c, entity => processResponse( isAdmin($c) ) );
 }
 
 =head2 createOrganization
@@ -150,11 +150,12 @@ sub createOrganization_POST {
         else {
 
             $response =
-              Daedalus::Organizations::Manager::createOrganization($c);
+              Daedalus::Organizations::Manager::createOrganization( $c,
+                $is_admin->{_hidden_data} );
         }
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    return $self->status_ok( $c, entity => processResponse($response), );
 }
 
 =head2 registerNewUser
@@ -221,17 +222,45 @@ Common functions
 
 =cut
 
+=head2 processResponse
+
+Cleans _hidden_data field from responde, _hidden_data is not public
+
+=cut
+
+sub processResponse {
+    my $response = shift;
+    if ( exists $response->{_hidden_data} ) {
+        delete $response->{_hidden_data};
+    }
+    return $response;
+}
+
+=head2 authUser
+
+Determines if required user exists and its password match
+
+=cut
+
 sub authUser {
 
     my $c = shift;
 
-    return Daedalus::Users::Manager::authUserUsingModel(
+    my $response = Daedalus::Users::Manager::authUserUsingModel(
         {
             request => $c->req,
             model   => $c->model('CoreRealms::User'),
         }
     );
+
+    return $response;
 }
+
+=head2 isAdmin
+
+Determines if required is and admin user
+
+=cut
 
 sub isAdmin {
     my $c = shift;

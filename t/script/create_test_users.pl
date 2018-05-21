@@ -34,8 +34,6 @@ my $config_hash = $config->load;
 my $dsn         = $config_hash->{'Model::CoreRealms'}->{'connect_info'};
 $dsn = $dsn =~ s/__HOME__/$Bin\/..\/../r;
 
-die Dumper($dsn);
-
 my $schema = Daedalus::Core::Schema::CoreRealms->connect($dsn)
   or die "Failed to connect to database at $dsn";
 

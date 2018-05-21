@@ -82,9 +82,10 @@ sub authUserUsingModel {
             $response{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response{status}  = 'Success';
-            $response{message} = 'Auth Successful.';
-            $response{data}    = {
+            $response{status}       = 'Success';
+            $response{message}      = 'Auth Successful.';
+            $response{_hidden_data} = { id => $user->id };
+            $response{data}         = {
                 email    => $user->email,
                 name     => $user->name,
                 surname  => $user->surname,

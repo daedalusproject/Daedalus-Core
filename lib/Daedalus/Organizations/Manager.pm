@@ -38,15 +38,20 @@ Creates a new Organization
 
 sub createOrganization {
 
-    my $request = shift;
-    my $model   = $request->{model};
+    my ( $request, $admin_user_data ) = @_;
+
+    my $model = $request->{model};
 
     my $organization_data = $request->{request}->{data}->{organization_data};
 
+    die Dumper($admin_user_data);
+
     # Create Organization
-    $request->model('CoreRealms::Organization')
+
+    my $organization = $request->model('CoreRealms::Organization')
       ->create( { name => $organization_data->{name} } );
 
+    die Dumper( $organization->id );
 }
 __PACKAGE__->meta->make_immutable;
 1;
