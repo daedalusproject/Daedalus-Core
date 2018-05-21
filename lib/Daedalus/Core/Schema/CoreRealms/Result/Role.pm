@@ -98,6 +98,20 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_role_name>
+
+=over 4
+
+=item * L</role_name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "unique_role_name", ["role_name"] );
+
 =head1 RELATIONS
 
 =head2 organization_group_roles
@@ -130,8 +144,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-21 06:08:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JcjDuxBRI1Sx9LAYxbMGJg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-21 18:58:28
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:U7CbLy4sf8Zci8i9ME2kxA
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
