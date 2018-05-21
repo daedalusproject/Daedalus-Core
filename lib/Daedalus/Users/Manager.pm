@@ -115,9 +115,10 @@ sub isAdmin {
     my $response;
 
     $response = {
-        status  => "Failed",
-        message => "You are not an admin user.",
-        imadmin => "False",
+        status       => "Failed",
+        message      => "You are not an admin user.",
+        imadmin      => "False",
+        _hidden_data => $user_login_response->{_hidden_data},
     };
 
     # Check if logged user is admin

@@ -38,18 +38,26 @@ Creates a new Organization
 
 sub createOrganization {
 
-    my ( $request, $admin_user_data ) = @_;
+    my $request         = shift;
+    my $admin_user_data = shift;
 
     my $model = $request->{model};
 
     my $organization_data = $request->{request}->{data}->{organization_data};
 
-    die Dumper($admin_user_data);
-
     # Create Organization
 
     my $organization = $request->model('CoreRealms::Organization')
       ->create( { name => $organization_data->{name} } );
+
+    # Add user to Organization
+    my $user_organization =
+      $request->model('CoreRealms::UserOrganization')->create(
+        {
+            organization_id => $organization->id,
+            user_id         => $admin_user_data->{id}
+        }
+      );
 
     die Dumper( $organization->id );
 }
