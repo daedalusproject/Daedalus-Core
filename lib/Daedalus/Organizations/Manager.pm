@@ -45,6 +45,9 @@ sub createOrganization {
 
     my $organization_data = $request->{request}->{data}->{organization_data};
 
+    my $request_organization_name = "$organization_data->{name}";
+    chomp $request_organization_name;
+
     # Check if user has already created and organization with the same name
 
     my @user_organizations_rs = $request->model('CoreRealms::UserOrganization')
@@ -56,7 +59,7 @@ sub createOrganization {
         push @organization_names, $user_organization->organization()->name;
     }
 
-    if ( grep( /^$organization_data->{name}$/, @organization_names ) ) {
+    if ( grep( /^$request_organization_name$/, @organization_names ) ) {
         $response = {
             status  => 'Failed',
             message => 'Duplicated organization name.',
@@ -73,7 +76,7 @@ sub createOrganization {
         # Create Organization
 
         my $organization = $request->model('CoreRealms::Organization')
-          ->create( { name => $organization_data->{name} } );
+          ->create( { name => $request_organization_name } );
 
         # Add user to Organization
         my $user_organization =
@@ -85,11 +88,12 @@ sub createOrganization {
           );
 
         # Create an organization admin group
+
         my $organization_group =
           $request->model('CoreRealms::OrganizationGroup')->create(
             {
                 organization_id => $organization->id,
-                group_name => "$organization_data->{name}" . "_administrators",
+                group_name => "$request_organization_name" . " Administrators",
             }
           );
 
