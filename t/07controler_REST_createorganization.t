@@ -137,4 +137,29 @@ is( $duplicated_organization_json->{status}, 'Failed', );
 is( $duplicated_organization_json->{message}, 'Duplicated organization name.',
 );
 
+my $duplicated_spaces_organization = request(
+    POST '/createorganization',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            organization_data => {
+                'name' => 'Windmaker',
+            },
+        }
+    )
+);
+
+my $duplicated_spaces_organization_json =
+  decode_json( $duplicated_spaces_organization->content );
+
+is( $duplicated_spaces_organization_json->{status}, 'Failed', );
+is(
+    $duplicated_spaces_organization_json->{message},
+    'Duplicated organization name.',
+);
+
 done_testing();
