@@ -103,7 +103,7 @@ my $correct_data = request(
                 password => 'this_is_a_Test_1234',
             },
             organization_data => {
-                'name' => 'Windmaker',
+                'name' => 'Windmaker2',
             },
         }
     )
@@ -111,8 +111,8 @@ my $correct_data = request(
 
 my $correct_data_json = decode_json( $correct_data->content );
 
-is( $correct_data_json->{status},    'Success', );
-is( $failed_no_data_json->{message}, 'Organization created.', );
+is( $correct_data_json->{status},  'Success', );
+is( $correct_data_json->{message}, 'Organization created.', );
 
 my $duplicated_organization = request(
     POST '/createorganization',
