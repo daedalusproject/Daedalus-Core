@@ -19,13 +19,13 @@ use namespace::clean -except => 'meta';
 
 =head1 NAME
 
-Daedalus::Core::Users::Manager
+Daedalus::Users::Manager
 
 =cut
 
 =head1 DESCRIPTION
 
-Daedalus::Core Users Manager
+Daedalus Users Manager
 
 =head1 METHODS
 
@@ -82,9 +82,10 @@ sub authUserUsingModel {
             $response{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response{status}  = 'Success';
-            $response{message} = 'Auth Successful.';
-            $response{data}    = {
+            $response{status}       = 'Success';
+            $response{message}      = 'Auth Successful.';
+            $response{_hidden_data} = { id => $user->id };
+            $response{data}         = {
                 email    => $user->email,
                 name     => $user->name,
                 surname  => $user->surname,
@@ -114,9 +115,10 @@ sub isAdmin {
     my $response;
 
     $response = {
-        status  => "Failed",
-        message => "You are not an admin user.",
-        imadmin => "False",
+        status       => "Failed",
+        message      => "You are not an admin user.",
+        imadmin      => "False",
+        _hidden_data => $user_login_response->{_hidden_data},
     };
 
     # Check if logged user is admin
