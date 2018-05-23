@@ -18,21 +18,66 @@ is_deeply(
     }
 );
 
-#my $failed_because_no_auth = request(
-#    POST '/registernewuser',
-#    Content_Type => 'application/json',
-#    Content      => encode_json( {} ),
-#);
-#
-#my $failed_because_no_auth_json =
-#  decode_json( $failed_because_no_auth->content );
-#
-#is_deeply(
-#    $failed_because_no_auth_json,
-#    {
-#        'status'  => 'Failed',
-#        'message' => 'Not implemented.',
-#    }
-#);
+my $failed_because_no_auth = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json( {} ),
+);
+
+my $failed_because_no_auth_json =
+  decode_json( $failed_because_no_auth->content );
+
+is( $failed_because_no_auth_json->{status},
+    'Failed', 'Status failed, no auth.' );
+is(
+    $failed_because_no_auth_json->{message},
+    'Wrong e-mail or password.',
+    'A valid e-mail password mut be provided.'
+);
+
+my $failed_no_admin = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'notanadmin@daedalus-project.io',
+                password => 'Test_is_th1s_123',
+            }
+        }
+    )
+);
+
+my $failed_no_admin_json = decode_json( $failed_no_admin->content );
+
+is( $failed_no_admin_json->{status}, 'Failed',
+    'Status failed, not an andmin.' );
+is(
+    $failed_no_admin_json->{message},
+    'You are not an admin user.',
+    'Only admin uers are able to register new users.'
+);
+
+my $failed_no_data = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+my $failed_no_data_json = decode_json( $failed_no_data->content );
+
+is( $failed_no_data_json->{status}, 'Failed', 'There is no user data.' );
+is(
+    $failed_no_data_json->{message},
+    'Invalid organization data.',
+    'It is required user data to register a new user.'
+);
 
 done_testing();

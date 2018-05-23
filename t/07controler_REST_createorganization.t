@@ -71,7 +71,7 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status},  'Failed', );
 is( $failed_no_data_json->{message}, 'Invalid organization data.', );
 
-my $failed_invalid_data = request(
+my $success_extra_data = request(
     POST '/createorganization',
     Content_Type => 'application/json',
     Content      => encode_json(
@@ -88,10 +88,10 @@ my $failed_invalid_data = request(
     )
 );
 
-my $failed_invalid_data_json = decode_json( $failed_invalid_data->content );
+my $success_extra_data_json = decode_json( $success_extra_data->content );
 
-is( $failed_no_data_json->{status},  'Failed', );
-is( $failed_no_data_json->{message}, 'Invalid organization data.', );
+is( $success_extra_data_json->{status},  'Success', );
+is( $success_extra_data_json->{message}, 'Organization created.', );
 
 my $correct_data = request(
     POST '/createorganization',
