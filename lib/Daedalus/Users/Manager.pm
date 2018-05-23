@@ -12,6 +12,8 @@ use strict;
 use warnings;
 use Moose;
 
+use Email::Valid;
+
 use Digest::SHA qw(sha512_base64);
 use Data::Dumper;
 
@@ -143,13 +145,27 @@ sub registerNewUser {
 
     my @required_user_data = qw/email name surname/;
 
+    # Check required data
     for my $data (@required_user_data) {
         if ( !( exists $requested_user_data->{$data} ) ) {
             $response->{status} = "Failed";
-            $response->{message} .= "No $data supplied.\n";
+            $response->{message} .= "No $data supplied.";
+        }
+        else {
+            chomp $requested_user_data->{$data};
         }
     }
 
+    # Check if email is valid
+    if ( $response->{status} ne 'Failed' ) {
+        if ( !( Email::Valid->address( $requested_user_data->{email} ) ) ) {
+            $response->{status}  = "Failed";
+            $response->{message} = "Provided e-amil is invalid.";
+        }
+        else {
+            die "YO";
+        }
+    }
     return $response;
 
 }

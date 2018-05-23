@@ -80,6 +80,83 @@ is(
     'It is required user data to register a new user.'
 );
 
+my $failed_empty_data = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {},
+        }
+    )
+);
+
+my $failed_empty_data_json = decode_json( $failed_empty_data->content );
+
+is( $failed_empty_data_json->{status}, 'Failed', 'Nothing supplied' );
+is(
+    $failed_empty_data_json->{message},
+    'No email supplied.No name supplied.No surname supplied.',
+    'new_user_data is empty.'
+);
+
+my $failed_no_email_no_surname = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                name => 'John',
+            },
+        }
+    )
+);
+
+my $failed_no_email_no_surname_json =
+  decode_json( $failed_no_email_no_surname->content );
+
+is( $failed_no_email_no_surname_json->{status},
+    'Failed', 'Only name is supplied' );
+is(
+    $failed_no_email_no_surname_json->{message},
+    'No email supplied.No surname supplied.',
+    'new_user_data only contains a name.'
+);
+
+my $failed_no_name_no_surname = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                email => 'never@mind',
+            },
+        }
+    )
+);
+
+my $failed_no_name_no_surname_json =
+  decode_json( $failed_no_name_no_surname->content );
+
+is( $failed_no_name_no_surname_json->{status},
+    'Failed', 'Only email is supplied' );
+is(
+    $failed_no_name_no_surname_json->{message},
+    'No name supplied.No surname supplied.',
+    'new_user_data only contains an email.'
+);
+
 my $failed_invalid_email = request(
     POST '/registernewuser',
     Content_Type => 'application/json',
@@ -102,9 +179,9 @@ my $failed_invalid_email = request(
 my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
 is( $failed_invalid_email_json->{status}, 'Failed', 'E-mail is invalid.' );
-like(
+is(
     $failed_invalid_email_json->{message},
-    'Provided e-amil is invalid',
+    'Provided e-amil is invalid.',
     'A valid e-mail is required.'
 );
 

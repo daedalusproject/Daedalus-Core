@@ -66,8 +66,8 @@ sub ask_filed {
         }
         elsif ( $options->{field_type} eq "email" ) {
             if ( !( Email::Valid->address($field) ) ) {
-                $error = 1;
-                print "This does not like an e-mail address.\n";
+                $response->{status} = "Failed";
+                $response->{message} .= "No $data supplied.";
             }
         }
     } while ($error);
