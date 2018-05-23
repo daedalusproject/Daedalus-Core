@@ -80,4 +80,32 @@ is(
     'It is required user data to register a new user.'
 );
 
+my $failed_invalid_email = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                email   => 'invalidemail_example.com',
+                name    => 'somename',
+                surname => 'Some surname',
+
+            },
+        }
+    )
+);
+
+my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
+
+is( $failed_invalid_email_json->{status}, 'Failed', 'E-mail is invalid.' );
+like(
+    $failed_invalid_email_json->{message},
+    'Provided e-amil is invalid',
+    'A valid e-mail is required.'
+);
+
 done_testing();

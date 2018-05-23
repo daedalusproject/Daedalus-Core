@@ -133,7 +133,25 @@ sub isAdmin {
 }
 
 sub registerNewUser {
-    die "YO";
+
+    my $request         = shift;
+    my $admin_user_data = shift;
+
+    my $response = { status => "Success", message => "", _hidden_data => "" };
+
+    my $requested_user_data = $request->{request}->{data}->{new_user_data};
+
+    my @required_user_data = qw/email name surname/;
+
+    for my $data (@required_user_data) {
+        if ( !( exists $requested_user_data->{$data} ) ) {
+            $response->{status} = "Failed";
+            $response->{message} .= "No $data supplied.\n";
+        }
+    }
+
+    return $response;
+
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -190,7 +190,7 @@ sub registeruser_POST {
         $response = $is_admin;
     }
     else {
-        if ( !exists( $c->{request}->{data}->{newuser_data} ) ) {
+        if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
             $response = {
                 status  => 'Failed',
                 message => 'Invalid user data.'
