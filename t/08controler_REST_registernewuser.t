@@ -76,7 +76,7 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status}, 'Failed', 'There is no user data.' );
 is(
     $failed_no_data_json->{message},
-    'Invalid organization data.',
+    'Invalid user data.',
     'It is required user data to register a new user.'
 );
 

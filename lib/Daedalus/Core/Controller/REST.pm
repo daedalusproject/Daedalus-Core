@@ -180,15 +180,31 @@ sub registeruser_GET {
 }
 
 sub registeruser_POST {
-    my ( $self, $c ) = shift;
+    my ( $self, $c ) = @_;
 
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'Not implemented.',
-        },
-    );
+    my $is_admin = isAdmin($c);
+
+    my $response;
+
+    if ( $is_admin->{status} eq "Failed" ) {
+        $response = $is_admin;
+    }
+    else {
+        if ( !exists( $c->{request}->{data}->{newuser_data} ) ) {
+            $response = {
+                status  => 'Failed',
+                message => 'Invalid user data.'
+            };
+        }
+        else {
+
+            $response =
+              Daedalus::Users::Manager::registerNewUser( $c,
+                $is_admin->{_hidden_data} );
+        }
+    }
+
+    return $self->status_ok( $c, entity => processResponse($response), );
 }
 
 =head2 confrimRegister

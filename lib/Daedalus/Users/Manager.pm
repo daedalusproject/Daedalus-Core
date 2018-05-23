@@ -132,5 +132,9 @@ sub isAdmin {
 
 }
 
+sub registerNewUser {
+    die "YO";
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
