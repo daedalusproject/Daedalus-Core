@@ -19,13 +19,13 @@ use namespace::clean -except => 'meta';
 
 =head1 NAME
 
-Daedalus::Core::Users::Manager
+Daedalus::Users::Manager
 
 =cut
 
 =head1 DESCRIPTION
 
-Daedalus::Core Users Manager
+Daedalus Users Manager
 
 =head1 METHODS
 
@@ -55,7 +55,7 @@ Auths user, returns auth data if submitted credentials match
 with database info.
 =cut
 
-sub auth_user_using_model {
+sub authUserUsingModel {
 
     my $request = shift;
     my $auth    = $request->{request}->{data}->{auth};
@@ -82,9 +82,10 @@ sub auth_user_using_model {
             $response{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response{status}  = 'Success';
-            $response{message} = 'Auth Successful.';
-            $response{data}    = {
+            $response{status}       = 'Success';
+            $response{message}      = 'Auth Successful.';
+            $response{_hidden_data} = { id => $user->id };
+            $response{data}         = {
                 email    => $user->email,
                 name     => $user->name,
                 surname  => $user->surname,
@@ -100,6 +101,35 @@ sub auth_user_using_model {
         $response{message} = 'Wrong e-mail or password.';
     }
     return \%response;
+}
+
+=head2 isAdmin
+
+Return if required user is admin.
+
+=cut
+
+sub isAdmin {
+
+    my $user_login_response = shift;
+    my $response;
+
+    $response = {
+        status       => "Failed",
+        message      => "You are not an admin user.",
+        imadmin      => "False",
+        _hidden_data => $user_login_response->{_hidden_data},
+    };
+
+    # Check if logged user is admin
+    if ( $user_login_response->{data}->{is_admin} == 1 ) {
+        $response->{status}  = "Success";
+        $response->{message} = "You are an admin user.";
+        $response->{imadmin} = 'True',;
+    }
+
+    return $response;
+
 }
 
 __PACKAGE__->meta->make_immutable;
