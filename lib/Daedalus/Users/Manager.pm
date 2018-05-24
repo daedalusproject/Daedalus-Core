@@ -137,7 +137,7 @@ sub isAdmin {
 sub registerNewUser {
 
     my $request         = shift;
-    my $admin_user_data = shift;
+    my $admin_user_data = shift;    #hidden_data
 
     my $response = { status => "Success", message => "", _hidden_data => "" };
 
@@ -199,7 +199,7 @@ sub registerNewUser {
                 my $password   = $pass->randpattern($patern256);
                 $password = sha512_base64("$salt$password");
 
-                $user_model->create(
+                my $registered_user = $user_model->create(
                     {
                         name       => $requested_user_data->{name},
                         surname    => $requested_user_data->{surname},
@@ -214,13 +214,30 @@ sub registerNewUser {
                     }
                 );
 
+                # Who registers who
+                my $registered_users_model =
+                  $request->model('CoreRealms::RegisteredUser');
+
+                my $user_registered = $registered_users_model->create(
+                    {
+                        registered_user  => $registered_user->id,
+                        registrator_user => $admin_user_data->{id},
+                    }
+                );
+
                 $response->{status} = "Success";
+
                 if ( $requested_user_data->{is_admin} ) {
                     $response->{message} = "Admin user has been registered.";
                 }
                 else {
                     $response->{message} = "User has been registered.";
                 }
+
+                $response->{_hidden_data} = {
+                    email      => $registered_user->email,
+                    auth_token => $registered_user->auth_token,
+                  }
 
             }
         }
