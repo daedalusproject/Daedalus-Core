@@ -181,8 +181,94 @@ my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 is( $failed_invalid_email_json->{status}, 'Failed', 'E-mail is invalid.' );
 is(
     $failed_invalid_email_json->{message},
-    'Provided e-amil is invalid.',
+    'Provided e-mail is invalid.',
     'A valid e-mail is required.'
+);
+
+my $failed_duplicated_email = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                email   => 'notanadmin@daedalus-project.io',
+                name    => 'somename',
+                surname => 'Some surname',
+
+            },
+        }
+    )
+);
+
+my $failed_duplicated_email_json =
+  decode_json( $failed_duplicated_email->content );
+
+is( $failed_duplicated_email_json->{status}, 'Failed',
+    'E-mail is duplicated.' );
+is(
+    $failed_duplicated_email_json->{message},
+    'There already exists a user using this e-mail.',
+    'A non previously stored e-mail is required.'
+);
+
+my $success_not_admin = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                email   => 'othernotanadmin@daedalus-project.io',
+                name    => 'Other',
+                surname => 'Not Admin',
+
+            },
+        }
+    )
+);
+
+my $success_not_admin_json = decode_json( $success_not_admin->content );
+
+is( $success_not_admin_json->{status}, 'Success', 'User has been created.' );
+is(
+    $success_not_admin_json->{message},
+    'User registered.',
+    'User has been registered.'
+);
+
+my $success_admin = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                email    => 'otheradmin@daedalus-project.io',
+                name     => 'Other',
+                surname  => 'Not Admin',
+                is_admin => 1,
+            },
+        }
+    )
+);
+
+my $success_admin_json = decode_json( $success_admin->content );
+
+is( $success_admin_json->{status}, 'Success', 'User has been created.' );
+is(
+    $success_admin_json->{message},
+    'User registered.',
+    'User has been registered.'
 );
 
 done_testing();
