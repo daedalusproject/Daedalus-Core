@@ -271,4 +271,39 @@ is(
     'Admin user registered.'
 );
 
+my $success_superadmin_admin = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            new_user_data => {
+                email    => 'anotheradmin@daedalus-project.io',
+                name     => 'Another',
+                surname  => 'Admin',
+                is_admin => 1,
+            },
+        }
+    )
+);
+
+my $success_admin_json = decode_json( $success_admin->content );
+
+is( $success_admin_json->{status}, 'Success', 'User has been created.' );
+is(
+    $success_admin_json->{message},
+    'Admin user has been registered.',
+    'Admin user registered.'
+);
+
+is( $success_admin_json->{status}, 'Success', 'User has been created.' );
+
+# Only "daedalus_manager" users receives _hidden_data
+
+is( $success_admin_json->{_hidden_data},
+    'email', 'anotheradmin@daedalus-project.io' );
+
 done_testing();
