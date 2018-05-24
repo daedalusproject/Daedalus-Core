@@ -50,7 +50,7 @@ my $salt =
 'lec6bQeaUiJoFQ3zPZiNzfz7D2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password = sha512_base64("$salt$password");
 
-$schema->resultset('User')->create(
+my $user = $schema->resultset('User')->create(
     {
         name       => $name,
         surname    => $surname,
@@ -95,15 +95,32 @@ $schema->resultset('User')->create(
 # Create Roles
 
 $schema->resultset('Role')->create( { role_name => "organization_master", } );
-$schema->resultset('Role')->create(
-    {
-        role_name => "project_caretaker",
-    }
-);
+$schema->resultset('Role')->create( { role_name => "project_caretaker", } );
 $schema->resultset('Role')->create( { role_name => "health_watcher", } );
 $schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
 $schema->resultset('Role')->create( { role_name => "maze_master", } );
 $schema->resultset('Role')->create( { role_name => "fireman", } );
 $schema->resultset('Role')->create( { role_name => "fireman_commando", } );
-$schema->resultset('Role')->create( { role_name => "daedalus_manager", } );
+my $daedalus_manager =
+  $schema->resultset('Role')->create( { role_name => "daedalus_manager", } );
+
+# Create organization
+
+my $organization =
+  $schema->resultset('Organization')->create( { name => "Daedalus Project", } );
+
+my $organization_group = $schema->resultset('OrganizationGroup')->create(
+    {
+        organization_id => $organization->id,
+        group_name      => "Daedalus Administrators",
+    }
+);
+
+my $organization_group_role =
+  $schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $organization_group->id,
+        role_id  => $daedalus_manager->id,
+    }
+  );
 
