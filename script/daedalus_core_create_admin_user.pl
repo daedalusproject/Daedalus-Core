@@ -194,7 +194,7 @@ $schema->resultset('User')->create(
         password   => $password,
         salt       => $salt,
         expires    => "3000-01-01",
-        active     => "1",
+        active     => 1,
         auth_token => $auth_token,
         is_admin   => 1,
     }

@@ -13,7 +13,7 @@ use warnings;
 use Moose;
 
 use Email::Valid;
-
+use String::Random;
 use Digest::SHA qw(sha512_base64);
 use Data::Dumper;
 
@@ -160,10 +160,64 @@ sub registerNewUser {
     if ( $response->{status} ne 'Failed' ) {
         if ( !( Email::Valid->address( $requested_user_data->{email} ) ) ) {
             $response->{status}  = "Failed";
-            $response->{message} = "Provided e-amil is invalid.";
+            $response->{message} = "Provided e-mail is invalid.";
         }
         else {
-            die "YO";
+            # check if user already exists
+
+            my $user_model = $request->model('CoreRealms::User');
+            my $user =
+              $user_model->find( { email => $requested_user_data->{email} } );
+            if ($user) {
+                $response->{status} = "Failed";
+                $response->{message} =
+                  "There already exists a user using this e-mail.";
+
+            }
+            else {
+                # Is admin?
+                if ( exists $requested_user_data->{is_admin} ) {
+                    if ( $requested_user_data->{is_admin} != 0 ) {
+                        $requested_user_data->{is_admin} = 1;
+                    }
+                }
+                else {
+                    $requested_user_data->{is_admin} = 0;
+                }
+
+                # Create a user
+                my $pass     = new String::Random;
+                my $patern32 = 'sssssssssssssssssssssssssssssss';
+                my $patern64 =
+'sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss';
+                my $patern256 =
+'sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss';
+
+                my $api_key    = $pass->randpattern($patern32);
+                my $auth_token = $pass->randpattern($patern64);
+                my $salt       = $pass->randpattern($patern256);
+                my $password   = $pass->randpattern($patern256);
+                $password = sha512_base64("$salt$password");
+
+                $user_model->create(
+                    {
+                        name       => $requested_user_data->{name},
+                        surname    => $requested_user_data->{surname},
+                        email      => $requested_user_data->{email},
+                        api_key    => $api_key,
+                        password   => $password,
+                        salt       => $salt,
+                        expires    => "3000-01-01",                   #Change it
+                        active     => 0,
+                        auth_token => $auth_token,
+                        is_admin => $requested_user_data->{is_admin},
+                    }
+                );
+
+                $response->{status}  = "Success";
+                $response->{message} = "User has been registered.";
+
+            }
         }
     }
     return $response;

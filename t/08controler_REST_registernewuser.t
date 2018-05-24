@@ -239,8 +239,8 @@ my $success_not_admin_json = decode_json( $success_not_admin->content );
 is( $success_not_admin_json->{status}, 'Success', 'User has been created.' );
 is(
     $success_not_admin_json->{message},
-    'User registered.',
-    'User has been registered.'
+    'User has been registered.',
+    'User registered.'
 );
 
 my $success_admin = request(
@@ -255,7 +255,7 @@ my $success_admin = request(
             new_user_data => {
                 email    => 'otheradmin@daedalus-project.io',
                 name     => 'Other',
-                surname  => 'Not Admin',
+                surname  => 'Admin',
                 is_admin => 1,
             },
         }
@@ -267,8 +267,8 @@ my $success_admin_json = decode_json( $success_admin->content );
 is( $success_admin_json->{status}, 'Success', 'User has been created.' );
 is(
     $success_admin_json->{message},
-    'User registered.',
-    'User has been registered.'
+    'User has been registered.',
+    'User registered.'
 );
 
 done_testing();
