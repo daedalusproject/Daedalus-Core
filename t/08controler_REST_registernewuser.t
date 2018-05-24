@@ -267,8 +267,8 @@ my $success_admin_json = decode_json( $success_admin->content );
 is( $success_admin_json->{status}, 'Success', 'User has been created.' );
 is(
     $success_admin_json->{message},
-    'User has been registered.',
-    'User registered.'
+    'Admin user has been registered.',
+    'Admin user registered.'
 );
 
 done_testing();

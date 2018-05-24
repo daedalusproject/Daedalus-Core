@@ -214,8 +214,13 @@ sub registerNewUser {
                     }
                 );
 
-                $response->{status}  = "Success";
-                $response->{message} = "User has been registered.";
+                $response->{status} = "Success";
+                if ( $requested_user_data->{is_admin} ) {
+                    $response->{message} = "Admin user has been registered.";
+                }
+                else {
+                    $response->{message} = "User has been registered.";
+                }
 
             }
         }
