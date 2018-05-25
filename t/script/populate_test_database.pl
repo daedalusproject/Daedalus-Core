@@ -95,10 +95,18 @@ $schema->resultset('User')->create(
 # Create Roles
 
 $schema->resultset('Role')->create( { role_name => "organization_master", } );
-$schema->resultset('Role')->create( { role_name => "project_caretaker", } );
+$schema->resultset('Role')->create(
+    {
+        role_name => "project_caretaker",
+    }
+);
 $schema->resultset('Role')->create( { role_name => "health_watcher", } );
 $schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
-$schema->resultset('Role')->create( { role_name => "maze_master", } );
+$schema->resultset('Role')->create(
+    {
+        role_name => "maze_master",
+    }
+);
 $schema->resultset('Role')->create( { role_name => "fireman", } );
 $schema->resultset('Role')->create( { role_name => "fireman_commando", } );
 my $daedalus_manager =
@@ -123,4 +131,11 @@ my $organization_group_role =
         role_id  => $daedalus_manager->id,
     }
   );
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $organization_group->id,
+        user_id  => $user->id,
+    }
+);
 

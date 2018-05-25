@@ -78,11 +78,9 @@ sub loginUser_GET {
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
-    #$response = Daedalus::Utils::Responses::processResponse( $c, authUser($c));
+    my $response = Daedalus::Users::Manager::authUser($c);
 
-    return $self->status_ok( $c,
-        entity =>
-          processResponse( Daedalus::Users::Manager::authUserUsingModel($c) ) );
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 imAdmin
@@ -109,7 +107,7 @@ sub imAdmin_GET {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => processResponse( isAdmin($c) ) );
+    return $self->status_ok( $c, entity => isAdmin($c) );
 }
 
 =head2 createOrganization
@@ -160,7 +158,7 @@ sub createOrganization_POST {
         }
     }
 
-    return $self->status_ok( $c, entity => processResponse($response), );
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 registerNewUser
@@ -209,7 +207,7 @@ sub registeruser_POST {
         }
     }
 
-    return $self->status_ok( $c, entity => processResponse($response), );
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 confrimRegister
@@ -243,20 +241,6 @@ Common functions
 
 =cut
 
-=head2 processResponse
-
-Cleans _hidden_data field from responde, _hidden_data is not public
-
-=cut
-
-sub processResponse {
-    my $response = shift;
-    if ( exists $response->{_hidden_data} ) {
-        delete $response->{_hidden_data};
-    }
-    return $response;
-}
-
 =head2 authUser
 
 Determines if required user exists and its password match
@@ -286,19 +270,7 @@ Determines if required is and admin user
 sub isAdmin {
     my $c = shift;
 
-    my $response;
-   #
-   #    # Check user
-   #    my $user_login_response = authUser($c);
-   #
-   #    if ( $user_login_response->{status} eq "Failed" ) {
-   #        $response = $user_login_response;
-   #    }
-   #    else {
-   #        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
-   #    }
-    $response = Daedalus::Users::Manager::isAdmin($c);
-    return $response;
+    return Daedalus::Users::Manager::isAdmin($c);
 }
 
 =encoding utf8

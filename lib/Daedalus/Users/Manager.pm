@@ -51,13 +51,13 @@ sub check_user_passwrd {
     return $password eq $user_password;
 }
 
-=head2 auth_user_using_model
+=head2 authUser
 
 Auths user, returns auth data if submitted credentials match
 with database info.
 =cut
 
-sub authUserUsingModel {
+sub authUser {
 
     my $c    = shift;
     my $auth = $c->{request}->{data}->{auth};
@@ -84,18 +84,25 @@ sub authUserUsingModel {
             $response->{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response->{status}       = 'Success';
-            $response->{message}      = 'Auth Successful.';
-            $response->{_hidden_data} = { id => $user->id };
-            $response->{data}         = {
-                email    => $user->email,
-                name     => $user->name,
-                surname  => $user->surname,
-                phone    => $user->phone,
-                api_key  => $user->api_key,
-                email    => $user->email,
-                is_admin => $user->is_admin,
+            $response->{status}  = 'Success';
+            $response->{message} = 'Auth Successful.';
+            $response->{data}    = {
+                'user' => {
+                    email    => $user->email,
+                    name     => $user->name,
+                    surname  => $user->surname,
+                    phone    => $user->phone,
+                    api_key  => $user->api_key,
+                    email    => $user->email,
+                    is_admin => $user->is_admin,
+                },
             };
+            $response->{_hidden_data} = { user => { id => $user->id } };
+
+            # If user is superAdmin remove _hidden_data
+            if ( !isSuperAdmin( $c, $response ) ) {
+                delete $response->{_hidden_data};
+            }
         }
     }
     else {
@@ -140,32 +147,77 @@ sub isAdmin {
 
 }
 
-=head2 isSuperAdmin
+=head2 isSuperAdminBy
 
-Return if required user belongs to a group with 'daedalus_manager'role .
+Return if required user belongs to a group with 'daedalus_manager'role
 
 =cut
 
 sub isSuperAdmin {
 
-    my $c = shift;
+    my $c       = shift;
+    my $request = shift;
 
-    my $auth_response = isAdmin($c);
+    my $is_super_admin = 0;
 
-    #    $response = {
-    #        status       => "Failed",
-    #        message      => "You are not an admin user.",
-    #        imadmin      => "False",
-    #        _hidden_data => $user_login_response->{_hidden_data},
-    #    };
-    #
-    #    # Check if logged user is admin
-    #    if ( $user_login_response->{data}->{is_admin} == 1 ) {
-    #        $response->{status}  = "Success";
-    #        $response->{message} = "You are an admin user.";
-    #        $response->{imadmin} = 'True',;
-    #    }
-    #
+    # Check-hidden_data;
+    my $find_by_user_id = 0;
+    if ( exists( $request->{_hidden_data} ) ) {
+        if ( exists( $request->{_hidden_data}->{user} ) ) {
+            $find_by_user_id = 1;
+
+            $is_super_admin =
+              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+
+        }
+    }
+    if ( $find_by_user_id == 0 ) {
+        my $user_admin_response = isAdmin($c);
+        if ( $user_admin_response->{status} eq "Success" ) {
+            $is_super_admin = isSuperAdminById( $c,
+                $user_admin_response->{_hidden_data}->{user}->{id} );
+        }
+    }
+    return $is_super_admin;
+
+}
+
+=head2 isSuperAdminById
+
+Return if required user belongs to a group with 'daedalus_manager'role, user id is provided
+
+=cut
+
+sub isSuperAdminById {
+
+    my $c       = shift;
+    my $user_id = shift;
+
+    my $daedalus_manager_role_id = $c->model('CoreRealms::Role')
+      ->find( { role_name => "daedalus_manager" } )->id;
+
+    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { 'user_id' => $user_id } );
+    if ($user_groups) {
+        my @user_groups_array = $user_groups->all;
+        for my $user_group (@user_groups_array) {
+
+            # Get group
+            my $group_id    = $user_group->group_id;
+            my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+              ->search( { group_id => $group_id } )->all();
+            my $roles = "";
+
+            foreach (@roles_array) {
+
+                if ( $_->role_id == $daedalus_manager_role_id ) {
+                    return 1;    #Break all
+                }
+
+            }
+        }
+    }
+
     return 0;
 
 }
