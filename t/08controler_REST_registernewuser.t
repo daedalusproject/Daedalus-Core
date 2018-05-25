@@ -303,7 +303,7 @@ is( $success_admin_json->{status}, 'Success', 'User has been created.' );
 
 # Only "daedalus_manager" users receives _hidden_data
 
-is( $success_admin_json->{_hidden_data},
-    'email', 'anotheradmin@daedalus-project.io' );
+#is( $success_admin_json->{_hidden_data},
+#    'email', 'anotheradmin@daedalus-project.io' );
 
 done_testing();

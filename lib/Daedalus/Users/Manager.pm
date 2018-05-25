@@ -59,17 +59,17 @@ with database info.
 
 sub authUserUsingModel {
 
-    my $request = shift;
-    my $auth    = $request->{request}->{data}->{auth};
-    my $model   = $request->{model};
+    my $c    = shift;
+    my $auth = $c->{request}->{data}->{auth};
 
-    my %response;
-    $response{status}  => "";
-    $response{message} => "";
-    $response{data}    => {};
+    my $response;
+    $response->{status}  => "";
+    $response->{message} => "";
+    $response->{data}    => {};
 
     # Get user from model
-    my $user = $model->find( { email => $auth->{email} } );
+    my $user =
+      $c->model('CoreRealms::User')->find( { email => $auth->{email} } );
 
     if ($user) {
         if (
@@ -80,14 +80,14 @@ sub authUserUsingModel {
             )
           )
         {
-            $response{status}  = 'Failed';
-            $response{message} = 'Wrong e-mail or password.';
+            $response->{status}  = 'Failed';
+            $response->{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response{status}       = 'Success';
-            $response{message}      = 'Auth Successful.';
-            $response{_hidden_data} = { id => $user->id };
-            $response{data}         = {
+            $response->{status}       = 'Success';
+            $response->{message}      = 'Auth Successful.';
+            $response->{_hidden_data} = { id => $user->id };
+            $response->{data}         = {
                 email    => $user->email,
                 name     => $user->name,
                 surname  => $user->surname,
@@ -99,10 +99,10 @@ sub authUserUsingModel {
         }
     }
     else {
-        $response{status}  = 'Failed';
-        $response{message} = 'Wrong e-mail or password.';
+        $response->{status}  = 'Failed';
+        $response->{message} = 'Wrong e-mail or password.';
     }
-    return \%response;
+    return $response;
 }
 
 =head2 isAdmin
@@ -113,24 +113,60 @@ Return if required user is admin.
 
 sub isAdmin {
 
-    my $user_login_response = shift;
+    my $c = shift;
+
+    my $user_auth = authUserUsingModel($c);
     my $response;
 
-    $response = {
-        status       => "Failed",
-        message      => "You are not an admin user.",
-        imadmin      => "False",
-        _hidden_data => $user_login_response->{_hidden_data},
-    };
-
-    # Check if logged user is admin
-    if ( $user_login_response->{data}->{is_admin} == 1 ) {
-        $response->{status}  = "Success";
-        $response->{message} = "You are an admin user.";
-        $response->{imadmin} = 'True',;
+    if ( $user_auth->{status} eq "Failed" ) {
+        $response = $user_auth;
     }
+    else {
+        $response = {
+            status       => "Failed",
+            message      => "You are not an admin user.",
+            imadmin      => "False",
+            _hidden_data => $user_auth->{_hidden_data},
+        };
 
+        # Check if logged user is admin
+        if ( $user_auth->{data}->{is_admin} == 1 ) {
+            $response->{status}  = "Success";
+            $response->{message} = "You are an admin user.";
+            $response->{imadmin} = 'True',;
+        }
+    }
     return $response;
+
+}
+
+=head2 isSuperAdmin
+
+Return if required user belongs to a group with 'daedalus_manager'role .
+
+=cut
+
+sub isSuperAdmin {
+
+    my $c = shift;
+
+    my $auth_response = isAdmin($c);
+
+    #    $response = {
+    #        status       => "Failed",
+    #        message      => "You are not an admin user.",
+    #        imadmin      => "False",
+    #        _hidden_data => $user_login_response->{_hidden_data},
+    #    };
+    #
+    #    # Check if logged user is admin
+    #    if ( $user_login_response->{data}->{is_admin} == 1 ) {
+    #        $response->{status}  = "Success";
+    #        $response->{message} = "You are an admin user.";
+    #        $response->{imadmin} = 'True',;
+    #    }
+    #
+    return 0;
 
 }
 

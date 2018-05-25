@@ -11,6 +11,7 @@ use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Users::Manager;
 use Daedalus::Organizations::Manager;
+use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -77,7 +78,11 @@ sub loginUser_GET {
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => processResponse( authUser($c) ) );
+    #$response = Daedalus::Utils::Responses::processResponse( $c, authUser($c));
+
+    return $self->status_ok( $c,
+        entity =>
+          processResponse( Daedalus::Users::Manager::authUserUsingModel($c) ) );
 }
 
 =head2 imAdmin
@@ -282,17 +287,17 @@ sub isAdmin {
     my $c = shift;
 
     my $response;
-
-    # Check user
-    my $user_login_response = authUser($c);
-
-    if ( $user_login_response->{status} eq "Failed" ) {
-        $response = $user_login_response;
-    }
-    else {
-        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
-    }
-
+   #
+   #    # Check user
+   #    my $user_login_response = authUser($c);
+   #
+   #    if ( $user_login_response->{status} eq "Failed" ) {
+   #        $response = $user_login_response;
+   #    }
+   #    else {
+   #        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
+   #    }
+    $response = Daedalus::Users::Manager::isAdmin($c);
     return $response;
 }
 
