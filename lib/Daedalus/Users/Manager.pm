@@ -122,7 +122,7 @@ sub isAdmin {
 
     my $c = shift;
 
-    my $user_auth = authUserUsingModel($c);
+    my $user_auth = authUser($c);
     my $response;
 
     if ( $user_auth->{status} eq "Failed" ) {
@@ -137,7 +137,7 @@ sub isAdmin {
         };
 
         # Check if logged user is admin
-        if ( $user_auth->{data}->{is_admin} == 1 ) {
+        if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
             $response->{status}  = "Success";
             $response->{message} = "You are an admin user.";
             $response->{imadmin} = 'True',;
