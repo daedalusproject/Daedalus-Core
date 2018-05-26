@@ -63,9 +63,7 @@ sub authUser {
     my $auth = $c->{request}->{data}->{auth};
 
     my $response;
-    $response->{status}  => "";
-    $response->{message} => "";
-    $response->{data}    => {};
+    $response->{data} => {};
 
     # Get user from model
     my $user =
