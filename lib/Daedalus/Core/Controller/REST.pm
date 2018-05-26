@@ -107,7 +107,8 @@ sub imAdmin_GET {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => isAdmin($c) );
+    return $self->status_ok( $c,
+        entity => Daedalus::Users::Manager::isAdmin($c) );
 }
 
 =head2 createOrganization
@@ -136,7 +137,7 @@ sub createOrganization_GET {
 sub createOrganization_POST {
     my ( $self, $c ) = @_;
 
-    my $is_admin = isAdmin($c);
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
 
@@ -185,7 +186,7 @@ sub registeruser_GET {
 sub registeruser_POST {
     my ( $self, $c ) = @_;
 
-    my $is_admin = isAdmin($c);
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
 
@@ -200,10 +201,8 @@ sub registeruser_POST {
             };
         }
         else {
-
             $response =
-              Daedalus::Users::Manager::registerNewUser( $c,
-                $is_admin->{_hidden_data}->{user} );
+              Daedalus::Users::Manager::registerNewUser( $c, $is_admin );
         }
     }
 
@@ -240,38 +239,6 @@ sub confrimRegister_POST {
 Common functions
 
 =cut
-
-=head2 authUser
-
-Determines if required user exists and its password match
-
-=cut
-
-sub authUser {
-
-    my $c = shift;
-
-    my $response = Daedalus::Users::Manager::authUserUsingModel(
-        {
-            request => $c->req,
-            model   => $c->model('CoreRealms::User'),
-        }
-    );
-
-    return $response;
-}
-
-=head2 isAdmin
-
-Determines if required is and admin user
-
-=cut
-
-sub isAdmin {
-    my $c = shift;
-
-    return Daedalus::Users::Manager::isAdmin($c);
-}
 
 =encoding utf8
 

@@ -224,12 +224,20 @@ sub isSuperAdminById {
 
 sub registerNewUser {
 
-    my $request         = shift;
-    my $admin_user_data = shift;    #hidden_data
+    my $c               = shift;
+    my $admin_user_data = shift;
 
-    my $response = { status => "Success", message => "", _hidden_data => "" };
+    if ( !( $admin_user_data->{_hidden_data} ) ) {
 
-    my $requested_user_data = $request->{request}->{data}->{new_user_data};
+        #Not an admin user, get user_id
+        $admin_user_data->{_hidden_data} = { user => { id => getUserId($c) } };
+    }
+
+    my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
+
+    my $response = { status => "Success", message => "" };
+
+    my $requested_user_data = $c->{request}->{data}->{new_user_data};
 
     my @required_user_data = qw/email name surname/;
 
@@ -253,7 +261,7 @@ sub registerNewUser {
         else {
             # check if user already exists
 
-            my $user_model = $request->model('CoreRealms::User');
+            my $user_model = $c->model('CoreRealms::User');
             my $user =
               $user_model->find( { email => $requested_user_data->{email} } );
             if ($user) {
@@ -304,12 +312,12 @@ sub registerNewUser {
 
                 # Who registers who
                 my $registered_users_model =
-                  $request->model('CoreRealms::RegisteredUser');
+                  $c->model('CoreRealms::RegisteredUser');
 
                 my $user_registered = $registered_users_model->create(
                     {
                         registered_user  => $registered_user->id,
-                        registrator_user => $admin_user_data->{id},
+                        registrator_user => $registrator_user_id,
                     }
                 );
 
@@ -322,16 +330,29 @@ sub registerNewUser {
                     $response->{message} = "User has been registered.";
                 }
 
-                $response->{_hidden_data} = {
-                    email      => $registered_user->email,
-                    auth_token => $registered_user->auth_token,
-                  }
+                if ( isSuperAdminById( $c, $registrator_user_id ) ) {
+                    $response->{_hidden_data} = {
+                        user => {
+                            email      => $registered_user->email,
+                            auth_token => $registered_user->auth_token,
+                        },
+                    };
 
+                }
             }
         }
     }
     return $response;
 
+}
+
+sub getUserId {
+    my $c = shift;
+
+    my $user_email = $c->{request}->{data}->{auth}->{email};
+    my $user_model = $c->model('CoreRealms::User');
+    my $user_id    = $user_model->find( { email => $user_email } )->id;
+    return $user_id;
 }
 
 __PACKAGE__->meta->make_immutable;
