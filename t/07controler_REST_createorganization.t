@@ -113,6 +113,7 @@ my $correct_data_json = decode_json( $correct_data->content );
 
 is( $correct_data_json->{status},  'Success', );
 is( $correct_data_json->{message}, 'Organization created.', );
+isnt( $correct_data_json->{_hidden_data}, undef, );
 
 my $duplicated_organization = request(
     POST '/createorganization',

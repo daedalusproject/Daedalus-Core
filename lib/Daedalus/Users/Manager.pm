@@ -51,25 +51,23 @@ sub check_user_passwrd {
     return $password eq $user_password;
 }
 
-=head2 auth_user_using_model
+=head2 authUser
 
 Auths user, returns auth data if submitted credentials match
 with database info.
 =cut
 
-sub authUserUsingModel {
+sub authUser {
 
-    my $request = shift;
-    my $auth    = $request->{request}->{data}->{auth};
-    my $model   = $request->{model};
+    my $c    = shift;
+    my $auth = $c->{request}->{data}->{auth};
 
-    my %response;
-    $response{status}  => "";
-    $response{message} => "";
-    $response{data}    => {};
+    my $response;
+    $response->{data} => {};
 
     # Get user from model
-    my $user = $model->find( { email => $auth->{email} } );
+    my $user =
+      $c->model('CoreRealms::User')->find( { email => $auth->{email} } );
 
     if ($user) {
         if (
@@ -80,29 +78,36 @@ sub authUserUsingModel {
             )
           )
         {
-            $response{status}  = 'Failed';
-            $response{message} = 'Wrong e-mail or password.';
+            $response->{status}  = 'Failed';
+            $response->{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response{status}       = 'Success';
-            $response{message}      = 'Auth Successful.';
-            $response{_hidden_data} = { id => $user->id };
-            $response{data}         = {
-                email    => $user->email,
-                name     => $user->name,
-                surname  => $user->surname,
-                phone    => $user->phone,
-                api_key  => $user->api_key,
-                email    => $user->email,
-                is_admin => $user->is_admin,
+            $response->{status}  = 'Success';
+            $response->{message} = 'Auth Successful.';
+            $response->{data}    = {
+                'user' => {
+                    email    => $user->email,
+                    name     => $user->name,
+                    surname  => $user->surname,
+                    phone    => $user->phone,
+                    api_key  => $user->api_key,
+                    email    => $user->email,
+                    is_admin => $user->is_admin,
+                },
             };
+            $response->{_hidden_data} = { user => { id => $user->id } };
+
+            # If user is superAdmin remove _hidden_data
+            if ( !isSuperAdmin( $c, $response ) ) {
+                delete $response->{_hidden_data};
+            }
         }
     }
     else {
-        $response{status}  = 'Failed';
-        $response{message} = 'Wrong e-mail or password.';
+        $response->{status}  = 'Failed';
+        $response->{message} = 'Wrong e-mail or password.';
     }
-    return \%response;
+    return $response;
 }
 
 =head2 isAdmin
@@ -113,35 +118,124 @@ Return if required user is admin.
 
 sub isAdmin {
 
-    my $user_login_response = shift;
+    my $c = shift;
+
+    my $user_auth = authUser($c);
     my $response;
 
-    $response = {
-        status       => "Failed",
-        message      => "You are not an admin user.",
-        imadmin      => "False",
-        _hidden_data => $user_login_response->{_hidden_data},
-    };
+    if ( $user_auth->{status} eq "Failed" ) {
+        $response = $user_auth;
+    }
+    else {
+        $response = {
+            status       => "Failed",
+            message      => "You are not an admin user.",
+            imadmin      => "False",
+            _hidden_data => $user_auth->{_hidden_data},
+        };
 
-    # Check if logged user is admin
-    if ( $user_login_response->{data}->{is_admin} == 1 ) {
-        $response->{status}  = "Success";
-        $response->{message} = "You are an admin user.";
-        $response->{imadmin} = 'True',;
+        # Check if logged user is admin
+        if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
+            $response->{status}  = "Success";
+            $response->{message} = "You are an admin user.";
+            $response->{imadmin} = 'True',;
+        }
+    }
+    return $response;
+
+}
+
+=head2 isSuperAdminBy
+
+Return if required user belongs to a group with 'daedalus_manager'role
+
+=cut
+
+sub isSuperAdmin {
+
+    my $c       = shift;
+    my $request = shift;
+
+    my $is_super_admin = 0;
+
+    # Check-hidden_data;
+    my $find_by_user_id = 0;
+    if ( exists( $request->{_hidden_data} ) ) {
+        if ( exists( $request->{_hidden_data}->{user} ) ) {
+            $find_by_user_id = 1;
+
+            $is_super_admin =
+              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+
+        }
+    }
+    if ( $find_by_user_id == 0 ) {
+        my $user_admin_response = isAdmin($c);
+        if ( $user_admin_response->{status} eq "Success" ) {
+            $is_super_admin = isSuperAdminById( $c,
+                $user_admin_response->{_hidden_data}->{user}->{id} );
+        }
+    }
+    return $is_super_admin;
+
+}
+
+=head2 isSuperAdminById
+
+Return if required user belongs to a group with 'daedalus_manager'role, user id is provided
+
+=cut
+
+sub isSuperAdminById {
+
+    my $c       = shift;
+    my $user_id = shift;
+
+    my $daedalus_manager_role_id = $c->model('CoreRealms::Role')
+      ->find( { role_name => "daedalus_manager" } )->id;
+
+    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { 'user_id' => $user_id } );
+    if ($user_groups) {
+        my @user_groups_array = $user_groups->all;
+        for my $user_group (@user_groups_array) {
+
+            # Get group
+            my $group_id    = $user_group->group_id;
+            my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+              ->search( { group_id => $group_id } )->all();
+            my $roles = "";
+
+            foreach (@roles_array) {
+
+                if ( $_->role_id == $daedalus_manager_role_id ) {
+                    return 1;    #Break all
+                }
+
+            }
+        }
     }
 
-    return $response;
+    return 0;
 
 }
 
 sub registerNewUser {
 
-    my $request         = shift;
-    my $admin_user_data = shift;    #hidden_data
+    my $c               = shift;
+    my $admin_user_data = shift;
 
-    my $response = { status => "Success", message => "", _hidden_data => "" };
+    if ( !( $admin_user_data->{_hidden_data} ) ) {
 
-    my $requested_user_data = $request->{request}->{data}->{new_user_data};
+        #Not an admin user, get user_id
+        $admin_user_data->{_hidden_data} = { user => { id => getUserId($c) } };
+    }
+
+    my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
+
+    my $response = { status => "Success", message => "" };
+
+    my $requested_user_data = $c->{request}->{data}->{new_user_data};
 
     my @required_user_data = qw/email name surname/;
 
@@ -165,7 +259,7 @@ sub registerNewUser {
         else {
             # check if user already exists
 
-            my $user_model = $request->model('CoreRealms::User');
+            my $user_model = $c->model('CoreRealms::User');
             my $user =
               $user_model->find( { email => $requested_user_data->{email} } );
             if ($user) {
@@ -216,12 +310,12 @@ sub registerNewUser {
 
                 # Who registers who
                 my $registered_users_model =
-                  $request->model('CoreRealms::RegisteredUser');
+                  $c->model('CoreRealms::RegisteredUser');
 
                 my $user_registered = $registered_users_model->create(
                     {
                         registered_user  => $registered_user->id,
-                        registrator_user => $admin_user_data->{id},
+                        registrator_user => $registrator_user_id,
                     }
                 );
 
@@ -234,16 +328,29 @@ sub registerNewUser {
                     $response->{message} = "User has been registered.";
                 }
 
-                $response->{_hidden_data} = {
-                    email      => $registered_user->email,
-                    auth_token => $registered_user->auth_token,
-                  }
+                if ( isSuperAdminById( $c, $registrator_user_id ) ) {
+                    $response->{_hidden_data} = {
+                        user => {
+                            email      => $registered_user->email,
+                            auth_token => $registered_user->auth_token,
+                        },
+                    };
 
+                }
             }
         }
     }
     return $response;
 
+}
+
+sub getUserId {
+    my $c = shift;
+
+    my $user_email = $c->{request}->{data}->{auth}->{email};
+    my $user_model = $c->model('CoreRealms::User');
+    my $user_id    = $user_model->find( { email => $user_email } )->id;
+    return $user_id;
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -11,6 +11,7 @@ use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Users::Manager;
 use Daedalus::Organizations::Manager;
+use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -77,7 +78,9 @@ sub loginUser_GET {
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => processResponse( authUser($c) ) );
+    my $response = Daedalus::Users::Manager::authUser($c);
+
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 imAdmin
@@ -104,7 +107,8 @@ sub imAdmin_GET {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => processResponse( isAdmin($c) ) );
+    return $self->status_ok( $c,
+        entity => Daedalus::Users::Manager::isAdmin($c) );
 }
 
 =head2 createOrganization
@@ -133,7 +137,7 @@ sub createOrganization_GET {
 sub createOrganization_POST {
     my ( $self, $c ) = @_;
 
-    my $is_admin = isAdmin($c);
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
 
@@ -151,11 +155,11 @@ sub createOrganization_POST {
 
             $response =
               Daedalus::Organizations::Manager::createOrganization( $c,
-                $is_admin->{_hidden_data} );
+                $is_admin->{_hidden_data}->{user} );
         }
     }
 
-    return $self->status_ok( $c, entity => processResponse($response), );
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 registerNewUser
@@ -182,7 +186,7 @@ sub registeruser_GET {
 sub registeruser_POST {
     my ( $self, $c ) = @_;
 
-    my $is_admin = isAdmin($c);
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
 
@@ -197,14 +201,12 @@ sub registeruser_POST {
             };
         }
         else {
-
             $response =
-              Daedalus::Users::Manager::registerNewUser( $c,
-                $is_admin->{_hidden_data} );
+              Daedalus::Users::Manager::registerNewUser( $c, $is_admin );
         }
     }
 
-    return $self->status_ok( $c, entity => processResponse($response), );
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head2 confrimRegister
@@ -237,64 +239,6 @@ sub confrimRegister_POST {
 Common functions
 
 =cut
-
-=head2 processResponse
-
-Cleans _hidden_data field from responde, _hidden_data is not public
-
-=cut
-
-sub processResponse {
-    my $response = shift;
-    if ( exists $response->{_hidden_data} ) {
-        delete $response->{_hidden_data};
-    }
-    return $response;
-}
-
-=head2 authUser
-
-Determines if required user exists and its password match
-
-=cut
-
-sub authUser {
-
-    my $c = shift;
-
-    my $response = Daedalus::Users::Manager::authUserUsingModel(
-        {
-            request => $c->req,
-            model   => $c->model('CoreRealms::User'),
-        }
-    );
-
-    return $response;
-}
-
-=head2 isAdmin
-
-Determines if required is and admin user
-
-=cut
-
-sub isAdmin {
-    my $c = shift;
-
-    my $response;
-
-    # Check user
-    my $user_login_response = authUser($c);
-
-    if ( $user_login_response->{status} eq "Failed" ) {
-        $response = $user_login_response;
-    }
-    else {
-        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
-    }
-
-    return $response;
-}
 
 =encoding utf8
 
