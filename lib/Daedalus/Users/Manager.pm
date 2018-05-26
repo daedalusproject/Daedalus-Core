@@ -63,7 +63,6 @@ sub authUser {
     my $auth = $c->{request}->{data}->{auth};
 
     my $response;
-    $response->{data} => {};
 
     # Get user from model
     my $user =
@@ -220,6 +219,12 @@ sub isSuperAdminById {
 
 }
 
+=head2 registerNewUser
+
+Register a new user.
+
+=cut
+
 sub registerNewUser {
 
     my $c               = shift;
@@ -344,12 +349,69 @@ sub registerNewUser {
 
 }
 
+=head2 showRegisteredUsers
+
+Register a new user.
+
+=cut
+
+sub showRegisteredUsers {
+    my $c = shift;
+
+    my $response;
+
+    my $registrator_user_id = getUserId($c);
+
+    my $user_model = $c->model('CoreRealms::RegisteredUser');
+
+    my @array_registered_users =
+      $user_model->search( { registrator_user => $registrator_user_id } )
+      ->all();
+
+    my @users_array;
+    my $user;
+
+    for my $registered_user (@array_registered_users) {
+        $user = {
+            data => {
+                email    => $registered_user->registered_user->email,
+                name     => $registered_user->registered_user->name,
+                suename  => $registered_user->registered_user->surname,
+                active   => $registered_user->registered_user->active,
+                is_admin => $registered_user->registered_user->is_admin,
+            },
+            _hidden_data => {
+                id         => $registered_user->registered_user->id,
+                auth_token => $registered_user->registered_user->auth_token,
+            },
+        };
+        push @users_array, $user;
+    }
+    if ( !( isSuperAdminById( $c, $registrator_user_id ) ) ) {
+        for my $response_user (@users_array) {
+            delete $response_user->{_hidden_data};
+        }
+    }
+    $response->{registered_users} = \@users_array;
+
+    $response->{status} = 'Success';
+
+    return $response;
+}
+
+=head2 Get User id
+
+Get user id.
+
+=cut
+
 sub getUserId {
     my $c = shift;
 
     my $user_email = $c->{request}->{data}->{auth}->{email};
     my $user_model = $c->model('CoreRealms::User');
     my $user_id    = $user_model->find( { email => $user_email } )->id;
+
     return $user_id;
 }
 
