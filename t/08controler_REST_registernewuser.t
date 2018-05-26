@@ -314,4 +314,23 @@ is(
     'anotheradmin@daedalus-project.io',
 );
 
+my $inactive_user_cant_login = request(
+    POST '/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'inactiveuser@daedalus-project.io',
+                password => 'N0b0d7car5_;___',
+            },
+        }
+    )
+);
+
+my $inactive_user_cant_login_json =
+  decode_json( $inactive_user_cant_login->content );
+
+is( $inactive_user_cant_login_json->{status},  'Failed', );
+is( $inactive_user_cant_login_json->{message}, 'Wrong e-mail or password.', );
+
 done_testing();
