@@ -75,6 +75,7 @@ sub authUser {
                     $auth->{password}, $user->salt, $user->password
                 )
             )
+            || ( $user->active == 0 )
           )
         {
             $response->{status}  = 'Failed';
