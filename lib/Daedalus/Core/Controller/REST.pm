@@ -168,11 +168,11 @@ Admin users are able to create new users.
 
 =cut
 
-sub registeruser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
+sub registerNewUser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub registeruser_GET {
+sub registerNewUser_GET {
     my ( $self, $c ) = @_;
     return $self->status_ok(
         $c,
@@ -183,7 +183,7 @@ sub registeruser_GET {
     );
 }
 
-sub registeruser_POST {
+sub registerNewUser_POST {
     my ( $self, $c ) = @_;
 
     my $is_admin = Daedalus::Users::Manager::isAdmin($c);
@@ -204,6 +204,45 @@ sub registeruser_POST {
             $response =
               Daedalus::Users::Manager::registerNewUser( $c, $is_admin );
         }
+    }
+
+    return $self->status_ok( $c, entity => $response, );
+}
+
+=head2 showRegisteredUsers
+
+Admin users are able to view which users has been registered by them.
+
+=cut
+
+sub showRegisteredUsers : Path('/showmyregisteredusers') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub showRegisteredUsers_GET {
+    my ( $self, $c ) = @_;
+    return $self->status_ok(
+        $c,
+        entity => {
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
+        },
+    );
+}
+
+sub showRegisteredUsers_POST {
+    my ( $self, $c ) = @_;
+
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
+
+    my $response;
+
+    if ( $is_admin->{status} eq "Failed" ) {
+        $response = $is_admin;
+    }
+    else {
+        $response = Daedalus::Users::Manager::showRegisteredUsers($c);
     }
 
     return $self->status_ok( $c, entity => $response, );
