@@ -393,6 +393,9 @@ sub showRegisteredUsers {
         }
     }
     $response->{registered_users} = \@users_array;
+
+    $response->{status} = 'Success';
+
     return $response;
 }
 
