@@ -15,6 +15,7 @@ use Moose;
 use Email::Valid;
 use String::Random;
 use Digest::SHA qw(sha512_base64);
+use Daedalus::Utils::Crypt;
 use Data::Dumper;
 
 use namespace::clean -except => 'meta';
@@ -400,6 +401,73 @@ sub showRegisteredUsers {
     return $response;
 }
 
+=head2 confirmRegistration
+
+Check auth token and activates inactive users
+
+=cut
+
+sub confirmRegistration {
+    my $c = shift;
+
+    my $response = {
+        status  => 'Failed',
+        message => 'Invalid Auth Token.'
+    };
+
+    my $auth_data = $c->{request}->{data}->{auth};
+
+    if ($auth_data) {
+        if ( exists( $auth_data->{auth_token} ) ) {
+            my $auth_token = $auth_data->{auth_token};
+            if ( length($auth_token) == 63 ) {    # auth token lenght
+
+                #find user
+                my $user_model = $c->model('CoreRealms::User');
+                my $user       = $user_model->find(
+                    { active => 0, auth_token => $auth_token } );
+                if ($user) {
+                    if ( !( exists( $auth_data->{password} ) ) ) {
+                        $response->{message} =
+                          'Valid Auth Token found, enter your new password.';
+                    }
+                    else {
+                        my $password = $auth_data->{password};
+                        my $password_strenght =
+                          Daedalus::Utils::Crypt::checkPassword($password);
+                        if ( $password_strenght->{status} eq "Failed" ) {
+                            $response->{message} = 'Password is invalid.';
+                        }
+                        else {
+                            # Password is valid
+                            my $new_auth_token =
+                              Daedalus::Utils::Crypt::generateRandomString(64);
+                            my $new_salt =
+                              Daedalus::Utils::Crypt::generateRandomString(256);
+                            $password =
+                              Daedalus::Utils::Crypt::hashPassword( $password,
+                                $new_salt );
+
+                            $response->{status}  = 'Success';
+                            $response->{message} = 'Account activated.';
+
+                            $user->update(
+                                {
+                                    password   => $password,
+                                    salt       => $new_salt,
+                                    auth_token => $new_auth_token,
+                                    active     => 1
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return $response;
+}
+
 =head2 Get User id
 
 Get user id.
@@ -415,6 +483,18 @@ sub getUserId {
 
     return $user_id;
 }
+
+=encoding utf8
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
+
+=cut
 
 __PACKAGE__->meta->make_immutable;
 1;

@@ -4,7 +4,7 @@ package Daedalus::Utils::Responses;
 =encoding UTF-8
 =head1 NAME
 
-Daedalus::Core::Users::Manager
+Daedalus::Core::Utils::Responsesr
 
 =cut
 
@@ -17,12 +17,6 @@ use Data::Dumper;
 
 use namespace::clean -except => 'meta';
 
-=head1 NAME
-
-Daedalus::Utils::Responses
-
-=cut
-
 =head1 DESCRIPTION
 
 Daedalus Utils for manageing responses.
@@ -33,8 +27,7 @@ Daedalus Utils for manageing responses.
 
 =head2
 
-Checks user password, this methods receives submitted user,
-user salt and stored password.
+Returns response so far.
 
 =cut
 
@@ -42,12 +35,20 @@ sub processResponse {
     my $c        = shift;
     my $response = shift;
 
-    #if (Daedalus::Users::Manager::isSuperAdmin($c)){
-    #die "Super Admin";
-    #}
-    #die Dumper($response);
     return $response;
 }
+
+=encoding utf8
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
+
+=cut
 
 __PACKAGE__->meta->make_immutable;
 1;
