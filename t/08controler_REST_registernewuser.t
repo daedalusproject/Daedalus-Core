@@ -32,7 +32,7 @@ is( $failed_because_no_auth_json->{status},
 is(
     $failed_because_no_auth_json->{message},
     'Wrong e-mail or password.',
-    'A valid e-mail password mut be provided.'
+    'A valid e-mail password must be provided.'
 );
 
 my $failed_no_admin = request(
