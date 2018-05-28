@@ -13,8 +13,6 @@ use warnings;
 use Moose;
 
 use Email::Valid;
-use String::Random;
-use Digest::SHA qw(sha512_base64);
 use Daedalus::Utils::Crypt;
 use Data::Dumper;
 
@@ -47,7 +45,8 @@ sub check_user_passwrd {
     my $user_salt          = shift;
     my $user_password      = shift;
 
-    my $password = sha512_base64("$user_salt$submitted_password");
+    my $password =
+      Daedalus::Utils::Crypt::hashPassword( $submitted_password, $user_salt );
 
     return $password eq $user_password;
 }
@@ -287,18 +286,14 @@ sub registerNewUser {
                 }
 
                 # Create a user
-                my $pass     = new String::Random;
-                my $patern32 = 'sssssssssssssssssssssssssssssss';
-                my $patern64 =
-'sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss';
-                my $patern256 =
-'sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss';
-
-                my $api_key    = $pass->randpattern($patern32);
-                my $auth_token = $pass->randpattern($patern64);
-                my $salt       = $pass->randpattern($patern256);
-                my $password   = $pass->randpattern($patern256);
-                $password = sha512_base64("$salt$password");
+                my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
+                my $auth_token =
+                  Daedalus::Utils::Crypt::generateRandomString(64);
+                my $salt = Daedalus::Utils::Crypt::generateRandomString(256);
+                my $password =
+                  Daedalus::Utils::Crypt::generateRandomString(256);
+                $password =
+                  Daedalus::Utils::Crypt::hashPassword( $password, $salt );
 
                 my $registered_user = $user_model->create(
                     {
