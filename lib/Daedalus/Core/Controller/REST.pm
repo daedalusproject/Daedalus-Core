@@ -254,23 +254,29 @@ Receives Auth token, if that token is owned by unactive user, user is registered
 
 =cut
 
-sub confrimRegister : Path('/confirmuserregistration') : Args(1) :
+sub confrimRegister : Path('/confirmregistration') : Args(0) :
   ActionClass('REST') {
-    my ( $self, $c, $auth_token ) = @_;
-    my ( $status, @user_info ) =
-      Daedalus::Core::Controller::UserController->confirmUserRegistration( $c,
-        $auth_token );
-    die("Stop");
+    my ( $self, $c ) = @_;
 }
 
-sub confrimRegister_POST {
+sub confrimRegister_GET {
     my ( $self, $c ) = @_;
     return $self->status_ok(
         $c,
         entity => {
-            status => "pong",
+            status  => 'Failed',
+            message => 'This method does not support GET requests.',
         },
     );
+}
+
+sub confrimRegister_POST {
+    my ( $self, $c ) = @_;
+    my $response;
+
+    $response = Daedalus::Users::Manager::confirmRegistration($c);
+
+    return $self->status_ok( $c, entity => $response, );
 }
 
 =head1 Common functions

@@ -31,8 +31,8 @@ is( $failed_because_no_auth_token_json->{status},
     'Failed', 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_token_json->{message},
-    'Wrong e-mail or password.',
-    'A valid e-mail password must be provided.'
+    'Invalid Auth Token.',
+    'There no auth data.'
 );
 
 my $failed_short_auth_token = request(
@@ -65,7 +65,7 @@ my $failed_invalid_auth_token = request(
         {
             auth => {
                 auth_token =>
-'w8DGLY.jzMy4QrPqdl./6WOKvOhEC8T9leuNbSOVle3Zl6/Zd./m1yJMhHmnwH.',
+'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5_',
             }
         }
     )
@@ -89,7 +89,7 @@ my $failed_valid_auth_token_no_password = request(
         {
             auth => {
                 auth_token =>
-'w8DGLY.jzMy4QrPqdl./6WOKvOhEC8T9leuNbSOVle3Zl6/Zd./m1yJMhHmnwHW',
+'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
             }
         }
     )
@@ -113,7 +113,7 @@ my $failed_valid_auth_token_short_password = request(
         {
             auth => {
                 auth_token =>
-'w8DGLY.jzMy4QrPqdl./6WOKvOhEC8T9leuNbSOVle3Zl6/Zd./m1yJMhHmnwHW',
+'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
                 password => 'pass',
             }
         }
@@ -138,7 +138,7 @@ my $failed_valid_auth_token_password_no_diverse = request(
         {
             auth => {
                 auth_token =>
-'w8DGLY.jzMy4QrPqdl./6WOKvOhEC8T9leuNbSOVle3Zl6/Zd./m1yJMhHmnwHW',
+'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
                 password => 'passwordddddddddddddd',
             }
         }
@@ -163,7 +163,7 @@ my $success_valid_auth_token_and_password = request(
         {
             auth => {
                 auth_token =>
-'w8DGLY.jzMy4QrPqdl./6WOKvOhEC8T9leuNbSOVle3Zl6/Zd./m1yJMhHmnwHW',
+'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
                 password => 'val1d_Pa55w0rd',
             }
         }
@@ -188,7 +188,7 @@ my $failed_account_activated_changed_auth_token = request(
         {
             auth => {
                 auth_token =>
-'w8DGLY.jzMy4QrPqdl./6WOKvOhEC8T9leuNbSOVle3Zl6/Zd./m1yJMhHmnwHW',
+'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
                 password => 'val1d_Pa55w0rd',
             }
         }
@@ -212,7 +212,7 @@ my $login_works = request(
     Content      => encode_json(
         {
             auth => {
-                email    => 'otheradmin@daedalus-project.io',
+                email    => 'inactiveuser@daedalus-project.io',
                 password => 'val1d_Pa55w0rd',
             }
         }

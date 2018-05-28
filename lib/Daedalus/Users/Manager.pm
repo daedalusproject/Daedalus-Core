@@ -400,6 +400,37 @@ sub showRegisteredUsers {
     return $response;
 }
 
+=head2 confirmRegistration
+
+Check auth token and activates inactive users
+
+=cut
+
+sub confirmRegistration {
+    my $c = shift;
+
+    my $response = {
+        status  => 'Failed',
+        message => 'Invalid Auth Token.'
+    };
+
+    my $auth_data = $c->{request}->{data}->{auth};
+
+    if ($auth_data) {
+        my $auth_token = $auth_data->{auth_token};
+        if ( exists($auth_token) ) {
+            if ( length($auth_token) == 63 ) {    # auth token lenght
+
+                #find user
+                my $user_model = $c->model('CoreRealms::User');
+                my $user       = $user_model->find(
+                    { active => 0, auth_token => $auth_token } );
+            }
+        }
+    }
+    return $response;
+}
+
 =head2 Get User id
 
 Get user id.
@@ -415,6 +446,18 @@ sub getUserId {
 
     return $user_id;
 }
+
+=encoding utf8
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
+
+=cut
 
 __PACKAGE__->meta->make_immutable;
 1;
