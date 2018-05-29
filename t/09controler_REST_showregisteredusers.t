@@ -75,10 +75,14 @@ my $admin_admin_two_users_json = decode_json( $admin_admin_two_users->content );
 
 is( $admin_admin_two_users_json->{status}, 'Success',
     'Status success, admin.' );
-is( @{ $admin_admin_two_users_json->{registered_users} },
+is( keys %{ $admin_admin_two_users_json->{registered_users} },
     2, 'admin@daedalus-project.io has 2 users registered' );
-ok( @{ $admin_admin_two_users_json->{registered_users} }[0]->{_hidden_data},
-    'admin@daedalus-project.io is super admin.' );
+ok(
+    $admin_admin_two_users_json->{registered_users}
+      { ( keys %{ $admin_admin_two_users_json->{registered_users} } )[0] }
+      ->{_hidden_data},
+    'admin@daedalus-project.io is super admin.'
+);
 
 my $anotheradmin_admin_zero_users = request(
     POST '/showmyregisteredusers',
@@ -98,7 +102,7 @@ my $anotheradmin_admin_zero_users_json =
 
 is( $anotheradmin_admin_zero_users_json->{status},
     'Success', 'Status success, andmin.' );
-is( @{ $anotheradmin_admin_zero_users_json->{registered_users} },
+is( keys %{ $anotheradmin_admin_zero_users_json->{registered_users} },
     0, 'adminagain@daedalus-project.io has 0 users registered' );
 
 my $admin_admin_one_user = request(
@@ -117,10 +121,12 @@ my $admin_admin_one_user = request(
 my $admin_admin_one_user_json = decode_json( $admin_admin_one_user->content );
 
 is( $admin_admin_one_user_json->{status}, 'Success', 'Status success, admin.' );
-is( @{ $admin_admin_one_user_json->{registered_users} },
+is( keys %{ $admin_admin_one_user_json->{registered_users} },
     1, 'yetanotheradmin@daedalus-project.io has 1 user registered' );
 isnt(
-    @{ $admin_admin_one_user_json->{registered_users} }[0]->{_hidden_data},
+    $admin_admin_two_users_json->{registered_users}
+      { ( keys %{ $admin_admin_two_users_json->{registered_users} } )[0] }
+      ->{_hidden_data},
     'yetanotheradmin@daedalus-project.io is not super admin.'
 );
 

@@ -365,7 +365,7 @@ sub showRegisteredUsers {
       $user_model->search( { registrator_user => $registrator_user_id } )
       ->all();
 
-    my @users_array;
+    my $users = {};
     my $user;
 
     for my $registered_user (@array_registered_users) {
@@ -373,7 +373,7 @@ sub showRegisteredUsers {
             data => {
                 email    => $registered_user->registered_user->email,
                 name     => $registered_user->registered_user->name,
-                suename  => $registered_user->registered_user->surname,
+                surname  => $registered_user->registered_user->surname,
                 active   => $registered_user->registered_user->active,
                 is_admin => $registered_user->registered_user->is_admin,
             },
@@ -382,14 +382,15 @@ sub showRegisteredUsers {
                 auth_token => $registered_user->registered_user->auth_token,
             },
         };
-        push @users_array, $user;
+        $users->{ $user->{data}->{email} } = $user;
     }
+
     if ( !( isSuperAdminById( $c, $registrator_user_id ) ) ) {
-        for my $response_user (@users_array) {
-            delete $response_user->{_hidden_data};
+        foreach my $userkey ( keys %{$users} ) {
+            delete $users->{$userkey}->{_hidden_data};
         }
     }
-    $response->{registered_users} = \@users_array;
+    $response->{registered_users} = $users;
 
     $response->{status} = 'Success';
 
