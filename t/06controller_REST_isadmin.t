@@ -89,10 +89,37 @@ my $imadmin_post_success = request(
 
 my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 
-is( $imadmin_post_success_json->{status},  'Success', );
-is( $imadmin_post_success_json->{message}, 'You are an admin user.', );
-is( $imadmin_post_success_json->{imadmin}, 'True', );
-isnt( $imadmin_post_success_json->{_hidden_data}, undef, );
+is( $imadmin_post_success_json->{status},          'Success', );
+is( $imadmin_post_success_json->{message},         'You are an admin user.', );
+is( $imadmin_post_success_json->{data}->{imadmin}, 1, );
+isnt(
+    $imadmin_post_success_json->{_hidden_data},
+    'Only super admin users receive hidden data'
+);
+
+my $imadmin_post_success_other_admin = request(
+    POST '/imadmin',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+my $imadmin_post_success_other_admin_json =
+  decode_json( $imadmin_post_success_other_admin->content );
+
+is( $imadmin_post_success_other_admin_json->{status}, 'Success', );
+is(
+    $imadmin_post_success_other_admin_json->{message},
+    'You are an admin user.',
+);
+is( $imadmin_post_success_other_admin_json->{data}->{imadmin}, 1, );
+isnt( $imadmin_post_success_other_admin_json->{_hidden_data}, undef, );
 
 my $imadmin_post_failed_no_admin = request(
     POST '/imadmin',
@@ -115,6 +142,10 @@ is(
     $imadmin_post_failed_no_admin_json->{message},
     'You are not an admin user.',
 );
-is( $imadmin_post_failed_no_admin_json->{imadmin}, 'False', );
+is( $imadmin_post_failed_no_admin_json->{data}->{imadmin}, 0, );
+isnt(
+    $imadmin_post_failed_no_admin_json->{_hidden_data},
+    'Only super admin users receive hidden data'
+);
 
 done_testing();

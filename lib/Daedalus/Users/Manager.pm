@@ -128,24 +128,27 @@ sub isAdmin {
     }
     else {
         $response = {
-            status       => "Failed",
-            message      => "You are not an admin user.",
-            imadmin      => "False",
-            _hidden_data => $user_auth->{_hidden_data},
+            status  => "Failed",
+            message => "You are not an admin user.",
+            data    => { imadmin => 0 },
         };
+
+        if ( exists $user_auth->{_hidden_data} ) {
+            $response->{_hidden_data} = $user_auth->{_hidden_data};
+        }
 
         # Check if logged user is admin
         if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
-            $response->{status}  = "Success";
-            $response->{message} = "You are an admin user.";
-            $response->{imadmin} = 'True',;
+            $response->{status}          = "Success";
+            $response->{message}         = "You are an admin user.";
+            $response->{data}->{imadmin} = 1;
         }
     }
     return $response;
 
 }
 
-=head2 isSuperAdminBy
+=head2 isSuperAdmin
 
 Return if required user belongs to a group with 'daedalus_manager'role
 
