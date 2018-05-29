@@ -130,7 +130,7 @@ sub isAdmin {
         $response = {
             status  => "Failed",
             message => "You are not an admin user.",
-            imadmin => "False",
+            data    => { imadmin => 0 },
         };
 
         if ( exists $user_auth->{_hidden_data} ) {
@@ -139,9 +139,9 @@ sub isAdmin {
 
         # Check if logged user is admin
         if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
-            $response->{status}  = "Success";
-            $response->{message} = "You are an admin user.";
-            $response->{imadmin} = 'True',;
+            $response->{status}          = "Success";
+            $response->{message}         = "You are an admin user.";
+            $response->{data}->{imadmin} = 1;
         }
     }
     return $response;

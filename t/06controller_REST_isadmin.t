@@ -91,9 +91,9 @@ my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 
 is( $imadmin_post_success_json->{status},          'Success', );
 is( $imadmin_post_success_json->{message},         'You are an admin user.', );
-is( $imadmin_post_success_json->{data}->{imadmin}, 'True', );
+is( $imadmin_post_success_json->{data}->{imadmin}, 1, );
 isnt(
-    $imadmin_post_failed_no_admin_json->{_hidden_data},
+    $imadmin_post_success_json->{_hidden_data},
     'Only super admin users receive hidden data'
 );
 
@@ -118,7 +118,7 @@ is(
     $imadmin_post_success_other_admin_json->{message},
     'You are an admin user.',
 );
-is( $imadmin_post_success_other_admin_json->{data}->{imadmin}, 'True', );
+is( $imadmin_post_success_other_admin_json->{data}->{imadmin}, 1, );
 isnt( $imadmin_post_success_other_admin_json->{_hidden_data}, undef, );
 
 my $imadmin_post_failed_no_admin = request(
@@ -142,7 +142,7 @@ is(
     $imadmin_post_failed_no_admin_json->{message},
     'You are not an admin user.',
 );
-is( $imadmin_post_failed_no_admin_json->{data}->{imadmin}, 'False', );
+is( $imadmin_post_failed_no_admin_json->{data}->{imadmin}, 0, );
 isnt(
     $imadmin_post_failed_no_admin_json->{_hidden_data},
     'Only super admin users receive hidden data'
