@@ -81,7 +81,33 @@ is_deeply(
     }
 );
 
-my $login_post_success = request(
+my $login_non_admin_post_success = request(
+    POST '/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'notanadmin@daedalus-project.io',
+                password => 'Test_is_th1s_123',
+            }
+        }
+    )
+);
+
+my $login_non_admin_post_success_json =
+  decode_json( $login_non_admin_post_success->content );
+
+is( $login_non_admin_post_success_json->{status},  'Success', );
+is( $login_non_admin_post_success_json->{message}, 'Auth Successful.', );
+is(
+    $login_non_admin_post_success_json->{data}->{user}->{email},
+    'notanadmin@daedalus-project.io',
+);
+is( $login_non_admin_post_success_json->{data}->{user}->{is_admin}, 0, );
+is( $login_non_admin_post_success_json->{_hidden_data},
+    undef, 'Non admin users do no receive hidden data' );
+
+my $login_admin_post_success = request(
     POST '/login',
     Content_Type => 'application/json',
     Content      => encode_json(
@@ -94,8 +120,15 @@ my $login_post_success = request(
     )
 );
 
-my $login_post_success_json = decode_json( $login_post_success->content );
+my $login_admin_post_success_json =
+  decode_json( $login_admin_post_success->content );
 
-is_deeply( $login_post_success_json->{status}, 'Success', );
+is( $login_admin_post_success_json->{status},  'Success', );
+is( $login_admin_post_success_json->{message}, 'Auth Successful.', );
+is( $login_admin_post_success_json->{data}->{user}->{email},
+    'admin@daedalus-project.io', );
+is( $login_admin_post_success_json->{data}->{user}->{is_admin}, 1, );
+isnt( $login_admin_post_success_json->{_hidden_data},
+    undef, 'Admin users receive hidden data' );
 
 done_testing();

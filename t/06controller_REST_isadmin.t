@@ -92,6 +92,7 @@ my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 is( $imadmin_post_success_json->{status},  'Success', );
 is( $imadmin_post_success_json->{message}, 'You are an admin user.', );
 is( $imadmin_post_success_json->{imadmin}, 'True', );
+isnt( $imadmin_post_success_json->{_hidden_data}, undef, );
 
 my $imadmin_post_failed_no_admin = request(
     POST '/imadmin',

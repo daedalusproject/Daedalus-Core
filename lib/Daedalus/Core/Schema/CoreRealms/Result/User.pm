@@ -267,6 +267,36 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
+=head2 registered_users_registered_users
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser>
+
+=cut
+
+__PACKAGE__->has_many(
+    "registered_users_registered_users",
+    "Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser",
+    { "foreign.registered_user" => "self.id" },
+    { cascade_copy              => 0, cascade_delete => 0 },
+);
+
+=head2 registered_users_registrator_users
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser>
+
+=cut
+
+__PACKAGE__->has_many(
+    "registered_users_registrator_users",
+    "Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser",
+    { "foreign.registrator_user" => "self.id" },
+    { cascade_copy               => 0, cascade_delete => 0 },
+);
+
 =head2 user_organizations
 
 Type: has_many
@@ -282,8 +312,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-21 18:58:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DsdlYjGdZU3ct+KcHSQAmw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-05-24 06:56:11
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aDVVIkaBZMvPeSeHuH2L+g
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
