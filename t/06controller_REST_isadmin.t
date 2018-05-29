@@ -116,5 +116,7 @@ is(
     'You are not an admin user.',
 );
 is( $imadmin_post_failed_no_admin_json->{imadmin}, 'False', );
+isnt( $imadmin_post_failed_no_admin_json->{_hidden_data},
+    'Only admin users receive hidden data' );
 
 done_testing();
