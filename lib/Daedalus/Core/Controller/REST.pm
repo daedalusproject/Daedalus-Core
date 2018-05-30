@@ -155,7 +155,7 @@ sub createOrganization_POST {
 
             $response =
               Daedalus::Organizations::Manager::createOrganization( $c,
-                $is_admin->{_hidden_data}->{user} );
+                $is_admin );
         }
     }
 

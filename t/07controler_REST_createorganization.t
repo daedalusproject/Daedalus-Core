@@ -163,4 +163,30 @@ is(
     'Duplicated organization name.',
 );
 
+my $correct_data_admin_not_superadmin = request(
+    POST '/createorganization',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'yetanotheradmin@daedalus-project.io',
+                password => 'Is a Password_1234',
+            },
+            organization_data => {
+                'name' => 'Cloudmaker',
+            },
+        }
+    )
+);
+
+my $correct_data_admin_not_superadmin_json =
+  decode_json( $correct_data_admin_not_superadmin->content );
+
+is( $correct_data_admin_not_superadmin_json->{status}, 'Success', );
+is(
+    $correct_data_admin_not_superadmin_json->{message},
+    'Organization created.',
+);
+is( $correct_data_admin_not_superadmin_json->{_hidden_data}, undef, );
+
 done_testing();
