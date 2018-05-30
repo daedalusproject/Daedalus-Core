@@ -374,18 +374,22 @@ sub showRegisteredUsers {
     for my $registered_user (@array_registered_users) {
         $user = {
             data => {
-                email    => $registered_user->registered_user->email,
-                name     => $registered_user->registered_user->name,
-                surname  => $registered_user->registered_user->surname,
-                active   => $registered_user->registered_user->active,
-                is_admin => $registered_user->registered_user->is_admin,
+                user => {
+                    email    => $registered_user->registered_user->email,
+                    name     => $registered_user->registered_user->name,
+                    surname  => $registered_user->registered_user->surname,
+                    active   => $registered_user->registered_user->active,
+                    is_admin => $registered_user->registered_user->is_admin,
+                },
             },
             _hidden_data => {
-                id         => $registered_user->registered_user->id,
-                auth_token => $registered_user->registered_user->auth_token,
+                user => {
+                    id         => $registered_user->registered_user->id,
+                    auth_token => $registered_user->registered_user->auth_token,
+                },
             },
         };
-        $users->{ $user->{data}->{email} } = $user;
+        $users->{ $user->{data}->{user}->{email} } = $user;
     }
 
     if ( !( isSuperAdminById( $c, $registrator_user_id ) ) ) {
