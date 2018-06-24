@@ -41,13 +41,6 @@ __PACKAGE__->table("registered_users");
 
 =head1 ACCESSORS
 
-=head2 id
-
-  data_type: 'integer'
-  extra: {unsigned => 1}
-  is_auto_increment: 1
-  is_nullable: 0
-
 =head2 registered_user
 
   data_type: 'bigint'
@@ -71,13 +64,6 @@ __PACKAGE__->table("registered_users");
 =cut
 
 __PACKAGE__->add_columns(
-    "id",
-    {
-        data_type         => "integer",
-        extra             => { unsigned => 1 },
-        is_auto_increment => 1,
-        is_nullable       => 0,
-    },
     "registered_user",
     {
         data_type      => "bigint",
@@ -104,13 +90,15 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</id>
+=item * L</registered_user>
+
+=item * L</registrator_user>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key( "registered_user", "registrator_user" );
 
 =head1 RELATIONS
 
@@ -144,8 +132,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-06-24 19:22:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pgefYD9E8SzWn92EhRSRkA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-06-24 19:43:24
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+kMz3bw8bm4dGmeNky+fbA
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
