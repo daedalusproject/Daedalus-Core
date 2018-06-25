@@ -41,13 +41,6 @@ __PACKAGE__->table("organization_share_project_roles");
 
 =head1 ACCESSORS
 
-=head2 id
-
-  data_type: 'bigint'
-  extra: {unsigned => 1}
-  is_auto_increment: 1
-  is_nullable: 0
-
 =head2 organization_share_project
 
   data_type: 'bigint'
@@ -71,13 +64,6 @@ __PACKAGE__->table("organization_share_project_roles");
 =cut
 
 __PACKAGE__->add_columns(
-    "id",
-    {
-        data_type         => "bigint",
-        extra             => { unsigned => 1 },
-        is_auto_increment => 1,
-        is_nullable       => 0,
-    },
     "organization_share_project",
     {
         data_type      => "bigint",
@@ -104,13 +90,15 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</id>
+=item * L</organization_share_project>
+
+=item * L</role_id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key( "organization_share_project", "role_id" );
 
 =head1 RELATIONS
 
@@ -144,8 +132,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-06-24 19:49:26
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:a/YTnK18GIgXUH8NvS9Hew
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-06-25 06:10:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oFzm9R7VaEUBcdU4V45dtw
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
