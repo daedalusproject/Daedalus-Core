@@ -1,5 +1,4 @@
 requires 'Devel::Cover::Report::Codecov', 0.22;
-requires 'Catalyst::Authentication::Credential::HTTP';
 requires 'Catalyst::Controller::REST';
 requires 'DBIx::Class::EncodedColumn';
 requires 'Module::Install::Catalyst';
