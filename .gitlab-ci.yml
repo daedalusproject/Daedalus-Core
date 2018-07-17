@@ -10,7 +10,7 @@ unit_tests:
         - apt-get install -y libcatalyst-perl libcatalyst-plugin-configloader-perl libcatalyst-plugin-static-simple-perl libcatalyst-action-renderview-perl libcatalyst-view-tt-perl libcatalyst-view-json-perl libcatalyst-plugin-unicode-perl libcatalyst-plugin-authentication-perl libcatalyst-plugin-authorization-roles-perl libdbix-class-encodedcolumn-perl libmoose-perl libmoosex-nonmoose-perl libconfig-general-perl libcatalyst-model-adaptor-perl libcatalyst-plugin-session-perl libcatalyst-plugin-session-state-cookie-perl libcatalyst-plugin-session-store-dbic-perl
     script:
         - perl --version
-        - cpanm --quiet --installdeps --notest .
+        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - rm -f /var/tmp/daedalus_core_realms.db
         - perl script/deploy.pl SQLite /var/tmp/daedalus_core_realms.db
         - perl t/script/populate_test_database.pl
