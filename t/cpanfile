@@ -1,4 +1,6 @@
 requires 'Devel::Cover::Report::Codecov', 0.22;
+requires 'Catalyst::Plugin::Session::Store::FastMmap';
+requires 'Catalyst::Authentication::Store::DBIx::Class';
 requires 'Catalyst::Controller::REST';
 requires 'DBIx::Class::EncodedColumn';
 requires 'Module::Install::Catalyst';
@@ -7,7 +9,6 @@ requires 'Catalyst::Controller::FormBuilder';
 requires 'Catalyst::Plugin::Session';
 requires 'Catalyst::Plugin::Session::State::Cookie';
 requires 'Catalyst::Plugin::Session::Store::DBIC';
-requires 'Text::CSV_XS';
 requires 'Config::ZOMG';
 requires 'Catalyst::Helper::Model::DBI';
 requires 'DBIx::Class::TimeStamp';
