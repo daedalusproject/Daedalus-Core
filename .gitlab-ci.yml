@@ -7,7 +7,7 @@ unit_tests:
     stage: test
     before_script:
         - apt-get update -qq && apt-get install -y gcc make cpanminus sqlite3 wget
-        - apt-get install -y libcatalyst-perl libcatalyst-plugin-configloader-perl libcatalyst-plugin-static-simple-perl libcatalyst-action-renderview-perl libcatalyst-view-tt-perl libcatalyst-view-json-perl libcatalyst-plugin-unicode-perl libcatalyst-plugin-authentication-perl libcatalyst-plugin-authorization-roles-perl libdbix-class-encodedcolumn-perl libmoose-perl libmoosex-nonmoose-perl libconfig-general-perl libcatalyst-model-adaptor-perl libcatalyst-plugin-session-perl libcatalyst-plugin-session-state-cookie-perl libcatalyst-plugin-session-store-dbic-perl
+        - apt-get install -y libcatalyst-perl libcatalyst-plugin-configloader-perl libcatalyst-plugin-static-simple-perl libcatalyst-action-renderview-perl libcatalyst-view-tt-perl libcatalyst-view-json-perl libcatalyst-plugin-unicode-perl libcatalyst-plugin-authentication-perl libcatalyst-plugin-authorization-roles-perl libnamespace-autoclean-perl libmoose-perl libmoosex-nonmoose-perl libconfig-general-perl libcatalyst-model-adaptor-perl 
     script:
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
