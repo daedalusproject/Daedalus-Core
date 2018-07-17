@@ -1,0 +1,19 @@
+requires 'Module::Install::Catalyst';
+requires 'Text::CSV_XS';
+requires 'Config::ZOMG';
+requires 'Catalyst::Plugin::Authentication';
+requires 'Catalyst::Helper::Model::DBI';
+requires 'DBIx::Class::TimeStamp';
+requires 'DBIx::Class::Validation';
+requires 'Term::ReadKey';
+requires 'String::Random';
+requires 'Data::Password::Check';
+
+recommends 'Pod::Usage';
+
+on test => sub {
+    requires 'Test::More',       1.302120;
+    requires 'Test::Class',      0.50;
+    requires 'Test::MockModule', 0.13;
+    requires 'Devel::Mutator',   0.03;
+};
