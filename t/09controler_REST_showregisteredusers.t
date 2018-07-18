@@ -9,14 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 
 my $show_my_registered_users_GET_content = get('/showmyregisteredusers');
-
-is_deeply(
-    decode_json($show_my_registered_users_GET_content),
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $show_my_registered_users_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
     POST '/showmyregisteredusers',

@@ -15,16 +15,8 @@ use Data::Dumper;
 
 ## GET
 
-my $imadmin_get_content      = get('/imadmin');
-my $imadmin_get_content_json = decode_json($imadmin_get_content);
-
-is_deeply(
-    $imadmin_get_content_json,
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+my $imadmin_get_content = get('/imadmin');
+ok( $imadmin_get_content, qr /Method GET not implemented/ );
 
 my $failed_imadmin_user_post_content = request(
     POST '/imadmin',

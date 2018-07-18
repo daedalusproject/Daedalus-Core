@@ -9,14 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 
 my $confirm_registration_GET_content = get('/confirmregistration');
-
-is_deeply(
-    decode_json($confirm_registration_GET_content),
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $confirm_registration_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth_token = request(
     POST '/confirmregistration',

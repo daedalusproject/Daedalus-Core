@@ -82,17 +82,6 @@ sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub imAdmin_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
@@ -109,18 +98,6 @@ Create Organization
 sub createOrganization : Path('/createorganization') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
-}
-
-sub createOrganization_GET {
-    my ( $self, $c ) = @_;
-
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
 }
 
 sub createOrganization_POST {
@@ -161,17 +138,6 @@ sub registerNewUser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub registerNewUser_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub registerNewUser_POST {
     my ( $self, $c ) = @_;
 
@@ -209,17 +175,6 @@ sub showRegisteredUsers : Path('/showmyregisteredusers') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub showRegisteredUsers_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub showRegisteredUsers_POST {
     my ( $self, $c ) = @_;
 
@@ -246,17 +201,6 @@ Receives Auth token, if that token is owned by unactive user, user is registered
 sub confrimRegister : Path('/confirmregistration') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
-}
-
-sub confrimRegister_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
 }
 
 sub confrimRegister_POST {
