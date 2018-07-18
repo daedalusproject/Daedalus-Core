@@ -1,4 +1,4 @@
-image: acastellano/cirunnerbionic
+image: acastellano/cirunnerdaedaluscore
 
 stages:
     - test
