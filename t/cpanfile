@@ -1,5 +1,4 @@
 requires 'Devel::Cover::Report::Codecov', 0.22;
-requires 'Module::Install::Catalyst';
 requires 'Catalyst::Plugin::Session';
 requires 'Catalyst::Plugin::Session::State::Cookie';
 requires 'Catalyst::Plugin::Session::Store::DBIC';
