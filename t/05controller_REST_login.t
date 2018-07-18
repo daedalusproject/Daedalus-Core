@@ -22,16 +22,9 @@ is_deeply( $ping_content->{'status'}, 'pong' );
 
 ## GET
 
-my $login_get_content      = get('/login');
-my $login_get_content_json = decode_json($login_get_content);
+my $login_get_content = get('/login');
 
-is_deeply(
-    $login_get_content_json,
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $login_get_content, qr /Method GET not implemented/ );
 
 my $failed_login_user_post_content = request(
     POST '/login',

@@ -64,17 +64,6 @@ sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub loginUser_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
