@@ -69,7 +69,13 @@ sub loginUser_POST {
 
     my $response = Daedalus::Users::Manager::authUser($c);
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+        $response->{status} = 'Success';
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        $self->status_forbidden( $c, message => $response->{message}, );
+    }
 }
 
 =head2 imAdmin

@@ -78,11 +78,11 @@ sub authUser {
             || ( $user->active == 0 )
           )
         {
-            $response->{status}  = 'Failed';
+            $response->{status}  = 0;
             $response->{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response->{status}  = 'Success';
+            $response->{status}  = 1;
             $response->{message} = 'Auth Successful.';
             $response->{data}    = {
                 'user' => {
@@ -104,7 +104,7 @@ sub authUser {
         }
     }
     else {
-        $response->{status}  = 'Failed';
+        $response->{status}  = 0;
         $response->{message} = 'Wrong e-mail or password.';
     }
     return $response;
