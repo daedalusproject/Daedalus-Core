@@ -174,7 +174,7 @@ sub isSuperAdmin {
     }
     if ( $find_by_user_id == 0 ) {
         my $user_admin_response = isAdmin($c);
-        if ( $user_admin_response->{status} eq "Success" ) {
+        if ( $user_admin_response->{status} ) {
             $is_super_admin = isSuperAdminById( $c,
                 $user_admin_response->{_hidden_data}->{user}->{id} );
         }
@@ -242,7 +242,7 @@ sub registerNewUser {
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
-    my $response = { status => "Success", message => "" };
+    my $response = { status => 1, message => "" };
 
     my $requested_user_data = $c->{request}->{data}->{new_user_data};
 
@@ -251,7 +251,7 @@ sub registerNewUser {
     # Check required data
     for my $data (@required_user_data) {
         if ( !( exists $requested_user_data->{$data} ) ) {
-            $response->{status} = "Failed";
+            $response->{status} = 0;
             $response->{message} .= "No $data supplied.";
         }
         else {
@@ -260,9 +260,9 @@ sub registerNewUser {
     }
 
     # Check if email is valid
-    if ( $response->{status} ne 'Failed' ) {
+    if ( $response->{status} != 0 ) {
         if ( !( Email::Valid->address( $requested_user_data->{email} ) ) ) {
-            $response->{status}  = "Failed";
+            $response->{status}  = 0;
             $response->{message} = "Provided e-mail is invalid.";
         }
         else {
@@ -272,7 +272,7 @@ sub registerNewUser {
             my $user =
               $user_model->find( { email => $requested_user_data->{email} } );
             if ($user) {
-                $response->{status} = "Failed";
+                $response->{status} = 0;
                 $response->{message} =
                   "There already exists a user using this e-mail.";
 
@@ -324,7 +324,7 @@ sub registerNewUser {
                     }
                 );
 
-                $response->{status} = "Success";
+                $response->{status} = 1;
 
                 if ( $requested_user_data->{is_admin} ) {
                     $response->{message} = "Admin user has been registered.";
@@ -399,7 +399,7 @@ sub showRegisteredUsers {
     }
     $response->{registered_users} = $users;
 
-    $response->{status} = 'Success';
+    $response->{status} = 1;
 
     return $response;
 }
@@ -414,7 +414,7 @@ sub confirmRegistration {
     my $c = shift;
 
     my $response = {
-        status  => 'Failed',
+        status  => 0,
         message => 'Invalid Auth Token.'
     };
 

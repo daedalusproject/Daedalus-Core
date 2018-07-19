@@ -93,7 +93,7 @@ sub imAdmin_POST {
     my $response = Daedalus::Users::Manager::isAdmin($c);
 
     if ( $response->{status} ) {
-        $response->{status} = 'Success';
+        $response->{status} = 1;
         $self->status_ok( $c, entity => $response, );
     }
     else {

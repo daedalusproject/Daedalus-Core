@@ -81,7 +81,7 @@ my $imadmin_post_success = request(
 
 my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 
-is( $imadmin_post_success_json->{status},          'Success', );
+is( $imadmin_post_success_json->{status},          1, );
 is( $imadmin_post_success_json->{message},         'You are an admin user.', );
 is( $imadmin_post_success_json->{data}->{imadmin}, 1, );
 isnt(
@@ -105,7 +105,7 @@ my $imadmin_post_success_other_admin = request(
 my $imadmin_post_success_other_admin_json =
   decode_json( $imadmin_post_success_other_admin->content );
 
-is( $imadmin_post_success_other_admin_json->{status}, 'Success', );
+is( $imadmin_post_success_other_admin_json->{status}, 1, );
 is(
     $imadmin_post_success_other_admin_json->{message},
     'You are an admin user.',
