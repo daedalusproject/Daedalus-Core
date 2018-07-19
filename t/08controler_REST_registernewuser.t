@@ -20,8 +20,7 @@ my $failed_because_no_auth = request(
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is( $failed_because_no_auth_json->{status},
-    'Failed', 'Status failed, no auth.' );
+is( $failed_because_no_auth_json->{status}, 0, 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_json->{message},
     'Wrong e-mail or password.',
@@ -43,8 +42,7 @@ my $failed_no_admin = request(
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status}, 'Failed',
-    'Status failed, not an andmin.' );
+is( $failed_no_admin_json->{status}, 0, 'Status failed, not an andmin.' );
 is(
     $failed_no_admin_json->{message},
     'You are not an admin user.',
@@ -323,7 +321,7 @@ my $inactive_user_cant_login = request(
 my $inactive_user_cant_login_json =
   decode_json( $inactive_user_cant_login->content );
 
-is( $inactive_user_cant_login_json->{status},  'Failed', );
+is( $inactive_user_cant_login_json->{status},  0, );
 is( $inactive_user_cant_login_json->{message}, 'Wrong e-mail or password.', );
 
 done_testing();

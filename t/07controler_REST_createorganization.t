@@ -23,7 +23,7 @@ my $failed_because_no_auth_json =
 is_deeply(
     $failed_because_no_auth_json,
     {
-        'status'  => 'Failed',
+        'status'  => '0',
         'message' => 'Wrong e-mail or password.',
     }
 );
@@ -43,7 +43,7 @@ my $failed_no_admin = request(
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status},  'Failed', );
+is( $failed_no_admin_json->{status},  0, );
 is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
 my $failed_no_data = request(
@@ -61,7 +61,7 @@ my $failed_no_data = request(
 
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status},  'Failed', );
+is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'Invalid organization data.', );
 
 my $success_extra_data = request(

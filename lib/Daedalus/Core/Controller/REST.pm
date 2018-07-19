@@ -120,13 +120,13 @@ sub createOrganization_POST {
 
     my $response;
 
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
     }
     else {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
             $response = {
-                status  => 'Failed',
+                status  => 0,
                 message => 'Invalid organization data.'
             };
         }
@@ -158,7 +158,7 @@ sub registerNewUser_POST {
 
     my $response;
 
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
     }
     else {
@@ -195,7 +195,7 @@ sub showRegisteredUsers_POST {
 
     my $response;
 
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
     }
     else {
