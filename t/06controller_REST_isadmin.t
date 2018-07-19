@@ -37,7 +37,7 @@ my $failed_imadmin_user_post_content_json =
 is_deeply(
     $failed_imadmin_user_post_content_json,
     {
-        'status'  => 'Failed',
+        'status'  => 0,
         'message' => 'Wrong e-mail or password.',
     }
 );
@@ -61,7 +61,7 @@ my $failed_imadmin_password_post_content_json =
 is_deeply(
     $failed_imadmin_password_post_content_json,
     {
-        'status'  => 'Failed',
+        'status'  => 0,
         'message' => 'Wrong e-mail or password.',
     }
 );
@@ -129,7 +129,7 @@ my $imadmin_post_failed_no_admin = request(
 my $imadmin_post_failed_no_admin_json =
   decode_json( $imadmin_post_failed_no_admin->content );
 
-is( $imadmin_post_failed_no_admin_json->{status}, 'Failed', );
+is( $imadmin_post_failed_no_admin->code(), 403, );
 is(
     $imadmin_post_failed_no_admin_json->{message},
     'You are not an admin user.',

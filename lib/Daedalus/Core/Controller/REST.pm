@@ -71,10 +71,10 @@ sub loginUser_POST {
 
     if ( $response->{status} ) {
         $response->{status} = 'Success';
-        return $self->status_ok( $c, entity => $response, );
+        $self->status_ok( $c, entity => $response, );
     }
     else {
-        $self->status_forbidden( $c, message => $response->{message}, );
+        $self->status_forbidden_entity( $c, entity => $response, );
     }
 }
 
@@ -91,8 +91,15 @@ sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c,
-        entity => Daedalus::Users::Manager::isAdmin($c) );
+    my $response = Daedalus::Users::Manager::isAdmin($c);
+
+    if ( $response->{status} ) {
+        $response->{status} = 'Success';
+        $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        $self->status_forbidden_entity( $c, entity => $response, );
+    }
 }
 
 =head2 createOrganization
@@ -223,6 +230,22 @@ sub confrimRegister_POST {
 Common functions
 
 =cut
+
+=head2 status_forbidden_entity
+
+Returns forbidden status using custom response based on controller $response
+
+=cut
+
+sub status_forbidden_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(403);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
 
 =encoding utf8
 

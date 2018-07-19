@@ -45,7 +45,8 @@ my $failed_login_user_post_content_json =
 is_deeply(
     $failed_login_user_post_content_json,
     {
-        'error' => 'Wrong e-mail or password.',
+        'status'  => 0,
+        'message' => 'Wrong e-mail or password.',
     }
 );
 
@@ -68,7 +69,8 @@ my $failed_login_password_post_content_json =
 is_deeply(
     $failed_login_password_post_content_json,
     {
-        'error' => 'Wrong e-mail or password.',
+        'status'  => 0,
+        'message' => 'Wrong e-mail or password.',
     }
 );
 

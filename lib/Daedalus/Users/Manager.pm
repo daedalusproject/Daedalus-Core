@@ -123,12 +123,12 @@ sub isAdmin {
     my $user_auth = authUser($c);
     my $response;
 
-    if ( $user_auth->{status} eq "Failed" ) {
+    if ( !$user_auth->{status} ) {
         $response = $user_auth;
     }
     else {
         $response = {
-            status  => "Failed",
+            status  => 0,
             message => "You are not an admin user.",
             data    => { imadmin => 0 },
         };
@@ -139,7 +139,7 @@ sub isAdmin {
 
         # Check if logged user is admin
         if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
-            $response->{status}          = "Success";
+            $response->{status}          = 1;
             $response->{message}         = "You are an admin user.";
             $response->{data}->{imadmin} = 1;
         }
