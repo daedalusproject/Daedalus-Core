@@ -90,7 +90,7 @@ my $login_non_admin_post_success = request(
 my $login_non_admin_post_success_json =
   decode_json( $login_non_admin_post_success->content );
 
-is( $login_non_admin_post_success_json->{status},  'Success', );
+is( $login_non_admin_post_success_json->{status},  1, );
 is( $login_non_admin_post_success_json->{message}, 'Auth Successful.', );
 is(
     $login_non_admin_post_success_json->{data}->{user}->{email},
@@ -116,7 +116,7 @@ my $login_admin_post_success = request(
 my $login_admin_post_success_json =
   decode_json( $login_admin_post_success->content );
 
-is( $login_admin_post_success_json->{status},  'Success', );
+is( $login_admin_post_success_json->{status},  1, );
 is( $login_admin_post_success_json->{message}, 'Auth Successful.', );
 is( $login_admin_post_success_json->{data}->{user}->{email},
     'admin@daedalus-project.io', );

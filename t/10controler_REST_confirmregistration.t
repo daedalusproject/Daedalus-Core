@@ -20,8 +20,8 @@ my $failed_because_no_auth_token = request(
 my $failed_because_no_auth_token_json =
   decode_json( $failed_because_no_auth_token->content );
 
-is( $failed_because_no_auth_token_json->{status},
-    'Failed', 'Status failed, no auth.' );
+is( $failed_because_no_auth_token_json->{status}, 0,
+    'Status failed, no auth.' );
 is(
     $failed_because_no_auth_token_json->{message},
     'Invalid Auth Token.',

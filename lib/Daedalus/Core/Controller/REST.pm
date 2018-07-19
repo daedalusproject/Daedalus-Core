@@ -70,7 +70,6 @@ sub loginUser_POST {
     my $response = Daedalus::Users::Manager::authUser($c);
 
     if ( $response->{status} ) {
-        $response->{status} = 'Success';
         $self->status_ok( $c, entity => $response, );
     }
     else {
