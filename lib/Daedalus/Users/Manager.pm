@@ -97,7 +97,7 @@ sub authUser {
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
 
-            # If user is superAdmin remove _hidden_data
+            # If user is not superAdmin remove _hidden_data
             if ( !isSuperAdmin( $c, $response ) ) {
                 delete $response->{_hidden_data};
             }
@@ -161,24 +161,28 @@ sub isSuperAdmin {
 
     my $is_super_admin = 0;
 
-    # Check-hidden_data;
-    my $find_by_user_id = 0;
-    if ( exists( $request->{_hidden_data} ) ) {
-        if ( exists( $request->{_hidden_data}->{user} ) ) {
-            $find_by_user_id = 1;
+  # Check-hidden_data;
+  #    my $find_by_user_id = 0;
+  #    if ( exists( $request->{_hidden_data} ) ) {
+  #        if ( exists( $request->{_hidden_data}->{user} ) ) {
+  #            $find_by_user_id = 1;
+  #
+  #            $is_super_admin =
+  #              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+  #
+  #        }
+  #    }
+  #    if ( $find_by_user_id == 0 ) {
+  #        my $user_admin_response = isAdmin($c);
+  #        if ( $user_admin_response->{status} ) {
+  #            $is_super_admin = isSuperAdminById( $c,
+  #                $user_admin_response->{_hidden_data}->{user}->{id} );
+  #        }
+  #    }
 
-            $is_super_admin =
-              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+    $is_super_admin =
+      isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
 
-        }
-    }
-    if ( $find_by_user_id == 0 ) {
-        my $user_admin_response = isAdmin($c);
-        if ( $user_admin_response->{status} ) {
-            $is_super_admin = isSuperAdminById( $c,
-                $user_admin_response->{_hidden_data}->{user}->{id} );
-        }
-    }
     return $is_super_admin;
 
 }
