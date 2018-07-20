@@ -213,12 +213,19 @@ sub showRegisteredUsers_POST {
 
     if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         $response = Daedalus::Users::Manager::showRegisteredUsers($c);
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =head2 confrimRegister
