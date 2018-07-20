@@ -64,7 +64,7 @@ my $failed_no_data = request(
 
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status}, 'Failed', 'There is no user data.' );
+is( $failed_no_data_json->{status}, 0, 'There is no user data.' );
 is(
     $failed_no_data_json->{message},
     'Invalid user data.',
@@ -87,7 +87,7 @@ my $failed_empty_data = request(
 
 my $failed_empty_data_json = decode_json( $failed_empty_data->content );
 
-is( $failed_empty_data_json->{status}, 'Failed', 'Nothing supplied' );
+is( $failed_empty_data_json->{status}, 0, 'Nothing supplied' );
 is(
     $failed_empty_data_json->{message},
     'No email supplied.No name supplied.No surname supplied.',
@@ -113,8 +113,7 @@ my $failed_no_email_no_surname = request(
 my $failed_no_email_no_surname_json =
   decode_json( $failed_no_email_no_surname->content );
 
-is( $failed_no_email_no_surname_json->{status},
-    'Failed', 'Only name is supplied' );
+is( $failed_no_email_no_surname_json->{status}, 0, 'Only name is supplied' );
 is(
     $failed_no_email_no_surname_json->{message},
     'No email supplied.No surname supplied.',
@@ -140,8 +139,7 @@ my $failed_no_name_no_surname = request(
 my $failed_no_name_no_surname_json =
   decode_json( $failed_no_name_no_surname->content );
 
-is( $failed_no_name_no_surname_json->{status},
-    'Failed', 'Only email is supplied' );
+is( $failed_no_name_no_surname_json->{status}, 0, 'Only email is supplied' );
 is(
     $failed_no_name_no_surname_json->{message},
     'No name supplied.No surname supplied.',
@@ -169,7 +167,7 @@ my $failed_invalid_email = request(
 
 my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
-is( $failed_invalid_email_json->{status}, 'Failed', 'E-mail is invalid.' );
+is( $failed_invalid_email_json->{status}, 0, 'E-mail is invalid.' );
 is(
     $failed_invalid_email_json->{message},
     'Provided e-mail is invalid.',
@@ -198,8 +196,7 @@ my $failed_duplicated_email = request(
 my $failed_duplicated_email_json =
   decode_json( $failed_duplicated_email->content );
 
-is( $failed_duplicated_email_json->{status}, 'Failed',
-    'E-mail is duplicated.' );
+is( $failed_duplicated_email_json->{status}, 0, 'E-mail is duplicated.' );
 is(
     $failed_duplicated_email_json->{message},
     'There already exists a user using this e-mail.',
@@ -227,7 +224,7 @@ my $success_not_admin = request(
 
 my $success_not_admin_json = decode_json( $success_not_admin->content );
 
-is( $success_not_admin_json->{status}, 'Success', 'User has been created.' );
+is( $success_not_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_not_admin_json->{message},
     'User has been registered.',
@@ -255,15 +252,12 @@ my $success_admin = request(
 
 my $success_admin_json = decode_json( $success_admin->content );
 
-is( $success_admin_json->{status}, 'Success', 'User has been created.' );
+is( $success_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_admin_json->{message},
     'Admin user has been registered.',
     'Admin user registered.'
 );
-
-#is( $success_superadmin_admin_json->{_hidden_data}->{user}->{email},
-#    'anotheradmin@daedalus-project.io', );
 
 my $success_superadmin_admin = request(
     POST '/registernewuser',
@@ -287,16 +281,14 @@ my $success_superadmin_admin = request(
 my $success_superadmin_admin_json =
   decode_json( $success_superadmin_admin->content );
 
-is( $success_superadmin_admin_json->{status},
-    'Success', 'User has been created.' );
+is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_superadmin_admin_json->{message},
     'Admin user has been registered.',
     'Admin user registered.'
 );
 
-is( $success_superadmin_admin_json->{status},
-    'Success', 'User has been created.' );
+is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
 
 # Only "daedalus_manager" users receives _hidden_data
 

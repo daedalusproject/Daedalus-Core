@@ -118,16 +118,19 @@ sub createOrganization_POST {
     my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
-
     if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
-            $response = {
-                status  => 0,
-                message => 'Invalid organization data.'
-            };
+            return $self->status_ok(
+                $c,
+                entity => {
+                    status  => 0,
+                    message => 'Invalid organization data.'
+                }
+            );
         }
         else {
 
@@ -137,7 +140,12 @@ sub createOrganization_POST {
         }
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+        $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        $self->status_ok( $c, entity => $response, );
+    }
 }
 
 =head2 registerNewUser
@@ -163,7 +171,7 @@ sub registerNewUser_POST {
     else {
         if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
             $response = {
-                status  => 'Failed',
+                status  => 0,
                 message => 'Invalid user data.'
             };
         }
@@ -242,6 +250,22 @@ sub status_forbidden_entity {
     my %p    = Params::Validate::validate( @_, { entity => 1, }, );
 
     $c->response->status(403);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
+
+=head2 status_bad_request_entity
+
+Returns bad requests status using custom response based on controller $response
+
+=cut
+
+sub status_bad_request_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(400);
     $self->_set_entity( $c, $p{'entity'} );
     return 1;
 }

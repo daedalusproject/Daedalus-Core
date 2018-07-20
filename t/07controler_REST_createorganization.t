@@ -83,7 +83,7 @@ my $success_extra_data = request(
 
 my $success_extra_data_json = decode_json( $success_extra_data->content );
 
-is( $success_extra_data_json->{status},  'Success', );
+is( $success_extra_data_json->{status},  1, );
 is( $success_extra_data_json->{message}, 'Organization created.', );
 
 my $correct_data = request(
@@ -104,7 +104,7 @@ my $correct_data = request(
 
 my $correct_data_json = decode_json( $correct_data->content );
 
-is( $correct_data_json->{status},  'Success', );
+is( $correct_data_json->{status},  1, );
 is( $correct_data_json->{message}, 'Organization created.', );
 isnt( $correct_data_json->{_hidden_data}, undef, );
 
@@ -127,7 +127,7 @@ my $duplicated_organization = request(
 my $duplicated_organization_json =
   decode_json( $duplicated_organization->content );
 
-is( $duplicated_organization_json->{status}, 'Failed', );
+is( $duplicated_organization_json->{status}, 0, );
 is( $duplicated_organization_json->{message}, 'Duplicated organization name.',
 );
 
@@ -150,7 +150,7 @@ my $duplicated_spaces_organization = request(
 my $duplicated_spaces_organization_json =
   decode_json( $duplicated_spaces_organization->content );
 
-is( $duplicated_spaces_organization_json->{status}, 'Failed', );
+is( $duplicated_spaces_organization_json->{status}, 0, );
 is(
     $duplicated_spaces_organization_json->{message},
     'Duplicated organization name.',
@@ -175,7 +175,7 @@ my $correct_data_admin_not_superadmin = request(
 my $correct_data_admin_not_superadmin_json =
   decode_json( $correct_data_admin_not_superadmin->content );
 
-is( $correct_data_admin_not_superadmin_json->{status}, 'Success', );
+is( $correct_data_admin_not_superadmin_json->{status}, 1, );
 is(
     $correct_data_admin_not_superadmin_json->{message},
     'Organization created.',

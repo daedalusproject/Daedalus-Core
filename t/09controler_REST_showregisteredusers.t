@@ -64,8 +64,7 @@ my $admin_admin_two_users = request(
 
 my $admin_admin_two_users_json = decode_json( $admin_admin_two_users->content );
 
-is( $admin_admin_two_users_json->{status}, 'Success',
-    'Status success, admin.' );
+is( $admin_admin_two_users_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_admin_two_users_json->{registered_users} },
     2, 'admin@daedalus-project.io has 2 users registered' );
 ok(
@@ -92,7 +91,7 @@ my $anotheradmin_admin_zero_users_json =
   decode_json( $anotheradmin_admin_zero_users->content );
 
 is( $anotheradmin_admin_zero_users_json->{status},
-    'Success', 'Status success, andmin.' );
+    1, 'Status success, andmin.' );
 is( keys %{ $anotheradmin_admin_zero_users_json->{registered_users} },
     0, 'adminagain@daedalus-project.io has 0 users registered' );
 
@@ -111,7 +110,7 @@ my $admin_admin_one_user = request(
 
 my $admin_admin_one_user_json = decode_json( $admin_admin_one_user->content );
 
-is( $admin_admin_one_user_json->{status}, 'Success', 'Status success, admin.' );
+is( $admin_admin_one_user_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_admin_one_user_json->{registered_users} },
     1, 'yetanotheradmin@daedalus-project.io has 1 user registered' );
 isnt(
