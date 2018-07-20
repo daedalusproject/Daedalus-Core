@@ -103,6 +103,13 @@ my $organization_group_role =
     }
   );
 
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $organization_group->id,
+        role_id  => $organization_master->id,
+    }
+);
+
 $schema->resultset('OrgaizationUsersGroup')->create(
     {
         group_id => $organization_group->id,
