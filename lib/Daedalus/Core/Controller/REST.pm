@@ -120,7 +120,7 @@ sub createOrganization_POST {
     my $response;
     if ( !$is_admin->{status} ) {
         $response = $is_admin;
-        $self->status_forbidden_entity( $c, entity => $response, );
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {

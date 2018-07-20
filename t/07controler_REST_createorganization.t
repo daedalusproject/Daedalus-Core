@@ -186,7 +186,7 @@ my $correct_data_admin_not_superadmin = request(
     )
 );
 
-is( $duplicated_spaces_organization->code(), 200, );
+is( $correct_data_admin_not_superadmin->code(), 200, );
 
 my $correct_data_admin_not_superadmin_json =
   decode_json( $correct_data_admin_not_superadmin->content );
