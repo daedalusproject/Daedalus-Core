@@ -3,7 +3,7 @@ image: acastellano/cirunnerdaedaluscore
 stages:
     - test
 
-unit_tests:
+integration_tests:
     stage: test
     before_script:
         - apt-get update -qq && apt-get install -y gcc make cpanminus sqlite3 wget
