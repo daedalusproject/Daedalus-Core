@@ -150,7 +150,7 @@ sub isAdmin {
 
 =head2 isSuperAdmin
 
-Return if required user belongs to a group with 'daedalus_manager'role
+Return if required user belongs to a group with 'daedalus_manager' role
 
 =cut
 
