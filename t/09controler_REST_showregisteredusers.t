@@ -17,6 +17,8 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
+is( $failed_because_no_auth->code(), 403, );
+
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
@@ -40,6 +42,8 @@ my $failed_no_admin = request(
     )
 );
 
+is( $failed_no_admin->code(), 403, );
+
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status}, 0, 'Status failed, not an andmin.' );
@@ -61,6 +65,8 @@ my $admin_admin_two_users = request(
         }
     )
 );
+
+is( $admin_admin_two_users->code(), 200, );
 
 my $admin_admin_two_users_json = decode_json( $admin_admin_two_users->content );
 
@@ -87,6 +93,8 @@ my $anotheradmin_admin_zero_users = request(
     )
 );
 
+is( $anotheradmin_admin_zero_users->code(), 200, );
+
 my $anotheradmin_admin_zero_users_json =
   decode_json( $anotheradmin_admin_zero_users->content );
 
@@ -107,6 +115,8 @@ my $admin_admin_one_user = request(
         }
     )
 );
+
+is( $admin_admin_one_user->code(), 200, );
 
 my $admin_admin_one_user_json = decode_json( $admin_admin_one_user->content );
 
