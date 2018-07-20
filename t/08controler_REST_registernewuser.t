@@ -279,6 +279,36 @@ is(
     'Admin user registered.'
 );
 
+my $success_no_admin_user = request(
+    POST '/registernewuser',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'yetanotheradmin@daedalus-project.io',
+                password => 'Is a Password_1234',
+            },
+            new_user_data => {
+                email    => 'othernoadmin@daedalus-project.io',
+                name     => 'Other',
+                surname  => 'No Admin',
+                is_admin => 0,
+            },
+        }
+    )
+);
+
+is( $success_no_admin_user->code(), 200, );
+
+my $success_no_admin_user_json = decode_json( $success_no_admin_user->content );
+
+is( $success_no_admin_user_json->{status}, 1, 'User has been created.' );
+is(
+    $success_no_admin_user_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+
 my $success_superadmin_admin = request(
     POST '/registernewuser',
     Content_Type => 'application/json',
