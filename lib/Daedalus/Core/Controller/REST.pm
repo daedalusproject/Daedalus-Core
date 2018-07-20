@@ -167,6 +167,7 @@ sub registerNewUser_POST {
 
     if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
@@ -174,6 +175,8 @@ sub registerNewUser_POST {
                 status  => 0,
                 message => 'Invalid user data.'
             };
+
+            return $self->status_bad_request_entity( $c, entity => $response, );
         }
         else {
             $response =
@@ -181,7 +184,13 @@ sub registerNewUser_POST {
         }
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =head2 showRegisteredUsers
