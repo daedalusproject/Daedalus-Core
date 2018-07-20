@@ -214,7 +214,6 @@ sub isSuperAdminById {
         my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
           ->search( { group_id => $group_id } )->all();
         my $roles = "";
-
         foreach (@roles_array) {
 
             if ( $_->role_id == $daedalus_manager_role_id ) {

@@ -175,4 +175,35 @@ is( $imadmin_post_success_no_superadminadmin_json->{data}->{imadmin}, 1, );
 isnt( $imadmin_post_success_no_superadminadmin_json->{_hidden_data},
     'Only super admin users receive hidden data' );
 
+my $yet_other_imadmin_post_success_no_superadminadmin = request(
+    POST '/imadmin',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'adminagain@daedalus-project.io',
+                password => '__:___Password_1234',
+            }
+        }
+    )
+);
+
+is( $yet_other_imadmin_post_success_no_superadminadmin->code(), 200, );
+
+my $yet_other_imadmin_post_success_no_superadminadmin_json =
+  decode_json( $yet_other_imadmin_post_success_no_superadminadmin->content );
+
+is(
+    $yet_other_imadmin_post_success_no_superadminadmin_json->{message},
+    'You are an admin user.',
+);
+
+is(
+    $yet_other_imadmin_post_success_no_superadminadmin_json->{data}->{imadmin},
+    1,
+);
+
+isnt( $yet_other_imadmin_post_success_no_superadminadmin_json->{_hidden_data},
+    'Only super admin users receive hidden data' );
+
 done_testing();
