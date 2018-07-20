@@ -250,7 +250,7 @@ sub confrimRegister_POST {
     }
     else {
 
-        return $self->status_forbidden_entity( $c, entity => $response, );
+        return $self->status_bad_request_entity( $c, entity => $response, );
     }
 }
 
