@@ -38,20 +38,29 @@ Creates a new Organization
 
 sub createOrganization {
 
-    my $request         = shift;
+    my $c               = shift;
     my $admin_user_data = shift;
 
     my $response;
 
-    my $organization_data = $request->{request}->{data}->{organization_data};
+    my $organization_data = $c->{request}->{data}->{organization_data};
 
     my $request_organization_name = "$organization_data->{name}";
     chomp $request_organization_name;
 
     # Check if user has already created and organization with the same name
 
-    my @user_organizations_rs = $request->model('CoreRealms::UserOrganization')
-      ->search( { user_id => $admin_user_data->{id} } )->all;
+    my $user_id;
+
+    if ( exists( $admin_user_data->{_hidden_data} ) ) {
+        $user_id = $admin_user_data->{_hidden_data}->{user}->{id};
+    }
+    else {
+        $user_id = Daedalus::Users::Manager::getUserId($c);
+    }
+
+    my @user_organizations_rs = $c->model('CoreRealms::UserOrganization')
+      ->search( { user_id => $user_id } )->all;
 
     my @organization_names;
 
@@ -61,7 +70,7 @@ sub createOrganization {
 
     if ( grep( /^$request_organization_name$/, @organization_names ) ) {
         $response = {
-            status  => 'Failed',
+            status  => 0,
             message => 'Duplicated organization name.',
           }
 
@@ -70,27 +79,27 @@ sub createOrganization {
 
         # Get organization_master role id
 
-        my $organization_master_role_id = $request->model('CoreRealms::Role')
+        my $organization_master_role_id = $c->model('CoreRealms::Role')
           ->find( { 'role_name' => 'organization_master' } )->id;
 
         # Create Organization
 
-        my $organization = $request->model('CoreRealms::Organization')
+        my $organization = $c->model('CoreRealms::Organization')
           ->create( { name => $request_organization_name } );
 
         # Add user to Organization
         my $user_organization =
-          $request->model('CoreRealms::UserOrganization')->create(
+          $c->model('CoreRealms::UserOrganization')->create(
             {
                 organization_id => $organization->id,
-                user_id         => $admin_user_data->{id}
+                user_id         => $user_id,
             }
           );
 
         # Create an organization admin group
 
         my $organization_group =
-          $request->model('CoreRealms::OrganizationGroup')->create(
+          $c->model('CoreRealms::OrganizationGroup')->create(
             {
                 organization_id => $organization->id,
                 group_name => "$request_organization_name" . " Administrators",
@@ -99,7 +108,7 @@ sub createOrganization {
 
         # This group has orgaization_master role
         my $organization_group_role =
-          $request->model('CoreRealms::OrganizationGroupRole')->create(
+          $c->model('CoreRealms::OrganizationGroupRole')->create(
             {
                 group_id => $organization_group->id,
                 role_id  => $organization_master_role_id,
@@ -107,7 +116,7 @@ sub createOrganization {
           );
 
         $response = {
-            status       => 'Success',
+            status       => 1,
             message      => 'Organization created.',
             _hidden_data => {
                 organization_id            => $organization->id,
@@ -116,6 +125,11 @@ sub createOrganization {
                 organization_group_role_id => $organization_group_role->id,
             },
         };
+
+        # Remove _hidden_data if user is not superadmin
+        if ( !( Daedalus::Users::Manager::isSuperAdminById( $c, $user_id ) ) ) {
+            delete $response->{_hidden_data};
+        }
     }
     return $response;
 }

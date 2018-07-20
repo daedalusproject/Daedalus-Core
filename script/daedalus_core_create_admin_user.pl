@@ -66,8 +66,8 @@ sub ask_filed {
         }
         elsif ( $options->{field_type} eq "email" ) {
             if ( !( Email::Valid->address($field) ) ) {
-                $error = 1;
-                print "This does not like an e-mail address.\n";
+                $response->{status} = "Failed";
+                $response->{message} .= "No $data supplied.";
             }
         }
     } while ($error);
@@ -194,7 +194,7 @@ $schema->resultset('User')->create(
         password   => $password,
         salt       => $salt,
         expires    => "3000-01-01",
-        active     => "1",
+        active     => 1,
         auth_token => $auth_token,
         is_admin   => 1,
     }

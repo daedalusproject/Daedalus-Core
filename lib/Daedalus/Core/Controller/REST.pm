@@ -11,6 +11,7 @@ use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Users::Manager;
 use Daedalus::Organizations::Manager;
+use Daedalus::Users::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -63,21 +64,12 @@ sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub loginUser_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => processResponse( authUser($c) ) );
+    my $response = Daedalus::Users::Manager::authUser($c);
+
+    $self->return_authorized_response( $c, $response );
 }
 
 =head2 imAdmin
@@ -90,21 +82,12 @@ sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub imAdmin_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c, entity => processResponse( isAdmin($c) ) );
+    my $response = Daedalus::Users::Manager::isAdmin($c);
+
+    $self->return_authorized_response( $c, $response );
 }
 
 =head2 createOrganization
@@ -118,44 +101,35 @@ sub createOrganization : Path('/createorganization') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub createOrganization_GET {
-    my ( $self, $c ) = @_;
-
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub createOrganization_POST {
     my ( $self, $c ) = @_;
 
-    my $is_admin = isAdmin($c);
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
-
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
-            $response = {
-                status  => 'Failed',
-                message => 'Invalid organization data.'
-            };
+            return $self->status_bad_request_entity(
+                $c,
+                entity => {
+                    status  => 0,
+                    message => 'Invalid organization data.'
+                }
+            );
         }
         else {
 
             $response =
               Daedalus::Organizations::Manager::createOrganization( $c,
-                $is_admin->{_hidden_data} );
+                $is_admin );
         }
     }
 
-    return $self->status_ok( $c, entity => processResponse($response), );
+    $self->return_rest_response( $c, $response );
 }
 
 =head2 registerNewUser
@@ -164,31 +138,66 @@ Admin users are able to create new users.
 
 =cut
 
-sub registeruser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
+sub registerNewUser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub registeruser_GET {
+sub registerNewUser_POST {
     my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
+
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
+
+    my $response;
+
+    if ( !$is_admin->{status} ) {
+        $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
+    }
+    else {
+        if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
+            $response = {
+                status  => 0,
+                message => 'Invalid user data.'
+            };
+
+            return $self->status_bad_request_entity( $c, entity => $response, );
+        }
+        else {
+            $response =
+              Daedalus::Users::Manager::registerNewUser( $c, $is_admin );
+        }
+    }
+
+    $self->return_rest_response( $c, $response );
 }
 
-sub registeruser_POST {
-    my ( $self, $c ) = shift;
+=head2 showRegisteredUsers
 
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'Not implemented.',
-        },
-    );
+Admin users are able to view which users has been registered by them.
+
+=cut
+
+sub showRegisteredUsers : Path('/showmyregisteredusers') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub showRegisteredUsers_POST {
+    my ( $self, $c ) = @_;
+
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
+
+    my $response;
+
+    if ( !$is_admin->{status} ) {
+        $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
+    }
+    else {
+        $response = Daedalus::Users::Manager::showRegisteredUsers($c);
+    }
+
+    $self->return_rest_response( $c, $response );
 }
 
 =head2 confrimRegister
@@ -197,23 +206,18 @@ Receives Auth token, if that token is owned by unactive user, user is registered
 
 =cut
 
-sub confrimRegister : Path('/confirmuserregistration') : Args(1) :
+sub confrimRegister : Path('/confirmregistration') : Args(0) :
   ActionClass('REST') {
-    my ( $self, $c, $auth_token ) = @_;
-    my ( $status, @user_info ) =
-      Daedalus::Core::Controller::UserController->confirmUserRegistration( $c,
-        $auth_token );
-    die("Stop");
+    my ( $self, $c ) = @_;
 }
 
 sub confrimRegister_POST {
     my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status => "pong",
-        },
-    );
+    my $response;
+
+    $response = Daedalus::Users::Manager::confirmRegistration($c);
+
+    $self->return_rest_response( $c, $response );
 }
 
 =head1 Common functions
@@ -222,62 +226,75 @@ Common functions
 
 =cut
 
-=head2 processResponse
+=head2 status_forbidden_entity
 
-Cleans _hidden_data field from responde, _hidden_data is not public
+Returns forbidden status using custom response based on controller $response
 
 =cut
 
-sub processResponse {
+sub status_forbidden_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(403);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
+
+=head2 status_bad_request_entity
+
+Returns bad requests status using custom response based on controller $response
+
+=cut
+
+sub status_bad_request_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(400);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
+
+=head2 return_authorized_response
+
+Returns 200 or 403 based on response status
+
+=cut
+
+sub return_authorized_response {
+    my $self     = shift;
+    my $c        = shift;
     my $response = shift;
-    if ( exists $response->{_hidden_data} ) {
-        delete $response->{_hidden_data};
-    }
-    return $response;
-}
 
-=head2 authUser
-
-Determines if required user exists and its password match
-
-=cut
-
-sub authUser {
-
-    my $c = shift;
-
-    my $response = Daedalus::Users::Manager::authUserUsingModel(
-        {
-            request => $c->req,
-            model   => $c->model('CoreRealms::User'),
-        }
-    );
-
-    return $response;
-}
-
-=head2 isAdmin
-
-Determines if required is and admin user
-
-=cut
-
-sub isAdmin {
-    my $c = shift;
-
-    my $response;
-
-    # Check user
-    my $user_login_response = authUser($c);
-
-    if ( $user_login_response->{status} eq "Failed" ) {
-        $response = $user_login_response;
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
     }
     else {
-        $response = Daedalus::Users::Manager::isAdmin($user_login_response);
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
+}
 
-    return $response;
+=head2 return_rest_response
+
+Returns 200 or 400 based on response status
+
+=cut
+
+sub return_rest_response {
+    my $self     = shift;
+    my $c        = shift;
+    my $response = shift;
+
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =encoding utf8

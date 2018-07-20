@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProjectRole;
+package Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProjectRole
+Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser
 
 =cut
 
@@ -33,24 +33,24 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<organization_share_project_roles>
+=head1 TABLE: C<registered_users>
 
 =cut
 
-__PACKAGE__->table("organization_share_project_roles");
+__PACKAGE__->table("registered_users");
 
 =head1 ACCESSORS
 
-=head2 organization_share_project
+=head2 registered_user
 
   data_type: 'bigint'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 role_id
+=head2 registrator_user
 
-  data_type: 'integer'
+  data_type: 'bigint'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
@@ -64,16 +64,16 @@ __PACKAGE__->table("organization_share_project_roles");
 =cut
 
 __PACKAGE__->add_columns(
-    "organization_share_project",
+    "registered_user",
     {
         data_type      => "bigint",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
     },
-    "role_id",
+    "registrator_user",
     {
-        data_type      => "integer",
+        data_type      => "bigint",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
@@ -90,52 +90,53 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</organization_share_project>
+=item * L</registered_user>
 
-=item * L</role_id>
+=item * L</registrator_user>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key( "organization_share_project", "role_id" );
+__PACKAGE__->set_primary_key( "registered_user", "registrator_user" );
 
 =head1 RELATIONS
 
-=head2 organization_share_project
+=head2 registered_user
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization_share_project",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
-    { id            => "organization_share_project" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    "registered_user",
+    "Daedalus::Core::Schema::CoreRealms::Result::User",
+    { id            => "registered_user" },
+    { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 role
+=head2 registrator_user
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "role",
-    "Daedalus::Core::Schema::CoreRealms::Result::Role",
-    { id            => "role_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    "registrator_user",
+    "Daedalus::Core::Schema::CoreRealms::Result::User",
+    { id            => "registrator_user" },
+    { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 # Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-06-25 06:10:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oFzm9R7VaEUBcdU4V45dtw
-
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2z5E/sexjElw/tB3H32XWA
+#
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
 
 __PACKAGE__->add_columns(
     'created_at',
@@ -145,5 +146,6 @@ __PACKAGE__->add_columns(
         set_on_update => 0
     }
 );
+
 __PACKAGE__->meta->make_immutable;
 1;
