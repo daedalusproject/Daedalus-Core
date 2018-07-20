@@ -39,6 +39,8 @@ my $failed_login_user_post_content = request(
     )
 );
 
+is( $failed_login_user_post_content->code(), 403, );
+
 my $failed_login_user_post_content_json =
   decode_json( $failed_login_user_post_content->content );
 
@@ -63,6 +65,8 @@ my $failed_login_password_post_content = request(
     )
 );
 
+is( $failed_login_password_post_content->code(), 403, );
+
 my $failed_login_password_post_content_json =
   decode_json( $failed_login_password_post_content->content );
 
@@ -86,6 +90,8 @@ my $login_non_admin_post_success = request(
         }
     )
 );
+
+is( $login_non_admin_post_success->code(), 200, );
 
 my $login_non_admin_post_success_json =
   decode_json( $login_non_admin_post_success->content );
@@ -112,6 +118,8 @@ my $login_admin_post_success = request(
         }
     )
 );
+
+is( $login_admin_post_success->code(), 200, );
 
 my $login_admin_post_success_json =
   decode_json( $login_admin_post_success->content );
