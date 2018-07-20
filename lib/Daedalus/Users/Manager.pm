@@ -198,32 +198,35 @@ sub isSuperAdminById {
     my $c       = shift;
     my $user_id = shift;
 
+    my $is_super_admin           = 0;
     my $daedalus_manager_role_id = $c->model('CoreRealms::Role')
       ->find( { role_name => "daedalus_manager" } )->id;
 
     my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { 'user_id' => $user_id } );
-    if ($user_groups) {
-        my @user_groups_array = $user_groups->all;
-        for my $user_group (@user_groups_array) {
 
-            # Get group
-            my $group_id    = $user_group->group_id;
-            my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
-              ->search( { group_id => $group_id } )->all();
-            my $roles = "";
+    #if ($user_groups) {
+    my @user_groups_array = $user_groups->all;
+    for my $user_group (@user_groups_array) {
 
-            foreach (@roles_array) {
+        # Get group
+        my $group_id    = $user_group->group_id;
+        my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+          ->search( { group_id => $group_id } )->all();
+        my $roles = "";
 
-                if ( $_->role_id == $daedalus_manager_role_id ) {
-                    return 1;    #Break all
-                }
+        foreach (@roles_array) {
 
+            if ( $_->role_id == $daedalus_manager_role_id ) {
+                $is_super_admin = 1;    #Break all
             }
+
         }
     }
 
-    return 0;
+    #}
+
+    return $is_super_admin;
 
 }
 
