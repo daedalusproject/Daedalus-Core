@@ -17,6 +17,8 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
+is( $failed_because_no_auth->code(), 403, );
+
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
@@ -40,6 +42,8 @@ my $failed_no_admin = request(
     )
 );
 
+is( $failed_no_admin->code(), 403, );
+
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status}, 0, 'Status failed, not an andmin.' );
@@ -61,6 +65,8 @@ my $failed_no_data = request(
         }
     )
 );
+
+is( $failed_no_data->code(), 400, );
 
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
@@ -84,6 +90,8 @@ my $failed_empty_data = request(
         }
     )
 );
+
+is( $failed_empty_data->code(), 400, );
 
 my $failed_empty_data_json = decode_json( $failed_empty_data->content );
 
@@ -110,6 +118,8 @@ my $failed_no_email_no_surname = request(
     )
 );
 
+is( $failed_no_email_no_surname->code(), 400, );
+
 my $failed_no_email_no_surname_json =
   decode_json( $failed_no_email_no_surname->content );
 
@@ -135,6 +145,8 @@ my $failed_no_name_no_surname = request(
         }
     )
 );
+
+is( $failed_no_name_no_surname->code(), 400, );
 
 my $failed_no_name_no_surname_json =
   decode_json( $failed_no_name_no_surname->content );
@@ -165,6 +177,8 @@ my $failed_invalid_email = request(
     )
 );
 
+is( $failed_invalid_email->code(), 400, );
+
 my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
 is( $failed_invalid_email_json->{status}, 0, 'E-mail is invalid.' );
@@ -192,6 +206,8 @@ my $failed_duplicated_email = request(
         }
     )
 );
+
+is( $failed_duplicated_email->code(), 400, );
 
 my $failed_duplicated_email_json =
   decode_json( $failed_duplicated_email->content );
@@ -222,6 +238,8 @@ my $success_not_admin = request(
     )
 );
 
+is( $success_not_admin->code(), 200, );
+
 my $success_not_admin_json = decode_json( $success_not_admin->content );
 
 is( $success_not_admin_json->{status}, 1, 'User has been created.' );
@@ -250,6 +268,8 @@ my $success_admin = request(
     )
 );
 
+is( $success_admin->code(), 200, );
+
 my $success_admin_json = decode_json( $success_admin->content );
 
 is( $success_admin_json->{status}, 1, 'User has been created.' );
@@ -277,6 +297,8 @@ my $success_superadmin_admin = request(
         }
     )
 );
+
+is( $success_superadmin_admin->code(), 200, );
 
 my $success_superadmin_admin_json =
   decode_json( $success_superadmin_admin->content );
@@ -309,6 +331,8 @@ my $inactive_user_cant_login = request(
         }
     )
 );
+
+is( $inactive_user_cant_login->code(), 403, );
 
 my $inactive_user_cant_login_json =
   decode_json( $inactive_user_cant_login->content );
