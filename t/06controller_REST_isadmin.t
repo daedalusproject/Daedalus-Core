@@ -31,6 +31,8 @@ my $failed_imadmin_user_post_content = request(
     )
 );
 
+is( $failed_imadmin_user_post_content->code(), 403, );
+
 my $failed_imadmin_user_post_content_json =
   decode_json( $failed_imadmin_user_post_content->content );
 
@@ -54,6 +56,8 @@ my $failed_imadmin_password_post_content = request(
         }
     )
 );
+
+is( $failed_imadmin_password_post_content->code(), 403, );
 
 my $failed_imadmin_password_post_content_json =
   decode_json( $failed_imadmin_password_post_content->content );
@@ -79,6 +83,8 @@ my $imadmin_post_success = request(
     )
 );
 
+is( $imadmin_post_success->code(), 200, );
+
 my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 
 is( $imadmin_post_success_json->{status},          1, );
@@ -101,6 +107,8 @@ my $imadmin_post_success_other_admin = request(
         }
     )
 );
+
+is( $imadmin_post_success_other_admin->code(), 200, );
 
 my $imadmin_post_success_other_admin_json =
   decode_json( $imadmin_post_success_other_admin->content );
@@ -126,10 +134,11 @@ my $imadmin_post_failed_no_admin = request(
     )
 );
 
+is( $imadmin_post_failed_no_admin->code(), 403, );
+
 my $imadmin_post_failed_no_admin_json =
   decode_json( $imadmin_post_failed_no_admin->content );
 
-is( $imadmin_post_failed_no_admin->code(), 403, );
 is(
     $imadmin_post_failed_no_admin_json->{message},
     'You are not an admin user.',
