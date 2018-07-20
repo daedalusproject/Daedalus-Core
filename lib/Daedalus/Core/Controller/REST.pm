@@ -124,7 +124,7 @@ sub createOrganization_POST {
     }
     else {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
-            return $self->status_ok(
+            return $self->status_bad_request_entity(
                 $c,
                 entity => {
                     status  => 0,
@@ -144,7 +144,7 @@ sub createOrganization_POST {
         $self->status_ok( $c, entity => $response, );
     }
     else {
-        $self->status_ok( $c, entity => $response, );
+        $self->status_bad_request_entity( $c, entity => $response, );
     }
 }
 
@@ -229,7 +229,13 @@ sub confrimRegister_POST {
 
     $response = Daedalus::Users::Manager::confirmRegistration($c);
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+
+        return $self->status_forbidden_entity( $c, entity => $response, );
+    }
 }
 
 =head1 Common functions

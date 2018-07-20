@@ -50,13 +50,13 @@ sub checkPassword {
 
     if ( $pwcheck->has_errors ) {
 
-        $response->{status} = "Failed";
+        $response->{status} = 0;
 
         # print the errors
         $response->{message} = join( "|", @{ $pwcheck->error_list } );
     }
     else {
-        $response->{status}  = "Success";
+        $response->{status}  = 1;
         $response->{message} = "Provided Password if valid.";
     }
 

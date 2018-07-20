@@ -438,7 +438,7 @@ sub confirmRegistration {
                         my $password = $auth_data->{password};
                         my $password_strenght =
                           Daedalus::Utils::Crypt::checkPassword($password);
-                        if ( $password_strenght->{status} eq "Failed" ) {
+                        if ( !$password_strenght->{status} ) {
                             $response->{message} = 'Password is invalid.';
                         }
                         else {
@@ -451,7 +451,7 @@ sub confirmRegistration {
                               Daedalus::Utils::Crypt::hashPassword( $password,
                                 $new_salt );
 
-                            $response->{status}  = 'Success';
+                            $response->{status}  = 1;
                             $response->{message} = 'Account activated.';
 
                             $user->update(
