@@ -42,6 +42,8 @@ my $failed_short_auth_token = request(
     )
 );
 
+is( $failed_short_auth_token->code(), 400, );
+
 my $failed_short_auth_token_json =
   decode_json( $failed_short_auth_token->content );
 
@@ -66,6 +68,8 @@ my $failed_invalid_auth_token = request(
     )
 );
 
+is( $failed_invalid_auth_token->code(), 400 );
+
 my $failed_invalid_auth_token_json =
   decode_json( $failed_invalid_auth_token->content );
 
@@ -89,6 +93,8 @@ my $failed_valid_auth_token_no_password = request(
         }
     )
 );
+
+is( $failed_valid_auth_token_no_password->code(), 400 );
 
 my $failed_valid_auth_token_no_password_json =
   decode_json( $failed_valid_auth_token_no_password->content );
@@ -115,11 +121,13 @@ my $failed_valid_auth_token_short_password = request(
     )
 );
 
+is( $failed_valid_auth_token_short_password->code(), 400 );
+
 my $failed_valid_auth_token_short_password_json =
   decode_json( $failed_valid_auth_token_short_password->content );
 
 is( $failed_valid_auth_token_short_password_json->{status},
-    0, 'Status failed, no password supplied' );
+    0, 'Status failed, short password' );
 is(
     $failed_valid_auth_token_short_password_json->{message},
     'Password is invalid.',
@@ -139,6 +147,8 @@ my $failed_valid_auth_token_password_no_diverse = request(
         }
     )
 );
+
+is( $failed_valid_auth_token_password_no_diverse->code(), 400 );
 
 my $failed_valid_auth_token_password_no_diverse_json =
   decode_json( $failed_valid_auth_token_password_no_diverse->content );
@@ -165,6 +175,8 @@ my $success_valid_auth_token_and_password = request(
     )
 );
 
+is( $success_valid_auth_token_and_password->code(), 200 );
+
 my $success_valid_auth_token_and_password_json =
   decode_json( $success_valid_auth_token_and_password->content );
 
@@ -190,6 +202,8 @@ my $failed_account_activated_changed_auth_token = request(
     )
 );
 
+is( $failed_account_activated_changed_auth_token->code(), 400 );
+
 my $failed_account_activated_changed_auth_token_json =
   decode_json( $failed_account_activated_changed_auth_token->content );
 
@@ -213,6 +227,8 @@ my $login_works = request(
         }
     )
 );
+
+is( $login_works->code(), 200 );
 
 my $login_works_json = decode_json( $login_works->content );
 
