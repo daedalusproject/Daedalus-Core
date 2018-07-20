@@ -9,14 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 
 my $confirm_registration_GET_content = get('/confirmregistration');
-
-is_deeply(
-    decode_json($confirm_registration_GET_content),
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $confirm_registration_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth_token = request(
     POST '/confirmregistration',
@@ -27,8 +20,10 @@ my $failed_because_no_auth_token = request(
 my $failed_because_no_auth_token_json =
   decode_json( $failed_because_no_auth_token->content );
 
-is( $failed_because_no_auth_token_json->{status},
-    'Failed', 'Status failed, no auth.' );
+is( $failed_because_no_auth_token->code(), 400, );
+
+is( $failed_because_no_auth_token_json->{status}, 0,
+    'Status failed, no auth.' );
 is(
     $failed_because_no_auth_token_json->{message},
     'Invalid Auth Token.',
@@ -47,11 +42,13 @@ my $failed_short_auth_token = request(
     )
 );
 
+is( $failed_short_auth_token->code(), 400, );
+
 my $failed_short_auth_token_json =
   decode_json( $failed_short_auth_token->content );
 
 is( $failed_short_auth_token_json->{status},
-    'Failed', 'Status failed, auth_token too short' );
+    0, 'Status failed, auth_token too short' );
 is(
     $failed_short_auth_token_json->{message},
     'Invalid Auth Token.',
@@ -71,11 +68,13 @@ my $failed_invalid_auth_token = request(
     )
 );
 
+is( $failed_invalid_auth_token->code(), 400 );
+
 my $failed_invalid_auth_token_json =
   decode_json( $failed_invalid_auth_token->content );
 
 is( $failed_invalid_auth_token_json->{status},
-    'Failed', 'Status failed, auth_token does not exists' );
+    0, 'Status failed, auth_token does not exists' );
 is(
     $failed_invalid_auth_token_json->{message},
     'Invalid Auth Token.',
@@ -95,11 +94,13 @@ my $failed_valid_auth_token_no_password = request(
     )
 );
 
+is( $failed_valid_auth_token_no_password->code(), 400 );
+
 my $failed_valid_auth_token_no_password_json =
   decode_json( $failed_valid_auth_token_no_password->content );
 
 is( $failed_valid_auth_token_no_password_json->{status},
-    'Failed', 'Status failed, no password supplied' );
+    0, 'Status failed, no password supplied' );
 is(
     $failed_valid_auth_token_no_password_json->{message},
     'Valid Auth Token found, enter your new password.',
@@ -120,11 +121,13 @@ my $failed_valid_auth_token_short_password = request(
     )
 );
 
+is( $failed_valid_auth_token_short_password->code(), 400 );
+
 my $failed_valid_auth_token_short_password_json =
   decode_json( $failed_valid_auth_token_short_password->content );
 
 is( $failed_valid_auth_token_short_password_json->{status},
-    'Failed', 'Status failed, no password supplied' );
+    0, 'Status failed, short password' );
 is(
     $failed_valid_auth_token_short_password_json->{message},
     'Password is invalid.',
@@ -145,11 +148,13 @@ my $failed_valid_auth_token_password_no_diverse = request(
     )
 );
 
+is( $failed_valid_auth_token_password_no_diverse->code(), 400 );
+
 my $failed_valid_auth_token_password_no_diverse_json =
   decode_json( $failed_valid_auth_token_password_no_diverse->content );
 
 is( $failed_valid_auth_token_password_no_diverse_json->{status},
-    'Failed', 'Status failed, no password supplied' );
+    0, 'Status failed, no password supplied' );
 is(
     $failed_valid_auth_token_password_no_diverse_json->{message},
     'Password is invalid.',
@@ -170,11 +175,13 @@ my $success_valid_auth_token_and_password = request(
     )
 );
 
+is( $success_valid_auth_token_and_password->code(), 200 );
+
 my $success_valid_auth_token_and_password_json =
   decode_json( $success_valid_auth_token_and_password->content );
 
 is( $success_valid_auth_token_and_password_json->{status},
-    'Success', 'Password changed, account is activated.' );
+    1, 'Password changed, account is activated.' );
 is(
     $success_valid_auth_token_and_password_json->{message},
     'Account activated.',
@@ -195,11 +202,13 @@ my $failed_account_activated_changed_auth_token = request(
     )
 );
 
+is( $failed_account_activated_changed_auth_token->code(), 400 );
+
 my $failed_account_activated_changed_auth_token_json =
   decode_json( $failed_account_activated_changed_auth_token->content );
 
 is( $failed_account_activated_changed_auth_token_json->{status},
-    'Failed', 'Auth Token has changed.' );
+    0, 'Auth Token has changed.' );
 is(
     $failed_account_activated_changed_auth_token_json->{message},
     'Invalid Auth Token.',
@@ -219,9 +228,11 @@ my $login_works = request(
     )
 );
 
+is( $login_works->code(), 200 );
+
 my $login_works_json = decode_json( $login_works->content );
 
-is( $login_works_json->{status}, 'Success', 'Now user is able to login.' );
+is( $login_works_json->{status}, 1, 'Now user is able to login.' );
 is(
     $login_works_json->{message},
     'Auth Successful.',

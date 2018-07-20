@@ -64,23 +64,17 @@ sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub loginUser_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub loginUser_POST {
     my ( $self, $c ) = @_;
 
     my $response = Daedalus::Users::Manager::authUser($c);
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+        $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        $self->status_forbidden_entity( $c, entity => $response, );
+    }
 }
 
 =head2 imAdmin
@@ -93,22 +87,18 @@ sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub imAdmin_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub imAdmin_POST {
     my ( $self, $c ) = @_;
 
-    return $self->status_ok( $c,
-        entity => Daedalus::Users::Manager::isAdmin($c) );
+    my $response = Daedalus::Users::Manager::isAdmin($c);
+
+    if ( $response->{status} ) {
+        $response->{status} = 1;
+        $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        $self->status_forbidden_entity( $c, entity => $response, );
+    }
 }
 
 =head2 createOrganization
@@ -122,34 +112,25 @@ sub createOrganization : Path('/createorganization') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub createOrganization_GET {
-    my ( $self, $c ) = @_;
-
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub createOrganization_POST {
     my ( $self, $c ) = @_;
 
     my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
-
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
-            $response = {
-                status  => 'Failed',
-                message => 'Invalid organization data.'
-            };
+            return $self->status_bad_request_entity(
+                $c,
+                entity => {
+                    status  => 0,
+                    message => 'Invalid organization data.'
+                }
+            );
         }
         else {
 
@@ -159,7 +140,12 @@ sub createOrganization_POST {
         }
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+        $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =head2 registerNewUser
@@ -172,17 +158,6 @@ sub registerNewUser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub registerNewUser_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub registerNewUser_POST {
     my ( $self, $c ) = @_;
 
@@ -190,15 +165,18 @@ sub registerNewUser_POST {
 
     my $response;
 
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
             $response = {
-                status  => 'Failed',
+                status  => 0,
                 message => 'Invalid user data.'
             };
+
+            return $self->status_bad_request_entity( $c, entity => $response, );
         }
         else {
             $response =
@@ -206,7 +184,13 @@ sub registerNewUser_POST {
         }
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =head2 showRegisteredUsers
@@ -220,17 +204,6 @@ sub showRegisteredUsers : Path('/showmyregisteredusers') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub showRegisteredUsers_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub showRegisteredUsers_POST {
     my ( $self, $c ) = @_;
 
@@ -238,14 +211,21 @@ sub showRegisteredUsers_POST {
 
     my $response;
 
-    if ( $is_admin->{status} eq "Failed" ) {
+    if ( !$is_admin->{status} ) {
         $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
     }
     else {
         $response = Daedalus::Users::Manager::showRegisteredUsers($c);
     }
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =head2 confrimRegister
@@ -259,24 +239,19 @@ sub confrimRegister : Path('/confirmregistration') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub confrimRegister_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status  => 'Failed',
-            message => 'This method does not support GET requests.',
-        },
-    );
-}
-
 sub confrimRegister_POST {
     my ( $self, $c ) = @_;
     my $response;
 
     $response = Daedalus::Users::Manager::confirmRegistration($c);
 
-    return $self->status_ok( $c, entity => $response, );
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =head1 Common functions
@@ -284,6 +259,38 @@ sub confrimRegister_POST {
 Common functions
 
 =cut
+
+=head2 status_forbidden_entity
+
+Returns forbidden status using custom response based on controller $response
+
+=cut
+
+sub status_forbidden_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(403);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
+
+=head2 status_bad_request_entity
+
+Returns bad requests status using custom response based on controller $response
+
+=cut
+
+sub status_bad_request_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(400);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
 
 =encoding utf8
 

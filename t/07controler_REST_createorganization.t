@@ -9,14 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 
 my $add_orgaization_GET_content = get('/createorganization');
-
-is_deeply(
-    decode_json($add_orgaization_GET_content),
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $add_orgaization_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
     POST '/createorganization',
@@ -24,13 +17,15 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
+is( $failed_because_no_auth->code(), 403, );
+
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
 is_deeply(
     $failed_because_no_auth_json,
     {
-        'status'  => 'Failed',
+        'status'  => '0',
         'message' => 'Wrong e-mail or password.',
     }
 );
@@ -48,9 +43,11 @@ my $failed_no_admin = request(
     )
 );
 
+is( $failed_no_admin->code(), 403, );
+
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status},  'Failed', );
+is( $failed_no_admin_json->{status},  0, );
 is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
 my $failed_no_data = request(
@@ -66,9 +63,11 @@ my $failed_no_data = request(
     )
 );
 
+is( $failed_no_data->code(), 400, );
+
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status},  'Failed', );
+is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'Invalid organization data.', );
 
 my $success_extra_data = request(
@@ -88,9 +87,11 @@ my $success_extra_data = request(
     )
 );
 
+is( $success_extra_data->code(), 200, );
+
 my $success_extra_data_json = decode_json( $success_extra_data->content );
 
-is( $success_extra_data_json->{status},  'Success', );
+is( $success_extra_data_json->{status},  1, );
 is( $success_extra_data_json->{message}, 'Organization created.', );
 
 my $correct_data = request(
@@ -109,9 +110,11 @@ my $correct_data = request(
     )
 );
 
+is( $correct_data->code(), 200, );
+
 my $correct_data_json = decode_json( $correct_data->content );
 
-is( $correct_data_json->{status},  'Success', );
+is( $correct_data_json->{status},  1, );
 is( $correct_data_json->{message}, 'Organization created.', );
 isnt( $correct_data_json->{_hidden_data}, undef, );
 
@@ -131,10 +134,12 @@ my $duplicated_organization = request(
     )
 );
 
+is( $duplicated_organization->code(), 400, );
+
 my $duplicated_organization_json =
   decode_json( $duplicated_organization->content );
 
-is( $duplicated_organization_json->{status}, 'Failed', );
+is( $duplicated_organization_json->{status}, 0, );
 is( $duplicated_organization_json->{message}, 'Duplicated organization name.',
 );
 
@@ -154,10 +159,12 @@ my $duplicated_spaces_organization = request(
     )
 );
 
+is( $duplicated_spaces_organization->code(), 400, );
+
 my $duplicated_spaces_organization_json =
   decode_json( $duplicated_spaces_organization->content );
 
-is( $duplicated_spaces_organization_json->{status}, 'Failed', );
+is( $duplicated_spaces_organization_json->{status}, 0, );
 is(
     $duplicated_spaces_organization_json->{message},
     'Duplicated organization name.',
@@ -179,10 +186,12 @@ my $correct_data_admin_not_superadmin = request(
     )
 );
 
+is( $correct_data_admin_not_superadmin->code(), 200, );
+
 my $correct_data_admin_not_superadmin_json =
   decode_json( $correct_data_admin_not_superadmin->content );
 
-is( $correct_data_admin_not_superadmin_json->{status}, 'Success', );
+is( $correct_data_admin_not_superadmin_json->{status}, 1, );
 is(
     $correct_data_admin_not_superadmin_json->{message},
     'Organization created.',

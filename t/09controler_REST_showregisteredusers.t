@@ -9,14 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 
 my $show_my_registered_users_GET_content = get('/showmyregisteredusers');
-
-is_deeply(
-    decode_json($show_my_registered_users_GET_content),
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $show_my_registered_users_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
     POST '/showmyregisteredusers',
@@ -24,11 +17,12 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
+is( $failed_because_no_auth->code(), 403, );
+
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is( $failed_because_no_auth_json->{status},
-    'Failed', 'Status failed, no auth.' );
+is( $failed_because_no_auth_json->{status}, 0, 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_json->{message},
     'Wrong e-mail or password.',
@@ -48,10 +42,11 @@ my $failed_no_admin = request(
     )
 );
 
+is( $failed_no_admin->code(), 403, );
+
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status}, 'Failed',
-    'Status failed, not an andmin.' );
+is( $failed_no_admin_json->{status}, 0, 'Status failed, not an andmin.' );
 is(
     $failed_no_admin_json->{message},
     'You are not an admin user.',
@@ -71,10 +66,11 @@ my $admin_admin_two_users = request(
     )
 );
 
+is( $admin_admin_two_users->code(), 200, );
+
 my $admin_admin_two_users_json = decode_json( $admin_admin_two_users->content );
 
-is( $admin_admin_two_users_json->{status}, 'Success',
-    'Status success, admin.' );
+is( $admin_admin_two_users_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_admin_two_users_json->{registered_users} },
     2, 'admin@daedalus-project.io has 2 users registered' );
 ok(
@@ -97,11 +93,13 @@ my $anotheradmin_admin_zero_users = request(
     )
 );
 
+is( $anotheradmin_admin_zero_users->code(), 200, );
+
 my $anotheradmin_admin_zero_users_json =
   decode_json( $anotheradmin_admin_zero_users->content );
 
 is( $anotheradmin_admin_zero_users_json->{status},
-    'Success', 'Status success, andmin.' );
+    1, 'Status success, andmin.' );
 is( keys %{ $anotheradmin_admin_zero_users_json->{registered_users} },
     0, 'adminagain@daedalus-project.io has 0 users registered' );
 
@@ -118,9 +116,11 @@ my $admin_admin_one_user = request(
     )
 );
 
+is( $admin_admin_one_user->code(), 200, );
+
 my $admin_admin_one_user_json = decode_json( $admin_admin_one_user->content );
 
-is( $admin_admin_one_user_json->{status}, 'Success', 'Status success, admin.' );
+is( $admin_admin_one_user_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_admin_one_user_json->{registered_users} },
     1, 'yetanotheradmin@daedalus-project.io has 1 user registered' );
 isnt(

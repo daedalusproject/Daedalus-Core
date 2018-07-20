@@ -78,11 +78,11 @@ sub authUser {
             || ( $user->active == 0 )
           )
         {
-            $response->{status}  = 'Failed';
+            $response->{status}  = 0;
             $response->{message} = 'Wrong e-mail or password.';
         }
         else {
-            $response->{status}  = 'Success';
+            $response->{status}  = 1;
             $response->{message} = 'Auth Successful.';
             $response->{data}    = {
                 'user' => {
@@ -104,7 +104,7 @@ sub authUser {
         }
     }
     else {
-        $response->{status}  = 'Failed';
+        $response->{status}  = 0;
         $response->{message} = 'Wrong e-mail or password.';
     }
     return $response;
@@ -123,12 +123,12 @@ sub isAdmin {
     my $user_auth = authUser($c);
     my $response;
 
-    if ( $user_auth->{status} eq "Failed" ) {
+    if ( !$user_auth->{status} ) {
         $response = $user_auth;
     }
     else {
         $response = {
-            status  => "Failed",
+            status  => 0,
             message => "You are not an admin user.",
             data    => { imadmin => 0 },
         };
@@ -139,7 +139,7 @@ sub isAdmin {
 
         # Check if logged user is admin
         if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
-            $response->{status}          = "Success";
+            $response->{status}          = 1;
             $response->{message}         = "You are an admin user.";
             $response->{data}->{imadmin} = 1;
         }
@@ -174,7 +174,7 @@ sub isSuperAdmin {
     }
     if ( $find_by_user_id == 0 ) {
         my $user_admin_response = isAdmin($c);
-        if ( $user_admin_response->{status} eq "Success" ) {
+        if ( $user_admin_response->{status} ) {
             $is_super_admin = isSuperAdminById( $c,
                 $user_admin_response->{_hidden_data}->{user}->{id} );
         }
@@ -242,7 +242,7 @@ sub registerNewUser {
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
-    my $response = { status => "Success", message => "" };
+    my $response = { status => 1, message => "" };
 
     my $requested_user_data = $c->{request}->{data}->{new_user_data};
 
@@ -251,7 +251,7 @@ sub registerNewUser {
     # Check required data
     for my $data (@required_user_data) {
         if ( !( exists $requested_user_data->{$data} ) ) {
-            $response->{status} = "Failed";
+            $response->{status} = 0;
             $response->{message} .= "No $data supplied.";
         }
         else {
@@ -260,9 +260,9 @@ sub registerNewUser {
     }
 
     # Check if email is valid
-    if ( $response->{status} ne 'Failed' ) {
+    if ( $response->{status} != 0 ) {
         if ( !( Email::Valid->address( $requested_user_data->{email} ) ) ) {
-            $response->{status}  = "Failed";
+            $response->{status}  = 0;
             $response->{message} = "Provided e-mail is invalid.";
         }
         else {
@@ -272,7 +272,7 @@ sub registerNewUser {
             my $user =
               $user_model->find( { email => $requested_user_data->{email} } );
             if ($user) {
-                $response->{status} = "Failed";
+                $response->{status} = 0;
                 $response->{message} =
                   "There already exists a user using this e-mail.";
 
@@ -324,7 +324,7 @@ sub registerNewUser {
                     }
                 );
 
-                $response->{status} = "Success";
+                $response->{status} = 1;
 
                 if ( $requested_user_data->{is_admin} ) {
                     $response->{message} = "Admin user has been registered.";
@@ -399,7 +399,7 @@ sub showRegisteredUsers {
     }
     $response->{registered_users} = $users;
 
-    $response->{status} = 'Success';
+    $response->{status} = 1;
 
     return $response;
 }
@@ -414,7 +414,7 @@ sub confirmRegistration {
     my $c = shift;
 
     my $response = {
-        status  => 'Failed',
+        status  => 0,
         message => 'Invalid Auth Token.'
     };
 
@@ -438,7 +438,7 @@ sub confirmRegistration {
                         my $password = $auth_data->{password};
                         my $password_strenght =
                           Daedalus::Utils::Crypt::checkPassword($password);
-                        if ( $password_strenght->{status} eq "Failed" ) {
+                        if ( !$password_strenght->{status} ) {
                             $response->{message} = 'Password is invalid.';
                         }
                         else {
@@ -451,7 +451,7 @@ sub confirmRegistration {
                               Daedalus::Utils::Crypt::hashPassword( $password,
                                 $new_salt );
 
-                            $response->{status}  = 'Success';
+                            $response->{status}  = 1;
                             $response->{message} = 'Account activated.';
 
                             $user->update(

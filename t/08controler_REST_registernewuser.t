@@ -9,14 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 
 my $registerGETcontent = get('/registernewuser');
-
-is_deeply(
-    decode_json($registerGETcontent),
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+ok( $registerGETcontent, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
     POST '/registernewuser',
@@ -24,11 +17,12 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
+is( $failed_because_no_auth->code(), 403, );
+
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is( $failed_because_no_auth_json->{status},
-    'Failed', 'Status failed, no auth.' );
+is( $failed_because_no_auth_json->{status}, 0, 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_json->{message},
     'Wrong e-mail or password.',
@@ -48,10 +42,11 @@ my $failed_no_admin = request(
     )
 );
 
+is( $failed_no_admin->code(), 403, );
+
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status}, 'Failed',
-    'Status failed, not an andmin.' );
+is( $failed_no_admin_json->{status}, 0, 'Status failed, not an andmin.' );
 is(
     $failed_no_admin_json->{message},
     'You are not an admin user.',
@@ -71,9 +66,11 @@ my $failed_no_data = request(
     )
 );
 
+is( $failed_no_data->code(), 400, );
+
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status}, 'Failed', 'There is no user data.' );
+is( $failed_no_data_json->{status}, 0, 'There is no user data.' );
 is(
     $failed_no_data_json->{message},
     'Invalid user data.',
@@ -94,9 +91,11 @@ my $failed_empty_data = request(
     )
 );
 
+is( $failed_empty_data->code(), 400, );
+
 my $failed_empty_data_json = decode_json( $failed_empty_data->content );
 
-is( $failed_empty_data_json->{status}, 'Failed', 'Nothing supplied' );
+is( $failed_empty_data_json->{status}, 0, 'Nothing supplied' );
 is(
     $failed_empty_data_json->{message},
     'No email supplied.No name supplied.No surname supplied.',
@@ -119,11 +118,12 @@ my $failed_no_email_no_surname = request(
     )
 );
 
+is( $failed_no_email_no_surname->code(), 400, );
+
 my $failed_no_email_no_surname_json =
   decode_json( $failed_no_email_no_surname->content );
 
-is( $failed_no_email_no_surname_json->{status},
-    'Failed', 'Only name is supplied' );
+is( $failed_no_email_no_surname_json->{status}, 0, 'Only name is supplied' );
 is(
     $failed_no_email_no_surname_json->{message},
     'No email supplied.No surname supplied.',
@@ -146,11 +146,12 @@ my $failed_no_name_no_surname = request(
     )
 );
 
+is( $failed_no_name_no_surname->code(), 400, );
+
 my $failed_no_name_no_surname_json =
   decode_json( $failed_no_name_no_surname->content );
 
-is( $failed_no_name_no_surname_json->{status},
-    'Failed', 'Only email is supplied' );
+is( $failed_no_name_no_surname_json->{status}, 0, 'Only email is supplied' );
 is(
     $failed_no_name_no_surname_json->{message},
     'No name supplied.No surname supplied.',
@@ -176,9 +177,11 @@ my $failed_invalid_email = request(
     )
 );
 
+is( $failed_invalid_email->code(), 400, );
+
 my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
-is( $failed_invalid_email_json->{status}, 'Failed', 'E-mail is invalid.' );
+is( $failed_invalid_email_json->{status}, 0, 'E-mail is invalid.' );
 is(
     $failed_invalid_email_json->{message},
     'Provided e-mail is invalid.',
@@ -204,11 +207,12 @@ my $failed_duplicated_email = request(
     )
 );
 
+is( $failed_duplicated_email->code(), 400, );
+
 my $failed_duplicated_email_json =
   decode_json( $failed_duplicated_email->content );
 
-is( $failed_duplicated_email_json->{status}, 'Failed',
-    'E-mail is duplicated.' );
+is( $failed_duplicated_email_json->{status}, 0, 'E-mail is duplicated.' );
 is(
     $failed_duplicated_email_json->{message},
     'There already exists a user using this e-mail.',
@@ -234,9 +238,11 @@ my $success_not_admin = request(
     )
 );
 
+is( $success_not_admin->code(), 200, );
+
 my $success_not_admin_json = decode_json( $success_not_admin->content );
 
-is( $success_not_admin_json->{status}, 'Success', 'User has been created.' );
+is( $success_not_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_not_admin_json->{message},
     'User has been registered.',
@@ -262,17 +268,16 @@ my $success_admin = request(
     )
 );
 
+is( $success_admin->code(), 200, );
+
 my $success_admin_json = decode_json( $success_admin->content );
 
-is( $success_admin_json->{status}, 'Success', 'User has been created.' );
+is( $success_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_admin_json->{message},
     'Admin user has been registered.',
     'Admin user registered.'
 );
-
-#is( $success_superadmin_admin_json->{_hidden_data}->{user}->{email},
-#    'anotheradmin@daedalus-project.io', );
 
 my $success_superadmin_admin = request(
     POST '/registernewuser',
@@ -293,19 +298,19 @@ my $success_superadmin_admin = request(
     )
 );
 
+is( $success_superadmin_admin->code(), 200, );
+
 my $success_superadmin_admin_json =
   decode_json( $success_superadmin_admin->content );
 
-is( $success_superadmin_admin_json->{status},
-    'Success', 'User has been created.' );
+is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_superadmin_admin_json->{message},
     'Admin user has been registered.',
     'Admin user registered.'
 );
 
-is( $success_superadmin_admin_json->{status},
-    'Success', 'User has been created.' );
+is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
 
 # Only "daedalus_manager" users receives _hidden_data
 
@@ -327,10 +332,12 @@ my $inactive_user_cant_login = request(
     )
 );
 
+is( $inactive_user_cant_login->code(), 403, );
+
 my $inactive_user_cant_login_json =
   decode_json( $inactive_user_cant_login->content );
 
-is( $inactive_user_cant_login_json->{status},  'Failed', );
+is( $inactive_user_cant_login_json->{status},  0, );
 is( $inactive_user_cant_login_json->{message}, 'Wrong e-mail or password.', );
 
 done_testing();

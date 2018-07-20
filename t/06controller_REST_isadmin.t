@@ -15,16 +15,8 @@ use Data::Dumper;
 
 ## GET
 
-my $imadmin_get_content      = get('/imadmin');
-my $imadmin_get_content_json = decode_json($imadmin_get_content);
-
-is_deeply(
-    $imadmin_get_content_json,
-    {
-        status  => 'Failed',
-        message => "This method does not support GET requests."
-    }
-);
+my $imadmin_get_content = get('/imadmin');
+ok( $imadmin_get_content, qr /Method GET not implemented/ );
 
 my $failed_imadmin_user_post_content = request(
     POST '/imadmin',
@@ -39,13 +31,15 @@ my $failed_imadmin_user_post_content = request(
     )
 );
 
+is( $failed_imadmin_user_post_content->code(), 403, );
+
 my $failed_imadmin_user_post_content_json =
   decode_json( $failed_imadmin_user_post_content->content );
 
 is_deeply(
     $failed_imadmin_user_post_content_json,
     {
-        'status'  => 'Failed',
+        'status'  => 0,
         'message' => 'Wrong e-mail or password.',
     }
 );
@@ -63,13 +57,15 @@ my $failed_imadmin_password_post_content = request(
     )
 );
 
+is( $failed_imadmin_password_post_content->code(), 403, );
+
 my $failed_imadmin_password_post_content_json =
   decode_json( $failed_imadmin_password_post_content->content );
 
 is_deeply(
     $failed_imadmin_password_post_content_json,
     {
-        'status'  => 'Failed',
+        'status'  => 0,
         'message' => 'Wrong e-mail or password.',
     }
 );
@@ -87,9 +83,11 @@ my $imadmin_post_success = request(
     )
 );
 
+is( $imadmin_post_success->code(), 200, );
+
 my $imadmin_post_success_json = decode_json( $imadmin_post_success->content );
 
-is( $imadmin_post_success_json->{status},          'Success', );
+is( $imadmin_post_success_json->{status},          1, );
 is( $imadmin_post_success_json->{message},         'You are an admin user.', );
 is( $imadmin_post_success_json->{data}->{imadmin}, 1, );
 isnt(
@@ -110,10 +108,12 @@ my $imadmin_post_success_other_admin = request(
     )
 );
 
+is( $imadmin_post_success_other_admin->code(), 200, );
+
 my $imadmin_post_success_other_admin_json =
   decode_json( $imadmin_post_success_other_admin->content );
 
-is( $imadmin_post_success_other_admin_json->{status}, 'Success', );
+is( $imadmin_post_success_other_admin_json->{status}, 1, );
 is(
     $imadmin_post_success_other_admin_json->{message},
     'You are an admin user.',
@@ -134,10 +134,11 @@ my $imadmin_post_failed_no_admin = request(
     )
 );
 
+is( $imadmin_post_failed_no_admin->code(), 403, );
+
 my $imadmin_post_failed_no_admin_json =
   decode_json( $imadmin_post_failed_no_admin->content );
 
-is( $imadmin_post_failed_no_admin_json->{status}, 'Failed', );
 is(
     $imadmin_post_failed_no_admin_json->{message},
     'You are not an admin user.',

@@ -70,7 +70,7 @@ sub createOrganization {
 
     if ( grep( /^$request_organization_name$/, @organization_names ) ) {
         $response = {
-            status  => 'Failed',
+            status  => 0,
             message => 'Duplicated organization name.',
           }
 
@@ -116,7 +116,7 @@ sub createOrganization {
           );
 
         $response = {
-            status       => 'Success',
+            status       => 1,
             message      => 'Organization created.',
             _hidden_data => {
                 organization_id            => $organization->id,
