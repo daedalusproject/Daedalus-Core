@@ -122,7 +122,7 @@ my $admin_admin_one_user_json = decode_json( $admin_admin_one_user->content );
 
 is( $admin_admin_one_user_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_admin_one_user_json->{registered_users} },
-    1, 'yetanotheradmin@daedalus-project.io has 1 user registered' );
+    2, 'There are 2 users registered' );
 isnt(
     $admin_admin_two_users_json->{registered_users}
       { ( keys %{ $admin_admin_two_users_json->{registered_users} } )[0] }

@@ -55,6 +55,29 @@ is(
     'Token is invalid because its too short.'
 );
 
+my $failed_empty_auth_token = request(
+    POST '/confirmregistration',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {}
+        }
+    )
+);
+
+is( $failed_empty_auth_token->code(), 400, );
+
+my $failed_empty_auth_token_json =
+  decode_json( $failed_empty_auth_token->content );
+
+is( $failed_empty_auth_token_json->{status},
+    0, 'Status failed, auth_token too short' );
+is(
+    $failed_empty_auth_token_json->{message},
+    'Invalid Auth Token.',
+    'Token is invalid because its too short.'
+);
+
 my $failed_invalid_auth_token = request(
     POST '/confirmregistration',
     Content_Type => 'application/json',

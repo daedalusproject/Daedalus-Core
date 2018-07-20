@@ -69,12 +69,7 @@ sub loginUser_POST {
 
     my $response = Daedalus::Users::Manager::authUser($c);
 
-    if ( $response->{status} ) {
-        $self->status_ok( $c, entity => $response, );
-    }
-    else {
-        $self->status_forbidden_entity( $c, entity => $response, );
-    }
+    $self->return_authorized_response( $c, $response );
 }
 
 =head2 imAdmin
@@ -92,13 +87,7 @@ sub imAdmin_POST {
 
     my $response = Daedalus::Users::Manager::isAdmin($c);
 
-    if ( $response->{status} ) {
-        $response->{status} = 1;
-        $self->status_ok( $c, entity => $response, );
-    }
-    else {
-        $self->status_forbidden_entity( $c, entity => $response, );
-    }
+    $self->return_authorized_response( $c, $response );
 }
 
 =head2 createOrganization
@@ -140,12 +129,7 @@ sub createOrganization_POST {
         }
     }
 
-    if ( $response->{status} ) {
-        $self->status_ok( $c, entity => $response, );
-    }
-    else {
-        $self->status_bad_request_entity( $c, entity => $response, );
-    }
+    $self->return_rest_response( $c, $response );
 }
 
 =head2 registerNewUser
@@ -184,13 +168,7 @@ sub registerNewUser_POST {
         }
     }
 
-    if ( $response->{status} ) {
-
-        return $self->status_ok( $c, entity => $response, );
-    }
-    else {
-        return $self->status_bad_request_entity( $c, entity => $response, );
-    }
+    $self->return_rest_response( $c, $response );
 }
 
 =head2 showRegisteredUsers
@@ -219,13 +197,7 @@ sub showRegisteredUsers_POST {
         $response = Daedalus::Users::Manager::showRegisteredUsers($c);
     }
 
-    if ( $response->{status} ) {
-
-        return $self->status_ok( $c, entity => $response, );
-    }
-    else {
-        return $self->status_bad_request_entity( $c, entity => $response, );
-    }
+    $self->return_rest_response( $c, $response );
 }
 
 =head2 confrimRegister
@@ -245,13 +217,7 @@ sub confrimRegister_POST {
 
     $response = Daedalus::Users::Manager::confirmRegistration($c);
 
-    if ( $response->{status} ) {
-        return $self->status_ok( $c, entity => $response, );
-    }
-    else {
-
-        return $self->status_bad_request_entity( $c, entity => $response, );
-    }
+    $self->return_rest_response( $c, $response );
 }
 
 =head1 Common functions
@@ -290,6 +256,45 @@ sub status_bad_request_entity {
     $c->response->status(400);
     $self->_set_entity( $c, $p{'entity'} );
     return 1;
+}
+
+=head2 return_authorized_response
+
+Returns 200 or 403 based on response status
+
+=cut
+
+sub return_authorized_response {
+    my $self     = shift;
+    my $c        = shift;
+    my $response = shift;
+
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+        return $self->status_forbidden_entity( $c, entity => $response, );
+    }
+}
+
+=head2 return_rest_response
+
+Returns 200 or 400 based on response status
+
+=cut
+
+sub return_rest_response {
+    my $self     = shift;
+    my $c        = shift;
+    my $response = shift;
+
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+
+        return $self->status_bad_request_entity( $c, entity => $response, );
+    }
 }
 
 =encoding utf8

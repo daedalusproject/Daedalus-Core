@@ -97,7 +97,7 @@ sub authUser {
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
 
-            # If user is superAdmin remove _hidden_data
+            # If user is not superAdmin remove _hidden_data
             if ( !isSuperAdmin( $c, $response ) ) {
                 delete $response->{_hidden_data};
             }
@@ -150,7 +150,7 @@ sub isAdmin {
 
 =head2 isSuperAdmin
 
-Return if required user belongs to a group with 'daedalus_manager'role
+Return if required user belongs to a group with 'daedalus_manager' role
 
 =cut
 
@@ -161,24 +161,28 @@ sub isSuperAdmin {
 
     my $is_super_admin = 0;
 
-    # Check-hidden_data;
-    my $find_by_user_id = 0;
-    if ( exists( $request->{_hidden_data} ) ) {
-        if ( exists( $request->{_hidden_data}->{user} ) ) {
-            $find_by_user_id = 1;
+  # Check-hidden_data;
+  #    my $find_by_user_id = 0;
+  #    if ( exists( $request->{_hidden_data} ) ) {
+  #        if ( exists( $request->{_hidden_data}->{user} ) ) {
+  #            $find_by_user_id = 1;
+  #
+  #            $is_super_admin =
+  #              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+  #
+  #        }
+  #    }
+  #    if ( $find_by_user_id == 0 ) {
+  #        my $user_admin_response = isAdmin($c);
+  #        if ( $user_admin_response->{status} ) {
+  #            $is_super_admin = isSuperAdminById( $c,
+  #                $user_admin_response->{_hidden_data}->{user}->{id} );
+  #        }
+  #    }
 
-            $is_super_admin =
-              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+    $is_super_admin =
+      isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
 
-        }
-    }
-    if ( $find_by_user_id == 0 ) {
-        my $user_admin_response = isAdmin($c);
-        if ( $user_admin_response->{status} ) {
-            $is_super_admin = isSuperAdminById( $c,
-                $user_admin_response->{_hidden_data}->{user}->{id} );
-        }
-    }
     return $is_super_admin;
 
 }
@@ -194,32 +198,34 @@ sub isSuperAdminById {
     my $c       = shift;
     my $user_id = shift;
 
+    my $is_super_admin           = 0;
     my $daedalus_manager_role_id = $c->model('CoreRealms::Role')
       ->find( { role_name => "daedalus_manager" } )->id;
 
     my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { 'user_id' => $user_id } );
-    if ($user_groups) {
-        my @user_groups_array = $user_groups->all;
-        for my $user_group (@user_groups_array) {
 
-            # Get group
-            my $group_id    = $user_group->group_id;
-            my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
-              ->search( { group_id => $group_id } )->all();
-            my $roles = "";
+    #if ($user_groups) {
+    my @user_groups_array = $user_groups->all;
+    for my $user_group (@user_groups_array) {
 
-            foreach (@roles_array) {
+        # Get group
+        my $group_id    = $user_group->group_id;
+        my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+          ->search( { group_id => $group_id } )->all();
+        my $roles = "";
+        foreach (@roles_array) {
 
-                if ( $_->role_id == $daedalus_manager_role_id ) {
-                    return 1;    #Break all
-                }
-
+            if ( $_->role_id == $daedalus_manager_role_id ) {
+                $is_super_admin = 1;    #Break all
             }
+
         }
     }
 
-    return 0;
+    #}
+
+    return $is_super_admin;
 
 }
 
