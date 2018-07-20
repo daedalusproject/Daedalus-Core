@@ -17,6 +17,8 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
+is( $failed_because_no_auth->code(), 403, );
+
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
@@ -41,6 +43,8 @@ my $failed_no_admin = request(
     )
 );
 
+is( $failed_no_admin->code(), 403, );
+
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status},  0, );
@@ -58,6 +62,8 @@ my $failed_no_data = request(
         }
     )
 );
+
+is( $failed_no_data->code(), 400, );
 
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
@@ -81,6 +87,8 @@ my $success_extra_data = request(
     )
 );
 
+is( $success_extra_data->code(), 200, );
+
 my $success_extra_data_json = decode_json( $success_extra_data->content );
 
 is( $success_extra_data_json->{status},  1, );
@@ -101,6 +109,8 @@ my $correct_data = request(
         }
     )
 );
+
+is( $correct_data->code(), 200, );
 
 my $correct_data_json = decode_json( $correct_data->content );
 
@@ -124,6 +134,8 @@ my $duplicated_organization = request(
     )
 );
 
+is( $duplicated_organization->code(), 400, );
+
 my $duplicated_organization_json =
   decode_json( $duplicated_organization->content );
 
@@ -146,6 +158,8 @@ my $duplicated_spaces_organization = request(
         }
     )
 );
+
+is( $duplicated_spaces_organization->code(), 400, );
 
 my $duplicated_spaces_organization_json =
   decode_json( $duplicated_spaces_organization->content );
@@ -171,6 +185,8 @@ my $correct_data_admin_not_superadmin = request(
         }
     )
 );
+
+is( $duplicated_spaces_organization->code(), 200, );
 
 my $correct_data_admin_not_superadmin_json =
   decode_json( $correct_data_admin_not_superadmin->content );
