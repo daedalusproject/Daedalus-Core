@@ -198,10 +198,7 @@ sub isAdmin {
         }
 
         # Check if logged user is admin
-
-        # die Dumper( $user_auth->{_hidden_data} );
-
-        my $is_admin = is_admin_model( $c, $user_id );
+        my $is_admin = $user_auth->{data}->{user}->{is_admin};
 
         if ( $is_admin == 1 ) {
             $response->{status}          = 1;
