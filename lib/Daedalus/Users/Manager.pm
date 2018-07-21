@@ -101,12 +101,13 @@ sub authUser {
             $response->{message} = 'Auth Successful.';
             $response->{data}    = {
                 'user' => {
-                    email   => $user->email,
-                    name    => $user->name,
-                    surname => $user->surname,
-                    phone   => $user->phone,
-                    api_key => $user->api_key,
-                    email   => $user->email,
+                    email    => $user->email,
+                    name     => $user->name,
+                    surname  => $user->surname,
+                    phone    => $user->phone,
+                    api_key  => $user->api_key,
+                    email    => $user->email,
+                    is_admin => is_admin_model( $c, $user->id ),
                 },
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
@@ -122,6 +123,45 @@ sub authUser {
         $response->{message} = 'Wrong e-mail or password.';
     }
     return $response;
+}
+
+=head2 is_admin_model
+
+Return if required user is admin using model.
+
+=cut
+
+sub is_admin_model {
+    my $c       = shift;
+    my $user_id = shift;
+
+    my $is_admin = 0;
+
+    my $organization_master_role_id = $c->model('CoreRealms::Role')
+      ->find( { role_name => "organization_master" } )->id;
+
+    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { 'user_id' => $user_id } );
+
+    #if ($user_groups) {
+    my @user_groups_array = $user_groups->all;
+    for my $user_group (@user_groups_array) {
+
+        # Get group
+        my $group_id    = $user_group->group_id;
+        my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+          ->search( { group_id => $group_id } )->all();
+        my $roles = "";
+        foreach (@roles_array) {
+
+            if ( $_->role_id == $organization_master_role_id ) {
+                $is_admin = 1;    #Break all
+            }
+        }
+    }
+
+    return $is_admin;
+
 }
 
 =head2 isAdmin
@@ -161,29 +201,7 @@ sub isAdmin {
 
         # die Dumper( $user_auth->{_hidden_data} );
 
-        my $is_admin                    = 0;
-        my $organization_master_role_id = $c->model('CoreRealms::Role')
-          ->find( { role_name => "organization_master" } )->id;
-
-        my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
-          ->search( { 'user_id' => $user_id } );
-
-        #if ($user_groups) {
-        my @user_groups_array = $user_groups->all;
-        for my $user_group (@user_groups_array) {
-
-            # Get group
-            my $group_id    = $user_group->group_id;
-            my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
-              ->search( { group_id => $group_id } )->all();
-            my $roles = "";
-            foreach (@roles_array) {
-
-                if ( $_->role_id == $organization_master_role_id ) {
-                    $is_admin = 1;    #Break all
-                }
-            }
-        }
+        my $is_admin = is_admin_model( $c, $user_id );
 
         if ( $is_admin == 1 ) {
             $response->{status}          = 1;
