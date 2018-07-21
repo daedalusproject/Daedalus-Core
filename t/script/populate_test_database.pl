@@ -108,7 +108,7 @@ my $organization_group_role =
 $schema->resultset('OrganizationGroupRole')->create(
     {
         group_id => $organization_group->id,
-        role_id  => $organization_master->id,
+        role_id  => $organization_master_role->id,
     }
 );
 
