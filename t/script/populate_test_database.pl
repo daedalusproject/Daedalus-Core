@@ -267,8 +267,10 @@ $schema->resultset('OrganizationGroupRole')->create(
 );
 
 $schema->resultset('OrganizationGroupRole')->create(
-    group_id => $yet_other_organization_group->id,
-    role_id  => $organization_master_role->id,
+    {
+        group_id => $yet_other_organization_group->id,
+        role_id  => $organization_master_role->id,
+    }
 );
 
 $schema->resultset('OrgaizationUsersGroup')->create(
