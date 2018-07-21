@@ -232,7 +232,6 @@ my $success_not_admin = request(
                 email   => 'othernotanadmin@daedalus-project.io',
                 name    => 'Other',
                 surname => 'Not Admin',
-
             },
         }
     )
@@ -259,10 +258,9 @@ my $success_admin = request(
                 password => 'Is a Password_1234',
             },
             new_user_data => {
-                email    => 'otheradmin@daedalus-project.io',
-                name     => 'Other',
-                surname  => 'Admin',
-                is_admin => 1,
+                email   => 'otheradmin@daedalus-project.io',
+                name    => 'Other',
+                surname => 'Admin',
             },
         }
     )
@@ -289,10 +287,9 @@ my $success_no_admin_user = request(
                 password => 'Is a Password_1234',
             },
             new_user_data => {
-                email    => 'othernoadmin@daedalus-project.io',
-                name     => 'Other',
-                surname  => 'No Admin',
-                is_admin => 0,
+                email   => 'othernoadmin@daedalus-project.io',
+                name    => 'Other',
+                surname => 'No Admin',
             },
         }
     )
@@ -319,10 +316,9 @@ my $success_superadmin_admin = request(
                 password => 'this_is_a_Test_1234',
             },
             new_user_data => {
-                email    => 'anotheradmin@daedalus-project.io',
-                name     => 'Another',
-                surname  => 'Admin',
-                is_admin => 1,
+                email   => 'anotheradmin@daedalus-project.io',
+                name    => 'Another',
+                surname => 'Admin',
             },
         }
     )

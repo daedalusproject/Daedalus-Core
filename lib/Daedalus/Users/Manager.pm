@@ -325,16 +325,7 @@ sub registerNewUser {
 
             }
             else {
-                # Is admin?
-                if ( exists $requested_user_data->{is_admin} ) {
-                    if ( $requested_user_data->{is_admin} != 0 ) {
-                        $requested_user_data->{is_admin} = 1;
-                    }
-                }
-                else {
-                    $requested_user_data->{is_admin} = 0;
-                }
-
+                #
                 # Create a user
                 my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
                 my $auth_token =
@@ -356,7 +347,6 @@ sub registerNewUser {
                         expires    => "3000-01-01",                   #Change it
                         active     => 0,
                         auth_token => $auth_token,
-                        is_admin => $requested_user_data->{is_admin},
                     }
                 );
 
@@ -373,12 +363,7 @@ sub registerNewUser {
 
                 $response->{status} = 1;
 
-                if ( $requested_user_data->{is_admin} ) {
-                    $response->{message} = "Admin user has been registered.";
-                }
-                else {
-                    $response->{message} = "User has been registered.";
-                }
+                $response->{message} = "User has been registered.";
 
                 if ( isSuperAdminById( $c, $registrator_user_id ) ) {
                     $response->{_hidden_data} = {
@@ -392,8 +377,6 @@ sub registerNewUser {
             }
         }
     }
-    return $response;
-
 }
 
 =head2 showRegisteredUsers

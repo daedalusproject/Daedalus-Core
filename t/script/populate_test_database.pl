@@ -61,7 +61,6 @@ my $user = $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => "1",
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
@@ -142,7 +141,6 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 0,
     }
 );
 
@@ -158,16 +156,14 @@ $password = sha512_base64("$salt$password");
 
 my $admin_again = $schema->resultset('User')->create(
     {
-        name       => $name,
-        surname    => $surname,
-        email      => $email,
-        api_key    => $api_key,
-        password   => $password,
-        salt       => $salt,
-        expires    => "3000-01-01",
-        active     => 1,
-        auth_token => $auth_token,
-        is_admin   => 1,
+        name     => $name,
+        surname  => $surname,
+        email    => $email,
+        api_key  => $api_key,
+        password => $password,
+        salt     => $salt,
+        expires  => "3000-01-01",
+        active   => 1,
     }
 );
 
@@ -213,7 +209,6 @@ my $yet_another_admin = $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
@@ -247,7 +242,6 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 0,
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
@@ -272,7 +266,6 @@ my $yet_other_user = $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
