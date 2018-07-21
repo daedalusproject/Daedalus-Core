@@ -196,6 +196,27 @@ my $admin_again = $schema->resultset('User')->create(
     }
 );
 
+my $admin_organization_group = $schema->resultset('OrganizationGroup')->create(
+    {
+        organization_id => $organization->id,
+        group_name      => "Daedalus Administrators",
+    }
+);
+
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $admin_organization_group->id,
+        role_id  => $organization_master_role->id,
+    }
+);
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $admin_organization_group->id,
+        user_id  => $admin_again->id,
+    }
+);
+
 # Create an inactive user
 
 $name       = 'Inactive';
