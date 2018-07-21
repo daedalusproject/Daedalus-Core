@@ -51,6 +51,22 @@ sub check_user_passwrd {
     return $password eq $user_password;
 }
 
+=head2 get_user
+
+Retrieve user data from model
+
+=cut
+
+sub get_user {
+    my $c     = shift;
+    my $email = shift;
+
+    my $user =
+      $c->model('CoreRealms::User')->find( { email => $email } );
+
+    return $user;
+}
+
 =head2 authUser
 
 Auths user, returns auth data if submitted credentials match
@@ -65,8 +81,7 @@ sub authUser {
     my $response;
 
     # Get user from model
-    my $user =
-      $c->model('CoreRealms::User')->find( { email => $auth->{email} } );
+    my $user = get_user( $c, $auth->{email} );
 
     if ($user) {
         if (
@@ -86,13 +101,12 @@ sub authUser {
             $response->{message} = 'Auth Successful.';
             $response->{data}    = {
                 'user' => {
-                    email    => $user->email,
-                    name     => $user->name,
-                    surname  => $user->surname,
-                    phone    => $user->phone,
-                    api_key  => $user->api_key,
-                    email    => $user->email,
-                    is_admin => $user->is_admin,
+                    email   => $user->email,
+                    name    => $user->name,
+                    surname => $user->surname,
+                    phone   => $user->phone,
+                    api_key => $user->api_key,
+                    email   => $user->email,
                 },
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
@@ -133,12 +147,45 @@ sub isAdmin {
             data    => { imadmin => 0 },
         };
 
+        my $user_id = -1;
+
         if ( exists $user_auth->{_hidden_data} ) {
             $response->{_hidden_data} = $user_auth->{_hidden_data};
+            $user_id = $user_auth->{_hidden_data}->{user}->{id};
+        }
+        else {
+            $user_id = get_user( $c, $user_auth->{data}->{user}->{email} )->id;
         }
 
         # Check if logged user is admin
-        if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
+
+        # die Dumper( $user_auth->{_hidden_data} );
+
+        my $is_admin                    = 0;
+        my $organization_master_role_id = $c->model('CoreRealms::Role')
+          ->find( { role_name => "organization_master" } )->id;
+
+        my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+          ->search( { 'user_id' => $user_id } );
+
+        #if ($user_groups) {
+        my @user_groups_array = $user_groups->all;
+        for my $user_group (@user_groups_array) {
+
+            # Get group
+            my $group_id    = $user_group->group_id;
+            my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+              ->search( { group_id => $group_id } )->all();
+            my $roles = "";
+            foreach (@roles_array) {
+
+                if ( $_->role_id == $organization_master_role_id ) {
+                    $is_admin = 1;    #Break all
+                }
+            }
+        }
+
+        if ( $is_admin == 1 ) {
             $response->{status}          = 1;
             $response->{message}         = "You are an admin user.";
             $response->{data}->{imadmin} = 1;
@@ -160,25 +207,6 @@ sub isSuperAdmin {
     my $request = shift;
 
     my $is_super_admin = 0;
-
-  # Check-hidden_data;
-  #    my $find_by_user_id = 0;
-  #    if ( exists( $request->{_hidden_data} ) ) {
-  #        if ( exists( $request->{_hidden_data}->{user} ) ) {
-  #            $find_by_user_id = 1;
-  #
-  #            $is_super_admin =
-  #              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
-  #
-  #        }
-  #    }
-  #    if ( $find_by_user_id == 0 ) {
-  #        my $user_admin_response = isAdmin($c);
-  #        if ( $user_admin_response->{status} ) {
-  #            $is_super_admin = isSuperAdminById( $c,
-  #                $user_admin_response->{_hidden_data}->{user}->{id} );
-  #        }
-  #    }
 
     $is_super_admin =
       isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
@@ -222,8 +250,6 @@ sub isSuperAdminById {
 
         }
     }
-
-    #}
 
     return $is_super_admin;
 
