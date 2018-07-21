@@ -91,9 +91,11 @@ my $organization =
 my $organization_group = $schema->resultset('OrganizationGroup')->create(
     {
         organization_id => $organization->id,
-        group_name      => "Daedalus Administrators",
+        group_name      => "Daedalus Super Administrators",
     }
 );
+
+# Daedalus Administrators has the following roles: # - daedalus_manager # - organization_master
 
 my $organization_group_role =
   $schema->resultset('OrganizationGroupRole')->create(
