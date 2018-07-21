@@ -95,7 +95,7 @@ my $organization_group = $schema->resultset('OrganizationGroup')->create(
     }
 );
 
-# Daedalus Administrators has the following roles: # - daedalus_manager # - organization_master
+# Daedalus Administrators has the following roles #  daedalus_manager #  organization_master
 
 my $organization_group_role =
   $schema->resultset('OrganizationGroupRole')->create(
@@ -181,7 +181,7 @@ $salt =
 '1ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSL1297EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password = sha512_base64("$salt$password");
 
-$schema->resultset('User')->create(
+my $admin_again = $schema->resultset('User')->create(
     {
         name       => $name,
         surname    => $surname,
@@ -223,9 +223,9 @@ $schema->resultset('User')->create(
     }
 );
 
-$name       = 'Yet Another Admin';
-$surname    = 'Again';
-$email      = 'otheradminagain@daedalus-project.io';
+$name       = 'Admin';
+$surname    = 'User';
+$email      = 'otheradminagain@megashops.com';
 $password   = '__::___Password_1234';
 $api_key    = '1TluauLErCtXhbBdyxfpVHpfifoBaJb';
 $auth_token = '1qYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
@@ -259,13 +259,17 @@ my $yet_other_organization_group =
     }
   );
 
-my $yet_other_organization_group_role =
-  $schema->resultset('OrganizationGroupRole')->create(
+$schema->resultset('OrganizationGroupRole')->create(
     {
         group_id => $yet_other_organization_group->id,
         role_id  => $fireman->id,
     }
-  );
+);
+
+$schema->resultset('OrganizationGroupRole')->create(
+    group_id => $yet_other_organization_group->id,
+    role_id  => $organization_master_role->id,
+);
 
 $schema->resultset('OrgaizationUsersGroup')->create(
     {
