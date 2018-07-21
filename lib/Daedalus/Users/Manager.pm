@@ -198,6 +198,7 @@ sub isAdmin {
         }
 
         # Check if logged user is admin
+
         my $is_admin = $user_auth->{data}->{user}->{is_admin};
 
         if ( $is_admin == 1 ) {
@@ -377,6 +378,8 @@ sub registerNewUser {
             }
         }
     }
+
+    return $response;
 }
 
 =head2 showRegisteredUsers
@@ -409,7 +412,9 @@ sub showRegisteredUsers {
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
-                    is_admin => $registered_user->registered_user->is_admin,
+                    is_admin => is_admin_model(
+                        $c, $registered_user->registered_user->id
+                    ),
                 },
             },
             _hidden_data => {

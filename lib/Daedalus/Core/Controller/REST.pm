@@ -148,7 +148,6 @@ sub registerNewUser_POST {
     my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
     my $response;
-
     if ( !$is_admin->{status} ) {
         $response = $is_admin;
         return $self->status_forbidden_entity( $c, entity => $response, );
@@ -160,7 +159,7 @@ sub registerNewUser_POST {
                 message => 'Invalid user data.'
             };
 
-            return $self->status_bad_request_entity( $c, entity => $response, );
+            $self->status_bad_request_entity( $c, entity => $response, );
         }
         else {
             $response =
@@ -168,7 +167,7 @@ sub registerNewUser_POST {
         }
     }
 
-    $self->return_rest_response( $c, $response );
+    return $self->return_rest_response( $c, $response );
 }
 
 =head2 showRegisteredUsers

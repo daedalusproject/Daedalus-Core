@@ -273,8 +273,8 @@ my $success_admin_json = decode_json( $success_admin->content );
 is( $success_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_admin_json->{message},
-    'Admin user has been registered.',
-    'Admin user registered.'
+    'User has been registered.',
+    'User registered.'
 );
 
 my $success_no_admin_user = request(
@@ -332,8 +332,8 @@ my $success_superadmin_admin_json =
 is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
 is(
     $success_superadmin_admin_json->{message},
-    'Admin user has been registered.',
-    'Admin user registered.'
+    'User has been registered.',
+    'User registered.'
 );
 
 is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
