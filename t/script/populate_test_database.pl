@@ -61,13 +61,12 @@ my $user = $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => "1",
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
 # Create Roles
 
-my $organization_master =
+my $organization_master_role =
   $schema->resultset('Role')->create( { role_name => "organization_master", } );
 $schema->resultset('Role')->create( { role_name => "project_caretaker", } );
 $schema->resultset('Role')->create(
@@ -91,9 +90,11 @@ my $organization =
 my $organization_group = $schema->resultset('OrganizationGroup')->create(
     {
         organization_id => $organization->id,
-        group_name      => "Daedalus Administrators",
+        group_name      => "Daedalus Super Administrators",
     }
 );
+
+# Daedalus Administrators has the following roles #  daedalus_manager #  organization_master
 
 my $organization_group_role =
   $schema->resultset('OrganizationGroupRole')->create(
@@ -106,7 +107,7 @@ my $organization_group_role =
 $schema->resultset('OrganizationGroupRole')->create(
     {
         group_id => $organization_group->id,
-        role_id  => $organization_master->id,
+        role_id  => $organization_master_role->id,
     }
 );
 
@@ -140,32 +141,6 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 0,
-    }
-);
-
-$name       = 'Other Admin';
-$surname    = 'User';
-$email      = 'yetanotheradmin@daedalus-project.io';
-$password   = 'Is a Password_1234';
-$api_key    = 'lTluauLErCtXhbBdyxfpVHpdodiBaJb';
-$auth_token = 'gqYyhZWMffFm9WK6q/XYUVcqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
-$salt =
-'1ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
-$password = sha512_base64("$salt$password");
-
-$schema->resultset('User')->create(
-    {
-        name       => $name,
-        surname    => $surname,
-        email      => $email,
-        api_key    => $api_key,
-        password   => $password,
-        salt       => $salt,
-        expires    => "3000-01-01",
-        active     => 1,
-        auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
@@ -179,7 +154,51 @@ $salt =
 '1ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSL1297EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password = sha512_base64("$salt$password");
 
-$schema->resultset('User')->create(
+my $admin_again = $schema->resultset('User')->create(
+    {
+        name     => $name,
+        surname  => $surname,
+        email    => $email,
+        api_key  => $api_key,
+        password => $password,
+        salt     => $salt,
+        expires  => "3000-01-01",
+        active   => 1,
+    }
+);
+
+my $admin_organization_group = $schema->resultset('OrganizationGroup')->create(
+    {
+        organization_id => $organization->id,
+        group_name      => "Daedalus Administrators",
+    }
+);
+
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $admin_organization_group->id,
+        role_id  => $organization_master_role->id,
+    }
+);
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $admin_organization_group->id,
+        user_id  => $admin_again->id,
+    }
+);
+
+$name       = 'Other Admin';
+$surname    = 'User';
+$email      = 'yetanotheradmin@daedalus-project.io';
+$password   = 'Is a Password_1234';
+$api_key    = 'lTluauLErCtXhbBdyxfpVHpdodiBaJb';
+$auth_token = 'gqYyhZWMffFm9WK6q/XYUVcqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
+$salt =
+'1ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
+$password = sha512_base64("$salt$password");
+
+my $yet_another_admin = $schema->resultset('User')->create(
     {
         name       => $name,
         surname    => $surname,
@@ -190,7 +209,13 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 1,
+    }
+);
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $admin_organization_group->id,
+        user_id  => $yet_another_admin->id,
     }
 );
 
@@ -217,13 +242,12 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 0,
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
-$name       = 'Yet Another Admin';
-$surname    = 'Again';
-$email      = 'otheradminagain@daedalus-project.io';
+$name       = 'Admin';
+$surname    = 'User';
+$email      = 'otheradminagain@megashops.com';
 $password   = '__::___Password_1234';
 $api_key    = '1TluauLErCtXhbBdyxfpVHpfifoBaJb';
 $auth_token = '1qYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
@@ -242,7 +266,6 @@ my $yet_other_user = $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 1,
     }
 );
 
@@ -257,13 +280,19 @@ my $yet_other_organization_group =
     }
   );
 
-my $yet_other_organization_group_role =
-  $schema->resultset('OrganizationGroupRole')->create(
+$schema->resultset('OrganizationGroupRole')->create(
     {
         group_id => $yet_other_organization_group->id,
         role_id  => $fireman->id,
     }
-  );
+);
+
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $yet_other_organization_group->id,
+        role_id  => $organization_master_role->id,
+    }
+);
 
 $schema->resultset('OrgaizationUsersGroup')->create(
     {
