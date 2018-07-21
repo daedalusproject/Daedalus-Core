@@ -67,7 +67,7 @@ my $user = $schema->resultset('User')->create(
 
 # Create Roles
 
-my $organization_master =
+my $organization_master_role =
   $schema->resultset('Role')->create( { role_name => "organization_master", } );
 $schema->resultset('Role')->create( { role_name => "project_caretaker", } );
 $schema->resultset('Role')->create(
