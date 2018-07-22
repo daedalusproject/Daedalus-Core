@@ -37,4 +37,4 @@ cover:
         - make
         - cover -test
         - cover -report codecov
-    coverage: /Total+.+s(d+.d+?)$/
+    coverage: /Total\s+.+\s(\d+\.\d+?)$/
