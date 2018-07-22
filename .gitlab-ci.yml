@@ -17,7 +17,9 @@ integration_tests:
         - rm -f /var/tmp/daedalus_core_realms.db
         - perl script/deploy.pl SQLite /var/tmp/daedalus_core_realms.db
         - perl t/script/populate_test_database.pl
-        - perl Makefile.PL && make &&  make test
+        - perl Makefile.PL
+        - make
+        - make test
 
 cover:
     stage: test
