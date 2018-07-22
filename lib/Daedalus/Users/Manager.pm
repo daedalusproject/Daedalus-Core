@@ -51,6 +51,22 @@ sub check_user_passwrd {
     return $password eq $user_password;
 }
 
+=head2 get_user
+
+Retrieve user data from model
+
+=cut
+
+sub get_user {
+    my $c     = shift;
+    my $email = shift;
+
+    my $user =
+      $c->model('CoreRealms::User')->find( { email => $email } );
+
+    return $user;
+}
+
 =head2 authUser
 
 Auths user, returns auth data if submitted credentials match
@@ -65,8 +81,7 @@ sub authUser {
     my $response;
 
     # Get user from model
-    my $user =
-      $c->model('CoreRealms::User')->find( { email => $auth->{email} } );
+    my $user = get_user( $c, $auth->{email} );
 
     if ($user) {
         if (
@@ -92,7 +107,7 @@ sub authUser {
                     phone    => $user->phone,
                     api_key  => $user->api_key,
                     email    => $user->email,
-                    is_admin => $user->is_admin,
+                    is_admin => is_admin_model( $c, $user->id ),
                 },
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
@@ -108,6 +123,45 @@ sub authUser {
         $response->{message} = 'Wrong e-mail or password.';
     }
     return $response;
+}
+
+=head2 is_admin_model
+
+Return if required user is admin using model.
+
+=cut
+
+sub is_admin_model {
+    my $c       = shift;
+    my $user_id = shift;
+
+    my $is_admin = 0;
+
+    my $organization_master_role_id = $c->model('CoreRealms::Role')
+      ->find( { role_name => "organization_master" } )->id;
+
+    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { 'user_id' => $user_id } );
+
+    #if ($user_groups) {
+    my @user_groups_array = $user_groups->all;
+    for my $user_group (@user_groups_array) {
+
+        # Get group
+        my $group_id    = $user_group->group_id;
+        my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+          ->search( { group_id => $group_id } )->all();
+        my $roles = "";
+        foreach (@roles_array) {
+
+            if ( $_->role_id == $organization_master_role_id ) {
+                $is_admin = 1;    #Break all
+            }
+        }
+    }
+
+    return $is_admin;
+
 }
 
 =head2 isAdmin
@@ -133,12 +187,21 @@ sub isAdmin {
             data    => { imadmin => 0 },
         };
 
+        my $user_id = -1;
+
         if ( exists $user_auth->{_hidden_data} ) {
             $response->{_hidden_data} = $user_auth->{_hidden_data};
+            $user_id = $user_auth->{_hidden_data}->{user}->{id};
+        }
+        else {
+            $user_id = get_user( $c, $user_auth->{data}->{user}->{email} )->id;
         }
 
         # Check if logged user is admin
-        if ( $user_auth->{data}->{user}->{is_admin} == 1 ) {
+
+        my $is_admin = $user_auth->{data}->{user}->{is_admin};
+
+        if ( $is_admin == 1 ) {
             $response->{status}          = 1;
             $response->{message}         = "You are an admin user.";
             $response->{data}->{imadmin} = 1;
@@ -160,25 +223,6 @@ sub isSuperAdmin {
     my $request = shift;
 
     my $is_super_admin = 0;
-
-  # Check-hidden_data;
-  #    my $find_by_user_id = 0;
-  #    if ( exists( $request->{_hidden_data} ) ) {
-  #        if ( exists( $request->{_hidden_data}->{user} ) ) {
-  #            $find_by_user_id = 1;
-  #
-  #            $is_super_admin =
-  #              isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
-  #
-  #        }
-  #    }
-  #    if ( $find_by_user_id == 0 ) {
-  #        my $user_admin_response = isAdmin($c);
-  #        if ( $user_admin_response->{status} ) {
-  #            $is_super_admin = isSuperAdminById( $c,
-  #                $user_admin_response->{_hidden_data}->{user}->{id} );
-  #        }
-  #    }
 
     $is_super_admin =
       isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
@@ -222,8 +266,6 @@ sub isSuperAdminById {
 
         }
     }
-
-    #}
 
     return $is_super_admin;
 
@@ -284,16 +326,7 @@ sub registerNewUser {
 
             }
             else {
-                # Is admin?
-                if ( exists $requested_user_data->{is_admin} ) {
-                    if ( $requested_user_data->{is_admin} != 0 ) {
-                        $requested_user_data->{is_admin} = 1;
-                    }
-                }
-                else {
-                    $requested_user_data->{is_admin} = 0;
-                }
-
+                #
                 # Create a user
                 my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
                 my $auth_token =
@@ -315,7 +348,6 @@ sub registerNewUser {
                         expires    => "3000-01-01",                   #Change it
                         active     => 0,
                         auth_token => $auth_token,
-                        is_admin => $requested_user_data->{is_admin},
                     }
                 );
 
@@ -332,12 +364,7 @@ sub registerNewUser {
 
                 $response->{status} = 1;
 
-                if ( $requested_user_data->{is_admin} ) {
-                    $response->{message} = "Admin user has been registered.";
-                }
-                else {
-                    $response->{message} = "User has been registered.";
-                }
+                $response->{message} = "User has been registered.";
 
                 if ( isSuperAdminById( $c, $registrator_user_id ) ) {
                     $response->{_hidden_data} = {
@@ -351,8 +378,8 @@ sub registerNewUser {
             }
         }
     }
-    return $response;
 
+    return $response;
 }
 
 =head2 showRegisteredUsers
@@ -385,7 +412,9 @@ sub showRegisteredUsers {
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
-                    is_admin => $registered_user->registered_user->is_admin,
+                    is_admin => is_admin_model(
+                        $c, $registered_user->registered_user->id
+                    ),
                 },
             },
             _hidden_data => {
