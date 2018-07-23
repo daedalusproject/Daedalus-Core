@@ -375,6 +375,17 @@ sub registerNewUser {
                     };
 
                 }
+
+                # Send notification to new user
+                notify_new_user(
+                    $c,
+                    {
+                        email      => $registered_user->email,
+                        auth_token => $registered_user->auth_token,
+                        name       => $registered_user->name,
+                        surname    => $registered_user->surname
+                    }
+                );
             }
         }
     }
