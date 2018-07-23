@@ -14,6 +14,7 @@ use Moose;
 
 use Email::Valid;
 use Daedalus::Utils::Crypt;
+use Daedalus::Messages::Manager qw(notify_new_user);
 use Data::Dumper;
 
 use namespace::clean -except => 'meta';
