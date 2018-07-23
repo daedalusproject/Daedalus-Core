@@ -1,16 +1,16 @@
 <config>
-       <name>Daedalus::Core</name>
-<hermes>
-  <type>RabbitMQ</type>
-  <user>guest</user>
-  <port>5672</port>
-  <host>localhost</host>
-  <password>guest</password>
-  <queues>
-    <daedalus_core_notifications purpose="daedalus_core_notifications" channel="45">
-      <queue_options durable="1" delivery_mode="2" />
-      <amqp_props delivery_mode="2"/>
-    </daedalus_core_notifications>
-  </queues>
-</hermes>
+    <name>Daedalus::Core</name>
+    <hermes>
+        <type>rabbitmq</type>
+        <user>guest</user>
+        <port>5672</port>
+        <host>localhost</host>
+        <password>guest</password>
+        <queues>
+            <daedalus_core_notifications purpose="daedalus_core_notifications" channel="45">
+                <queue_options durable="1"/>
+                <amqp_props delivery_mode="2"/>
+            </daedalus_core_notifications>
+        </queues>
+    </hermes>
 </config>

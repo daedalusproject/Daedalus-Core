@@ -41,7 +41,24 @@ Send a notification to a new registered user
 =cut
 
 sub notify_new_user {
-    return 1;
+    my $c    = shift;
+    my $data = shift;
+
+    my $hermes_config = $c->config->{hermes};
+
+    my $HERMES = Daedalus::Hermes->new( $hermes_config->{type} );
+    my $hermes = $HERMES->new(
+        host     => $hermes_config->{host},
+        user     => $hermes_config->{user},
+        password => $hermes_config->{password},
+        port     => $hermes_config->{port},
+        queues   => $hermes_config->{queues},
+    );
+
+    $hermes->validateAndSend(
+        { queue => 'daedalus_core_notifications', message => "test" } );
+
+    undef $hermes;
 }
 
 __PACKAGE__->meta->make_immutable;
