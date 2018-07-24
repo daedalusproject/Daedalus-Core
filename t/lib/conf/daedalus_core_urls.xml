@@ -1,0 +1,4 @@
+<config>
+    <name>Daedalus::Core</name>
+    <baseurl value="http://dev-api.daedalus-project.io"/>
+</config>
