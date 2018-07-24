@@ -14,6 +14,7 @@ use Moose;
 
 use Email::Valid;
 use Daedalus::Utils::Crypt;
+use Daedalus::Messages::Manager qw(notify_new_user);
 use Data::Dumper;
 
 use namespace::clean -except => 'meta';
@@ -375,6 +376,17 @@ sub registerNewUser {
                     };
 
                 }
+
+                # Send notification to new user
+                notify_new_user(
+                    $c,
+                    {
+                        email      => $registered_user->email,
+                        auth_token => $registered_user->auth_token,
+                        name       => $registered_user->name,
+                        surname    => $registered_user->surname
+                    }
+                );
             }
         }
     }
