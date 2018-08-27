@@ -48,6 +48,9 @@ sub notify_new_user {
     my $hermes_config = $c->config->{hermes};
     my $base_url      = $c->config->{baseurl}->{value};
     my $confirm_url   = "$base_url/confirmregistration/$data->{auth_token}";
+    my $subject =
+      "Welcome to Daedalus Project, $data->{name} $data->{surname}.";
+    my $body = "Please, confirm your register at $confirm_url";
 
     my $HERMES = Daedalus::Hermes->new( $hermes_config->{type} );
     my $hermes = $HERMES->new(
@@ -59,10 +62,9 @@ sub notify_new_user {
     );
 
     my $message = {
-        email       => $data->{email},
-        name        => $data->{name},
-        surname     => $data->{surname},
-        confirm_url => $confirm_url
+        emailto => $data->{email},
+        subject => $subject,
+        body    => $body,
     };
 
     my $encoded_message = encode_json($message);
