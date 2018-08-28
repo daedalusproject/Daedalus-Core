@@ -12,6 +12,7 @@ use strict;
 use warnings;
 use Moose;
 use Daedalus::Hermes;
+use JSON::XS;
 use Data::Dumper;
 use base qw(Exporter);
 
@@ -45,6 +46,11 @@ sub notify_new_user {
     my $data = shift;
 
     my $hermes_config = $c->config->{hermes};
+    my $base_url      = $c->config->{baseurl}->{value};
+    my $confirm_url   = "$base_url/confirmregistration/$data->{auth_token}";
+    my $subject =
+      "Welcome to Daedalus Project, $data->{name} $data->{surname}.";
+    my $body = "Please, confirm your register at $confirm_url";
 
     my $HERMES = Daedalus::Hermes->new( $hermes_config->{type} );
     my $hermes = $HERMES->new(
@@ -55,12 +61,21 @@ sub notify_new_user {
         queues   => $hermes_config->{queues},
     );
 
+    my $message = {
+        emailto => $data->{email},
+        subject => $subject,
+        body    => $body,
+    };
+
+    my $encoded_message = encode_json($message);
+
     $hermes->validateAndSend(
-        { queue => 'daedalus_core_notifications', message => "test" } );
+        { queue => 'daedalus_core_notifications', message => $encoded_message }
+    );
 
     undef $hermes;
     undef $HERMES;
 }
 
-#__PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable;
 1;
