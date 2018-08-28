@@ -1,5 +1,3 @@
-requires 'Devel::Cover::Report::Codecov', 0.22;
-
 recommends 'Pod::Usage';
 
 on test => sub {
