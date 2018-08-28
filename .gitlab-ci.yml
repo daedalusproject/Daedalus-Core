@@ -46,4 +46,5 @@ cover:
         - perl Makefile.PL
         - make
         - cover -test
+        - cover -report codecov
     coverage: /Total\s+.+\s(\d+\.\d+?)$/
