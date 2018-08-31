@@ -219,6 +219,26 @@ sub confrimRegister_POST {
     $self->return_rest_response( $c, $response );
 }
 
+=head2 showinactiveusers
+
+Admin users are allowed to watch which users registered by them still inactive.
+
+=cut
+
+sub showInactiveUsers : Path('/showinactiveusers') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub showInactiveUsers_POST {
+    my ( $self, $c ) = @_;
+    my $response;
+
+    $response = Daedalus::Users::Manager::showInactiveUsers($c);
+
+    $self->return_rest_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions
