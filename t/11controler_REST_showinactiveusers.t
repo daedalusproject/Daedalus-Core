@@ -69,11 +69,10 @@ my $admin_two_user = request(
 
 is( $admin_two_user->code(), 200, );
 
-my $admin_two_user_json =
-  decode_json( $admin_two_user->content );
+my $admin_two_user_json = decode_json( $admin_two_user->content );
 
 is( $admin_two_user_json->{status}, 1, 'Status success, admin.' );
-is( keys %{ $admin_admin_one_user_json->{inactive_users} },
+is( keys %{ $admin_two_user_json->{inactive_users} },
     2, 'There are 2 inactive users' );
 
 my $anotheradmin_admin_zero_users = request(
