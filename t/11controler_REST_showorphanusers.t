@@ -52,4 +52,6 @@ my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 is( $failed_no_admin_json->{status},  0, );
 is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
+# yetanotheradmin@daedalus-project.io has registered two users for the time being, these users have not confirmed its registration yet
+
 done_testing();
