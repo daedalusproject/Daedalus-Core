@@ -232,10 +232,17 @@ sub showInactiveUsers : Path('/showinactiveusers') : Args(0) :
 
 sub showInactiveUsers_POST {
     my ( $self, $c ) = @_;
+
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
     my $response;
 
-    $response = Daedalus::Users::Manager::showInactiveUsers($c);
-
+    if ( !$is_admin->{status} ) {
+        $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
+    }
+    else {
+        $response = Daedalus::Users::Manager::showInactiveUsers($c);
+    }
     $self->return_rest_response( $c, $response );
 }
 

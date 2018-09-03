@@ -518,6 +518,37 @@ sub confirmRegistration {
     return $response;
 }
 
+=head2 showInactiveUsers
+
+List users, show inactive ones.
+
+=cut
+
+sub showInactiveUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my $response;
+
+    if ( $registered_users_respose->{status} != 1 ) {
+        $response = $registered_users_respose;
+    }
+    else {
+        my $registered_users = $registered_users_respose->{registered_users};
+
+        my %inactive_users = map {
+            $registered_users->{$_}->{data}->{user}->{active} == 0
+              ? ( $_ => $registered_users->{$_} )
+              : ()
+        } keys %$registered_users;
+
+        $response->{status}         = 1;
+        $response->{inactive_users} = \%inactive_users;
+    }
+    return $response;
+}
+
 =head2 Get User id
 
 Get user id.
