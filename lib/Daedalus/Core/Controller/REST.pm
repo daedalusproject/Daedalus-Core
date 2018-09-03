@@ -246,6 +246,32 @@ sub showInactiveUsers_POST {
     $self->return_rest_response( $c, $response );
 }
 
+=head2 showactiveusers
+
+Admin users are allowed to watch which users registered who have confirmed their registration.
+
+=cut
+
+sub showActiveUsers : Path('/showactiveusers') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub showActiveUsers_POST {
+    my ( $self, $c ) = @_;
+
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
+    my $response;
+
+    if ( !$is_admin->{status} ) {
+        $response = $is_admin;
+        return $self->status_forbidden_entity( $c, entity => $response, );
+    }
+    else {
+        $response = Daedalus::Users::Manager::showActiveUsers($c);
+    }
+    $self->return_rest_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions

@@ -518,6 +518,33 @@ sub confirmRegistration {
     return $response;
 }
 
+=head2 showActiveUsers
+
+List users, show active ones.
+
+=cut
+
+sub showActiveUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my $response;
+
+    my $registered_users = $registered_users_respose->{registered_users};
+
+    my %inactive_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 1
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
+
+    $response->{status}       = 1;
+    $response->{active_users} = \%inactive_users;
+
+    return $response;
+}
+
 =head2 showInactiveUsers
 
 List users, show inactive ones.

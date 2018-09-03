@@ -10,7 +10,7 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 
-my $endpoint = "showinactiveusers";
+my $endpoint = "showactiveusers";
 
 my $show_inactive_users_GET_content = get($endpoint);
 ok( $show_inactive_users_GET_content, qr /Method GET not implemented/ );
@@ -56,7 +56,7 @@ is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
 # admin@daedalus-project.io has registered two users for the time being, these users have not confirmed its registration yet
 
-my $admin_two_user = request(
+my $admin_one_user = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Content      => encode_json(
@@ -69,13 +69,13 @@ my $admin_two_user = request(
     )
 );
 
-is( $admin_two_user->code(), 200, );
+is( $admin_one_user->code(), 200, );
 
-my $admin_two_user_json = decode_json( $admin_two_user->content );
+my $admin_one_user_json = decode_json( $admin_one_user->content );
 
-is( $admin_two_user_json->{status}, 1, 'Status success, admin.' );
-is( keys %{ $admin_two_user_json->{inactive_users} },
-    2, 'There are 2 inactive users' );
+is( $admin_one_user_json->{status}, 1, 'Status success, admin.' );
+is( keys %{ $admin_one_user_json->{active_users} },
+    1, 'There is one active user' );
 
 my $anotheradmin_admin_zero_users = request(
     POST $endpoint,
@@ -95,16 +95,35 @@ is( $anotheradmin_admin_zero_users->code(), 200, );
 my $anotheradmin_admin_zero_users_json =
   decode_json( $anotheradmin_admin_zero_users->content );
 
-is( $anotheradmin_admin_zero_users_json->{status},
-    1, 'Status success, andmin.' );
-is( keys %{ $anotheradmin_admin_zero_users_json->{inactive_users} },
-    0, 'adminagain@daedalus-project.io has 0 users inactive' );
+is( $anotheradmin_admin_zero_users_json->{status}, 1,
+    'Status success, admin.' );
+is( keys %{ $anotheradmin_admin_zero_users_json->{active_users} },
+    0, 'adminagain@daedalus-project.io has 0 users active' );
 
 # Let's confirm one of admin@daedalus-project.io inactive users
 # othernotanadmin@daedalus-project.io
 
-my $inactive_user_data = $admin_two_user_json->{inactive_users}
-  ->{'othernotanadmin@daedalus-project.io'};
+my $admin_one_inactive_user = request(
+    POST '/showinactiveusers',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+#anotheradmin@daedalus-project.io
+my $admin_one_inactive_user_json =
+  decode_json( $admin_one_inactive_user->content );
+
+is( $admin_one_inactive_user_json->{status}, 1, 'Status success, admin.' );
+
+my $inactive_user_data = $admin_one_inactive_user_json->{inactive_users}
+  ->{'anotheradmin@daedalus-project.io'};
 my $inactive_user_data_auth_token =
   $inactive_user_data->{_hidden_data}->{user}->{auth_token};
 
@@ -123,7 +142,7 @@ my $success_valid_auth_token_and_password = request(
 
 is( $success_valid_auth_token_and_password->code(), 200 );
 
-my $admin_one_user = request(
+my $admin_two_users = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Content      => encode_json(
@@ -136,12 +155,12 @@ my $admin_one_user = request(
     )
 );
 
-is( $admin_one_user->code(), 200, );
+is( $admin_two_users->code(), 200, );
 
-my $admin_one_user_json = decode_json( $admin_one_user->content );
+my $admin_two_users_json = decode_json( $admin_two_users->content );
 
-is( $admin_one_user_json->{status}, 1, 'Status success, admin.' );
-is( keys %{ $admin_one_user_json->{inactive_users} },
-    1, 'Now, There is only one inactive user' );
+is( $admin_two_users_json->{status}, 1, 'Status success, admin.' );
+is( keys %{ $admin_two_users_json->{active_users} },
+    2, 'Now, There are two active users' );
 
 done_testing();
