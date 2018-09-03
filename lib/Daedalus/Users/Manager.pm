@@ -331,7 +331,7 @@ sub registerNewUser {
                 # Create a user
                 my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
                 my $auth_token =
-                  Daedalus::Utils::Crypt::generateRandomString(64);
+                  Daedalus::Utils::Crypt::generateRandomString(63);
                 my $salt = Daedalus::Utils::Crypt::generateRandomString(256);
                 my $password =
                   Daedalus::Utils::Crypt::generateRandomString(256);
@@ -515,6 +515,33 @@ sub confirmRegistration {
             }
         }
     }
+    return $response;
+}
+
+=head2 showInactiveUsers
+
+List users, show inactive ones.
+
+=cut
+
+sub showInactiveUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my $response;
+
+    my $registered_users = $registered_users_respose->{registered_users};
+
+    my %inactive_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 0
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
+
+    $response->{status}         = 1;
+    $response->{inactive_users} = \%inactive_users;
+
     return $response;
 }
 
