@@ -531,21 +531,17 @@ sub showInactiveUsers {
 
     my $response;
 
-    if ( $registered_users_respose->{status} != 1 ) {
-        $response = $registered_users_respose;
-    }
-    else {
-        my $registered_users = $registered_users_respose->{registered_users};
+    my $registered_users = $registered_users_respose->{registered_users};
 
-        my %inactive_users = map {
-            $registered_users->{$_}->{data}->{user}->{active} == 0
-              ? ( $_ => $registered_users->{$_} )
-              : ()
-        } keys %$registered_users;
+    my %inactive_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 0
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
 
-        $response->{status}         = 1;
-        $response->{inactive_users} = \%inactive_users;
-    }
+    $response->{status}         = 1;
+    $response->{inactive_users} = \%inactive_users;
+
     return $response;
 }
 
