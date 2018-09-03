@@ -331,7 +331,7 @@ sub registerNewUser {
                 # Create a user
                 my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
                 my $auth_token =
-                  Daedalus::Utils::Crypt::generateRandomString(64);
+                  Daedalus::Utils::Crypt::generateRandomString(63);
                 my $salt = Daedalus::Utils::Crypt::generateRandomString(256);
                 my $password =
                   Daedalus::Utils::Crypt::generateRandomString(256);

@@ -2,6 +2,8 @@ use strict;
 use warnings;
 use Test::More;
 
+use Data::Dumper;
+
 use Catalyst::Test 'Daedalus::Core';
 use Daedalus::Core::Controller::REST;
 
@@ -97,5 +99,49 @@ is( $anotheradmin_admin_zero_users_json->{status},
     1, 'Status success, andmin.' );
 is( keys %{ $anotheradmin_admin_zero_users_json->{inactive_users} },
     0, 'adminagain@daedalus-project.io has 0 users inactive' );
+
+# Let's confirm one of admin@daedalus-project.io inactive users
+# othernotanadmin@daedalus-project.io
+
+my $inactive_user_data = $admin_two_user_json->{inactive_users}
+  ->{'othernotanadmin@daedalus-project.io'};
+my $inactive_user_data_auth_token =
+  $inactive_user_data->{_hidden_data}->{user}->{auth_token};
+
+my $success_valid_auth_token_and_password = request(
+    POST '/confirmregistration',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                auth_token => $inactive_user_data_auth_token,
+                password   => 'val1d_Pa55w0rd',
+            }
+        }
+    )
+);
+
+is( $success_valid_auth_token_and_password->code(), 200 );
+
+my $admin_one_user = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+is( $admin_one_user->code(), 200, );
+
+my $admin_one_user_json = decode_json( $admin_one_user->content );
+
+is( $admin_one_user_json->{status}, 1, 'Status success, admin.' );
+is( keys %{ $admin_one_user_json->{inactive_users} },
+    1, 'Now, There is only one inactive users' );
 
 done_testing();
