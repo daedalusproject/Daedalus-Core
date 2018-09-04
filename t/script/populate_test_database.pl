@@ -87,6 +87,15 @@ my $daedalus_manager =
 my $organization =
   $schema->resultset('Organization')->create( { name => "Daedalus Project", } );
 
+# admin@daedalus-project.io belongs to ""Daedalus Project"" Organization
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $organization->id,
+        user_id         => $user->id,
+    }
+);
+
 my $organization_group = $schema->resultset('OrganizationGroup')->create(
     {
         organization_id => $organization->id,
