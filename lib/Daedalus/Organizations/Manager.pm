@@ -155,8 +155,14 @@ sub getUserOrganizations {
         },
     };
 
-    my $user_id = $user_data->{_hidden_data}->{user}->{id};
+    my $user_id;
 
+    if ( exists( $user_data->{_hidden_data} ) ) {
+        $user_id = $user_data->{_hidden_data}->{user}->{id};
+    }
+    else {
+        $user_id = Daedalus::Users::Manager::getUserId($c);
+    }
     my @user_organizations = $c->model('CoreRealms::UserOrganization')
       ->search( { user_id => $user_id } )->all();
 
