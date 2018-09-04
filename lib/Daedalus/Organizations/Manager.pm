@@ -45,7 +45,7 @@ sub createOrganization {
 
     my $organization_data = $c->{request}->{data}->{organization_data};
 
-    my $request_organization_name = "$organization_data->{name}";
+    my $request_organization_name = $organization_data->{name};
     chomp $request_organization_name;
 
     # Check if user has already created and organization with the same name
@@ -72,7 +72,7 @@ sub createOrganization {
         $response = {
             status  => 0,
             message => 'Duplicated organization name.',
-          }
+        };
 
     }
     else {
@@ -133,5 +133,52 @@ sub createOrganization {
     }
     return $response;
 }
+
+=head2 getUserOrganizations
+
+For a given user, show its organizations
+
+=cut
+
+sub getUserOrganizations {
+
+    my $c         = shift;
+    my $user_data = shift;
+
+    my $response = {
+        status => 1,
+        data   => {
+            organizations => [],
+        },
+        _hidden_data => {
+            organizations => {}
+        },
+    };
+
+    my $user_id = $user_data->{_hidden_data}->{user}->{id};
+
+    my @user_organizations = $c->model('CoreRealms::UserOrganization')
+      ->search( { user_id => $user_id } )->all();
+
+    my @organizations_names;
+    my %organizations;
+
+    for my $user_organization (@user_organizations) {
+        my $organization = $c->model('CoreRealms::Organization')
+          ->find( { id => $user_organization->organization_id } );
+        push @organizations_names, $organization->name;
+        $organizations{ $organization->name } = $organization->id;
+    }
+
+    $response->{data}->{organizations}         = \@organizations_names;
+    $response->{_hidden_data}->{organizations} = \%organizations;
+
+    if ( !( Daedalus::Users::Manager::isSuperAdminById( $c, $user_id ) ) ) {
+        delete $response->{_hidden_data};
+    }
+
+    return $response;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
