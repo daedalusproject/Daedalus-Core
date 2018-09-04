@@ -101,6 +101,65 @@ is( scalar @{ $user_without_organization_json->{data}->{organizations} },
     0, 'This user does not belong to any organization' );
 
 is( $user_without_organization_json->{_hidden_data},
-    undef, 'Non admin users do no receive hidden data' );
+    undef, 'Non Super admin users do no receive hidden data' );
+
+my $admin_user_mega_shop_organization = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            }
+        }
+    )
+);
+
+is( $admin_user_mega_shop_organization->code(), 200, );
+
+my $admin_user_mega_shop_organization_json =
+  decode_json( $admin_user_mega_shop_organization->content );
+
+is( $admin_user_mega_shop_organization_json->{status}, 1, 'Status success.' );
+is(
+    scalar @{ $admin_user_mega_shop_organization_json->{data}->{organizations}
+    },
+    1,
+    'This user belongs to Mega Shops'
+);
+
+is( $admin_user_mega_shop_organization_json->{_hidden_data},
+    undef, 'Non Super admin users do no receive hidden data' );
+
+my $no_admin_user_mega_shop_organization = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'noadmin@megashops.com',
+                password => '__;;_12__Password_34',
+            }
+        }
+    )
+);
+
+is( $no_admin_user_mega_shop_organization->code(), 200, );
+
+my $no_admin_user_mega_shop_organization_json =
+  decode_json( $no_admin_user_mega_shop_organization->content );
+
+is( $no_admin_user_mega_shop_organization_json->{status}, 1,
+    'Status success.' );
+is(
+    scalar
+      @{ $no_admin_user_mega_shop_organization_json->{data}->{organizations} },
+    1,
+    'This user belongs to Mega Shops'
+);
+
+is( $no_admin_user_mega_shop_organization_json->{_hidden_data},
+    undef, 'Non Super admin users do no receive hidden data' );
 
 done_testing();
