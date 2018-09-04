@@ -173,6 +173,10 @@ sub getUserOrganizations {
     $response->{data}->{organizations}         = \@organizations_names;
     $response->{_hidden_data}->{organizations} = \%organizations;
 
+    if ( !( Daedalus::Users::Manager::isSuperAdminById( $c, $user_id ) ) ) {
+        delete $response->{_hidden_data};
+    }
+
     return $response;
 }
 
