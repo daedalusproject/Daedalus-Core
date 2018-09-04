@@ -34,7 +34,24 @@ is_deeply(
     }
 );
 
-# admin@daedalus-project.io is allowd to show its organizations
+my $admin_failed_login = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_failed_Test_1234',
+            }
+        }
+    )
+);
+
+is( $admin_failed_login->code(), 403, );
+
+my $admin_failed_login_json = decode_json( $admin_failed_login->content );
+
+is( $admin_failed_login_json->{status}, 0, 'Status failed, wrong password.' );
 
 my $admin_three_organization = request(
     POST $endpoint,
