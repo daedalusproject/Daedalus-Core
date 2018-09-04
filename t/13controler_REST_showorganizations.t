@@ -58,4 +58,32 @@ is( $admin_three_organization_json->{status}, 1, 'Status success, admin.' );
 is( scalar @{ $admin_three_organization_json->{data}->{organizations} },
     3, 'Admin belongis to 3 organizations' );
 
+isnt( $admin_three_organization_json->{_hidden_data},
+    undef, 'Super admin users receive hidden data' );
+
+my $user_without_organization = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'notanadmin@daedalus-project.io',
+                password => 'Test_is_th1s_123',
+            }
+        }
+    )
+);
+
+is( $user_without_organization->code(), 200, );
+
+my $user_without_organization_json =
+  decode_json( $user_without_organization->content );
+
+is( $user_without_organization_json->{status}, 1, 'Status success.' );
+is( scalar @{ $user_without_organization_json->{data}->{organizations} },
+    0, 'This user does not belong to any organization' );
+
+is( $user_without_organization_json->{_hidden_data},
+    undef, 'Non admin users do no receive hidden data' );
+
 done_testing();
