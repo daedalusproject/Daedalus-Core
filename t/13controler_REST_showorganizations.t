@@ -36,7 +36,7 @@ is_deeply(
 
 # admin@daedalus-project.io is allowd to show its organizations
 
-my $admin_one_organization = request(
+my $admin_three_organization = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Content      => encode_json(
@@ -49,12 +49,13 @@ my $admin_one_organization = request(
     )
 );
 
-is( $admin_one_organization->code(), 200, );
+is( $admin_three_organization->code(), 200, );
 
-my $admin_one_organization_json =
-  decode_json( $admin_one_organization->content );
+my $admin_three_organization_json =
+  decode_json( $admin_three_organization->content );
 
-is( $admin_one_organization_json->{status}, 1, 'Status success, admin.' );
-is( keys %{ $admin_one_organization_json->{organizations} },
-    1, 'There is one active organization' );
+is( $admin_three_organization_json->{status}, 1, 'Status success, admin.' );
+is( scalar @{ $admin_three_organization_json->{data}->{organizations} },
+    3, 'Admin belongis to 3 organizations' );
+
 done_testing();
