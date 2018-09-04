@@ -34,26 +34,6 @@ is_deeply(
     }
 );
 
-my $failed_no_admin = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
-        }
-    )
-);
-
-is( $failed_no_admin->code(), 403, );
-
-my $failed_no_admin_json = decode_json( $failed_no_admin->content );
-
-is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
-
 # admin@daedalus-project.io is allowd to show its organizations
 
 my $admin_one_organization = request(

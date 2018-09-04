@@ -286,13 +286,15 @@ sub showOrganizations : Path('/showorganizations') : Args(0) :
 sub showOrganizations_POST {
     my ( $self, $c ) = @_;
 
+    my $response;
+
     my $auth = Daedalus::Users::Manager::authUser($c);
 
     if ( !$auth->{status} ) {
         return $self->status_forbidden_entity( $c, entity => $auth, );
     }
     else {
-        my $response =
+        $response =
           Daedalus::Organizations::Manager::getUserOrganizations( $c, $auth );
     }
 
