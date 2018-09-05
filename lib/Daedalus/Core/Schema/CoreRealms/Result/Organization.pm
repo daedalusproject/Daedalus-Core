@@ -67,6 +67,11 @@ __PACKAGE__->table("organizations");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 token
+
+  data_type: 'integer'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -96,6 +101,8 @@ __PACKAGE__->add_columns(
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
+    "token",
+    { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -109,6 +116,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique token>
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "unique token", ["token"] );
 
 =head1 RELATIONS
 
@@ -142,8 +163,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-07-21 18:23:12
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gxf/9TCEZcVGSKg8FaMiqA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-05 03:56:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oAAR3PG/Lk1WYOsqFB1cZQ
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
