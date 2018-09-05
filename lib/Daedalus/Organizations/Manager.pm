@@ -12,6 +12,7 @@ use strict;
 use warnings;
 use Moose;
 
+use Daedalus::Utils::Crypt;
 use Data::Dumper;
 
 use namespace::clean -except => 'meta';
@@ -84,8 +85,14 @@ sub createOrganization {
 
         # Create Organization
 
-        my $organization = $c->model('CoreRealms::Organization')
-          ->create( { name => $request_organization_name } );
+        my $organization_token =
+          Daedalus::Utils::Crypt::generateRandomString(32);
+        my $organization = $c->model('CoreRealms::Organization')->create(
+            {
+                name  => $request_organization_name,
+                token => $organization_token
+            }
+        );
 
         # Add user to Organization
         my $user_organization =
@@ -119,10 +126,8 @@ sub createOrganization {
             status       => 1,
             message      => 'Organization created.',
             _hidden_data => {
-                organization_id            => $organization->id,
-                user_organization_id       => $user_organization->id,
-                organization_group_id      => $organization_group->id,
-                organization_group_role_id => $organization_group_role->id,
+                organization_id    => $organization->id,
+                organization_token => $organization->token,
             },
         };
 
@@ -163,6 +168,7 @@ sub getUserOrganizations {
     else {
         $user_id = Daedalus::Users::Manager::getUserId($c);
     }
+
     my @user_organizations = $c->model('CoreRealms::UserOrganization')
       ->search( { user_id => $user_id } )->all();
 
@@ -173,7 +179,8 @@ sub getUserOrganizations {
         my $organization = $c->model('CoreRealms::Organization')
           ->find( { id => $user_organization->organization_id } );
         push @organizations_names, $organization->name;
-        $organizations{ $organization->name } = $organization->id;
+        $organizations{ $organization->name } =
+          { id => $organization->id, token => $organization->token };
     }
 
     $response->{data}->{organizations}         = \@organizations_names;
