@@ -117,6 +117,20 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique token>
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "unique token", ["token"] );
+
 =head1 RELATIONS
 
 =head2 organization_groups
@@ -149,8 +163,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-04 16:39:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SEqw6iogpe3EHHqKRoQMKg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-05 03:56:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oAAR3PG/Lk1WYOsqFB1cZQ
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
