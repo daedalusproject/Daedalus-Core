@@ -93,4 +93,110 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'Invalid organization data.', );
 
+my $megashops_admin_invalid_short_token = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            },
+            organization => {
+                token => 'somefailedtoken',
+            },
+        }
+    )
+);
+
+is( $megashops_admin_invalid_short_token->code(), 400, );
+
+my $megashops_admin_invalid_short_token_json =
+  decode_json( $megashops_admin_invalid_short_token->content );
+
+is( $megashops_admin_invalid_short_token_json->{status}, 0, );
+is(
+    $megashops_admin_invalid_short_token_json->{message},
+    'Invalid Organization token',
+);
+
+my $megashops_admin_invalid_token = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            },
+            organization => {
+                token =>
+                  'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pof',    #Almost the same token
+            },
+        }
+    )
+);
+
+is( $megashops_admin_invalid_token->code(), 400, );
+
+my $megashops_admin_invalid_token_json =
+  decode_json( $megashops_admin_invalid_token->content );
+
+is( $megashops_admin_invalid_token_json->{status}, 0, );
+is(
+    $megashops_admin_invalid_token_json->{message},
+    'Invalid Organization token',
+);
+
+my $megashops_admin_daedalus_token = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            },
+            organization => {
+                token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO'
+                ,    #Daedalus Organization token
+            },
+        }
+    )
+);
+
+is( $megashops_admin_daedalus_token->code(), 400, );
+
+my $megashops_admin_daedalus_token_json =
+  decode_json( $megashops_admin_invalid_token->content );
+
+is( $megashops_admin_daedalus_token_json->{status}, 0, );
+is(
+    $megashops_admin_daedalus_token_json->{message},
+    'Invalid Organization token',
+);
+
+my $megashops_admin_valid_token = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            },
+            organization => {
+                token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            },
+        }
+    )
+);
+
+is( $megashops_admin_valid_token->code(), 200, );
+
+my $megashops_admin_valid_token_json =
+  decode_json( $megashops_admin_invalid_token->content );
+
+is( $megashops_admin_valid_token_json->{status}, 1, );
+
 done_testing();
