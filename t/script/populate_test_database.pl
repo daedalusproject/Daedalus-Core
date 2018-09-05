@@ -84,8 +84,12 @@ my $daedalus_manager =
 
 # Create organization
 
-my $organization =
-  $schema->resultset('Organization')->create( { name => "Daedalus Project", } );
+my $organization = $schema->resultset('Organization')->create(
+    {
+        name  => "Daedalus Project",
+        token => "FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    }
+);
 
 # admin@daedalus-project.io belongs to ""Daedalus Project"" Organization
 
@@ -278,8 +282,12 @@ my $yet_other_user = $schema->resultset('User')->create(
     }
 );
 
-my $yet_other_organization =
-  $schema->resultset('Organization')->create( { name => "Mega Shops", } );
+my $yet_other_organization = $schema->resultset('Organization')->create(
+    {
+        name  => "Mega Shops",
+        token => "ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    }
+);
 
 $schema->resultset('UserOrganization')->create(
     {
