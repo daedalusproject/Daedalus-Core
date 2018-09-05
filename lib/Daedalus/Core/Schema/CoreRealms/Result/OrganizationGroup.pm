@@ -159,8 +159,23 @@ __PACKAGE__->has_many(
     { cascade_copy       => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-05 03:56:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:y0S3yYgTdaFf5wv8IVQEhA
+=head2 organization_share_projects
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject>
+
+=cut
+
+__PACKAGE__->has_many(
+    "organization_share_projects",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
+    { "foreign.organization_to_manage_group_id" => "self.id" },
+    { cascade_copy                              => 0, cascade_delete => 0 },
+);
+
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-05 04:53:39
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UxlRq49ugy5Uo+rxIOCJlw
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
