@@ -193,5 +193,23 @@ sub getUserOrganizations {
     return $response;
 }
 
+=head2 showOrganizationUsers
+
+For a given organization token, show its users
+
+=cut
+
+=head2 _getOrganizationFromToken
+
+For a given organization token, return organization data
+
+Private method
+
+=cut
+
+sub _getOrganizationFromToken {
+
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

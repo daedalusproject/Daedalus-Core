@@ -108,7 +108,7 @@ sub authUser {
                     phone    => $user->phone,
                     api_key  => $user->api_key,
                     email    => $user->email,
-                    is_admin => is_admin_model( $c, $user->id ),
+                    is_admin => isAdminOfAnyOrganization( $c, $user->id ),
                 },
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
@@ -126,13 +126,13 @@ sub authUser {
     return $response;
 }
 
-=head2 is_admin_model
+=head2 isAdminOfAnyOrganization
 
-Return if required user is admin using model.
+Return if required user is admin in any Organization
 
 =cut
 
-sub is_admin_model {
+sub isAdminOfAnyOrganization {
     my $c       = shift;
     my $user_id = shift;
 
@@ -144,7 +144,6 @@ sub is_admin_model {
     my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { 'user_id' => $user_id } );
 
-    #if ($user_groups) {
     my @user_groups_array = $user_groups->all;
     for my $user_group (@user_groups_array) {
 
@@ -161,6 +160,51 @@ sub is_admin_model {
         }
     }
 
+    return $is_admin;
+
+}
+
+=head2 isOrganizationAdmin
+
+Return if required user is admin of required Organization
+
+=cut
+
+sub isOrganizationAdmin {
+    my $c               = shift;
+    my $user_id         = shift;
+    my $organization_id = shift;
+
+    my $is_admin = 0;
+
+    my $organization_master_role_id = $c->model('CoreRealms::Role')
+      ->find( { role_name => "organization_master" } )->id;
+
+    my @organization_groups = $c->model('CoreRealms::OrganizationGroup')
+      ->find( { organization_id => $organization_id } )->all();
+
+    die Dumper( \@organization_groups );
+
+    #    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+    #      ->search( { 'user_id' => $user_id } );
+    #
+    #    #if ($user_groups) {
+    #    my @user_groups_array = $user_groups->all;
+    #    for my $user_group (@user_groups_array) {
+    #
+    #        # Get group
+    #        my $group_id    = $user_group->group_id;
+    #        my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
+    #          ->search( { group_id => $group_id } )->all();
+    #        my $roles = "";
+    #        foreach (@roles_array) {
+    #
+    #            if ( $_->role_id == $organization_master_role_id ) {
+    #                $is_admin = 1;    #Break all
+    #            }
+    #        }
+    #    }
+    #
     return $is_admin;
 
 }
@@ -424,7 +468,7 @@ sub showRegisteredUsers {
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
-                    is_admin => is_admin_model(
+                    is_admin => isAdminOfAnyOrganization(
                         $c, $registered_user->registered_user->id
                     ),
                 },

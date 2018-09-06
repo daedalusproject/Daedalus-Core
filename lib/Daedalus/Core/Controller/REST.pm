@@ -317,7 +317,14 @@ sub showOrganizationUsers_POST {
 
     my $response;
 
-    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
+    # First of all, system must check if organization token is provided
+
+    my $organization_data =
+      Daedalus::Organizations::Manager::_getOrganizationFromToken($c);
+
+    my $is_organization_admin =
+      Daedalus::Users::Manager::isOrganizationAdmin( $c,
+        $organization_data->id );
 
     if ( !$is_admin->{status} ) {
         return $self->status_forbidden_entity( $c, entity => $is_admin, );
