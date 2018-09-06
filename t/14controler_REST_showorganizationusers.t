@@ -199,4 +199,36 @@ my $megashops_admin_valid_token_json =
 
 is( $megashops_admin_valid_token_json->{status}, 1, );
 
+is( scalar @{ $megashops_admin_valid_token_json->{data}->{users} },
+    1, 'Mega Shops has only one more user' );
+
+is( $megashops_admin_valid_token_json->{_hidden_data},
+    undef, 'Non Super admin users do no receive hidden data' );
+
+my $superadmin_token = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            organization => {
+                token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            },
+        }
+    )
+);
+
+is( $superadmin_token->code(), 200, );
+
+my $superadmin_token_json = decode_json( $superadmin_token->content );
+
+is( scalar @{ $superadmin_token_json->{data}->{users} },
+    4, 'Daedalus Project has four users so far' );
+
+isnt( $megashops_admin_valid_token_json->{_hidden_data},
+    undef, 'Super admin users do receive hidden data' );
+
 done_testing();
