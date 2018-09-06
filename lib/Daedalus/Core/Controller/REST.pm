@@ -301,6 +301,34 @@ sub showOrganizations_POST {
     $self->return_rest_response( $c, $response );
 }
 
+=head2 showorganizationusers
+
+Admin users are allowed to show their organization users
+
+=cut
+
+sub showOrganizationUsers : Path('/showorganizationusers') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub showOrganizationUsers_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
+
+    if ( !$is_admin->{status} ) {
+        return $self->status_forbidden_entity( $c, entity => $is_admin, );
+    }
+    else {
+        $response = Daedalus::Organizations::Manager::showOrganizationUsers($c);
+    }
+
+    $self->return_rest_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions
