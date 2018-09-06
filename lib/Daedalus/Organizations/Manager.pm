@@ -209,6 +209,28 @@ Private method
 
 sub _getOrganizationFromToken {
 
+    my $c = shift;
+
+    my $response;
+    $response->{status}  = 0;
+    $response->{message} = 'Invalid Organization token';
+
+    my $organization_request_data = $c->{request}->{data}->{organization};
+    if ($organization_request_data) {
+        if ( $organization_request_data->{token} ) {
+
+            my $organization = $c->model('CoreRealms::Organization')
+              ->find( { token => $organization_request_data->{token} } );
+
+            if ($organization) {
+                $response->{status}       = 1;
+                $response->{organization} = $organization;
+            }
+
+        }
+    }
+
+    return $response;
 }
 
 __PACKAGE__->meta->make_immutable;

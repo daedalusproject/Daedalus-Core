@@ -175,37 +175,36 @@ sub isOrganizationAdmin {
     my $user_id         = shift;
     my $organization_id = shift;
 
-    my $is_admin = 0;
+    my $response;
+
+    $response->{status}  = 0;
+    $response->{message} = "User is not an admin of this organization";
 
     my $organization_master_role_id = $c->model('CoreRealms::Role')
       ->find( { role_name => "organization_master" } )->id;
 
     my @organization_groups = $c->model('CoreRealms::OrganizationGroup')
-      ->find( { organization_id => $organization_id } )->all();
+      ->search( { organization_id => $organization_id } )->all();
 
-    die Dumper( \@organization_groups );
+    my @user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { 'user_id' => $user_id } )->all();
 
-    #    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
-    #      ->search( { 'user_id' => $user_id } );
-    #
-    #    #if ($user_groups) {
-    #    my @user_groups_array = $user_groups->all;
-    #    for my $user_group (@user_groups_array) {
-    #
-    #        # Get group
-    #        my $group_id    = $user_group->group_id;
-    #        my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
-    #          ->search( { group_id => $group_id } )->all();
-    #        my $roles = "";
-    #        foreach (@roles_array) {
-    #
-    #            if ( $_->role_id == $organization_master_role_id ) {
-    #                $is_admin = 1;    #Break all
-    #            }
-    #        }
-    #    }
-    #
-    return $is_admin;
+    if (@user_groups) {
+
+        for my $user_group (@user_groups) {
+            for my $organization_group (@organization_groups) {
+                if ( $organization_group->id == $user_group->group_id ) {
+                    $response->{status}  = 0;
+                    $response->{message} = "User is admin of this organization";
+
+                    return $response;
+                }
+                die Dumper($organization_group);
+            }
+        }
+    }
+
+    return $response;
 
 }
 
@@ -614,6 +613,24 @@ sub showInactiveUsers {
     $response->{inactive_users} = \%inactive_users;
 
     return $response;
+}
+
+=head2 getOrganizationUsers
+
+Get users of given organization
+
+=cut
+
+sub getOrganizationUsers {
+
+    my $c               = shift;
+    my $organization_id = shift;
+    my $is_super_admin  = shift;
+
+    my @organization_users = $c->model('CoreRealms::UserOrganization')
+      ->search( { 'organization_id' => $organization_id } )->all();
+
+    #### For
 }
 
 =head2 Get User id

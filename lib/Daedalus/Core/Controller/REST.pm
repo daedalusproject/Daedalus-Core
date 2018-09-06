@@ -317,22 +317,62 @@ sub showOrganizationUsers_POST {
 
     my $response;
 
-    # First of all, system must check if organization token is provided
+    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
 
-    my $organization_data =
-      Daedalus::Organizations::Manager::_getOrganizationFromToken($c);
-
-    my $is_organization_admin =
-      Daedalus::Users::Manager::isOrganizationAdmin( $c,
-        $organization_data->id );
-
-    if ( !$is_admin->{status} ) {
-        return $self->status_forbidden_entity( $c, entity => $is_admin, );
+    if ( $is_admin->{status} != 1 ) {    #Not an admin user
+        $response = $is_admin;
     }
     else {
-        $response = Daedalus::Organizations::Manager::showOrganizationUsers($c);
+        my $user = Daedalus::Users::Manager::get_user( $c,
+            $c->{request}->{data}->{auth}->{email} );
+        my $organization_request =
+          Daedalus::Organizations::Manager::_getOrganizationFromToken( $c,
+            $user->email );
+        if ( $organization_request->{status} == 0 ) {
+            $response = $organization_request;
+        }
+        else {
+            my $organization = $organization_request->{organization};
+
+            #Check is user is admin of $oganization
+            my $is_organization_admin =
+              Daedalus::Users::Manager::isOrganizationAdmin( $c, $user->id,
+                $organization->id );
+            my $is_super_admin =
+              Daedalus::Users::Manager::isSuperAdminById( $c, $user->id );
+            if ( $is_organization_admin->{status} == 0 && $is_super_admin == 0 )
+            {
+                $response->{status} = 0;
+
+                # Do not reveal if the token exists if the user is not an admin
+                $response->{message} = 'Invalid Organization token';
+            }
+            else {
+                #Get users from organization
+                my $response =
+                  Daedalus::Users::Manager::getOrganizationUsers( $c,
+                    $organization->id, $is_super_admin );
+            }
+        }
     }
 
+#
+#    if exists $c->{request}->{organization}->{auth};
+#
+#    my $organization_data =
+#      Daedalus::Organizations::Manager::_getOrganizationFromToken($c);
+#
+#    my $is_organization_admin =
+#      Daedalus::Users::Manager::isOrganizationAdmin( $c,
+#        $organization_data->id );
+#
+#    if ( !$is_admin->{status} ) {
+#        return $self->status_forbidden_entity( $c, entity => $is_admin, );
+#    }
+#    else {
+#        $response = Daedalus::Organizations::Manager::showOrganizationUsers($c);
+#    }
+#
     $self->return_rest_response( $c, $response );
 }
 
