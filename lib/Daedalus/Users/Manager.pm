@@ -194,12 +194,11 @@ sub isOrganizationAdmin {
         for my $user_group (@user_groups) {
             for my $organization_group (@organization_groups) {
                 if ( $organization_group->id == $user_group->group_id ) {
-                    $response->{status}  = 0;
+                    $response->{status}  = 1;
                     $response->{message} = "User is admin of this organization";
 
                     return $response;
                 }
-                die Dumper($organization_group);
             }
         }
     }
@@ -627,10 +626,42 @@ sub getOrganizationUsers {
     my $organization_id = shift;
     my $is_super_admin  = shift;
 
+    my $response = {
+        status => 1,
+        data   => {
+            users => {},
+        },
+        _hidden_data => {
+            users => {}
+        },
+    };
+
     my @organization_users = $c->model('CoreRealms::UserOrganization')
       ->search( { 'organization_id' => $organization_id } )->all();
 
-    #### For
+    for my $organization_user (@organization_users) {
+        my $user = $c->model('CoreRealms::User')
+          ->find( { 'id' => $organization_user->user_id } );
+        if ( !exists( $response->{data}->{users}->{ $user->email } ) ) {
+            $response->{data}->{users}->{ $user->email } = {
+                email   => $user->email,
+                name    => $user->name,
+                surname => $user->surname,
+                phone   => $user->phone,
+            };
+
+            if ($is_super_admin) {
+                $response->{_hidden_data}->{users}->{ $user->email } = {
+                    id         => $user->id,
+                    created_at => $user->created_at->strftime('%Y-%m-%d %H:%M'),
+                    modified_at =>
+                      $user->modified_at->strftime('%Y-%m-%d %H:%M'),
+                    expires => $user->expires->strftime('%Y-%m-%d %H:%M'),
+                };
+            }
+        }
+    }
+    return $response;
 }
 
 =head2 Get User id

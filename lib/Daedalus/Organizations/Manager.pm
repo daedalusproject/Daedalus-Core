@@ -213,7 +213,7 @@ sub _getOrganizationFromToken {
 
     my $response;
     $response->{status}  = 0;
-    $response->{message} = 'Invalid Organization token';
+    $response->{message} = 'Invalid Organization token.';
 
     my $organization_request_data = $c->{request}->{data}->{organization};
     if ($organization_request_data) {

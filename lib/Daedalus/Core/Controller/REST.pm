@@ -321,6 +321,7 @@ sub showOrganizationUsers_POST {
 
     if ( $is_admin->{status} != 1 ) {    #Not an admin user
         $response = $is_admin;
+        $self->return_authorized_response( $c, $response );
     }
     else {
         my $user = Daedalus::Users::Manager::get_user( $c,
@@ -349,31 +350,13 @@ sub showOrganizationUsers_POST {
             }
             else {
                 #Get users from organization
-                my $response =
+                $response =
                   Daedalus::Users::Manager::getOrganizationUsers( $c,
                     $organization->id, $is_super_admin );
             }
         }
+        $self->return_rest_response( $c, $response );
     }
-
-#
-#    if exists $c->{request}->{organization}->{auth};
-#
-#    my $organization_data =
-#      Daedalus::Organizations::Manager::_getOrganizationFromToken($c);
-#
-#    my $is_organization_admin =
-#      Daedalus::Users::Manager::isOrganizationAdmin( $c,
-#        $organization_data->id );
-#
-#    if ( !$is_admin->{status} ) {
-#        return $self->status_forbidden_entity( $c, entity => $is_admin, );
-#    }
-#    else {
-#        $response = Daedalus::Organizations::Manager::showOrganizationUsers($c);
-#    }
-#
-    $self->return_rest_response( $c, $response );
 }
 
 =head1 Common functions

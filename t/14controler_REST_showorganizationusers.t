@@ -91,7 +91,7 @@ is( $failed_no_data->code(), 400, );
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
 is( $failed_no_data_json->{status},  0, );
-is( $failed_no_data_json->{message}, 'Invalid organization data.', );
+is( $failed_no_data_json->{message}, 'Invalid Organization token.', );
 
 my $megashops_admin_invalid_short_token = request(
     POST $endpoint,
@@ -117,7 +117,7 @@ my $megashops_admin_invalid_short_token_json =
 is( $megashops_admin_invalid_short_token_json->{status}, 0, );
 is(
     $megashops_admin_invalid_short_token_json->{message},
-    'Invalid Organization token',
+    'Invalid Organization token.',
 );
 
 my $megashops_admin_invalid_token = request(
@@ -145,7 +145,7 @@ my $megashops_admin_invalid_token_json =
 is( $megashops_admin_invalid_token_json->{status}, 0, );
 is(
     $megashops_admin_invalid_token_json->{message},
-    'Invalid Organization token',
+    'Invalid Organization token.',
 );
 
 my $megashops_admin_daedalus_token = request(
@@ -173,7 +173,7 @@ my $megashops_admin_daedalus_token_json =
 is( $megashops_admin_daedalus_token_json->{status}, 0, );
 is(
     $megashops_admin_daedalus_token_json->{message},
-    'Invalid Organization token',
+    'Invalid Organization token.',
 );
 
 my $megashops_admin_valid_token = request(
@@ -226,7 +226,7 @@ is( $superadmin_token->code(), 200, );
 my $superadmin_token_json = decode_json( $superadmin_token->content );
 
 is( scalar @{ $superadmin_token_json->{data}->{users} },
-    4, 'Daedalus Project has four users so far' );
+    1, 'Daedalus Project has only one user so far' );
 
 isnt( $megashops_admin_valid_token_json->{_hidden_data},
     undef, 'Super admin users do receive hidden data' );
