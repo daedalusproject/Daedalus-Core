@@ -69,8 +69,10 @@ __PACKAGE__->table("organizations");
 
 =head2 token
 
-  data_type: 'integer'
+  data_type: 'varchar'
+  default_value: (empty string)
   is_nullable: 0
+  size: 33
 
 =cut
 
@@ -102,7 +104,12 @@ __PACKAGE__->add_columns(
         is_nullable               => 0,
     },
     "token",
-    { data_type => "integer", is_nullable => 0 },
+    {
+        data_type     => "varchar",
+        default_value => "",
+        is_nullable   => 0,
+        size          => 33
+    },
 );
 
 =head1 PRIMARY KEY
@@ -119,7 +126,7 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<unique token>
+=head2 C<token>
 
 =over 4
 
@@ -129,7 +136,7 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint( "unique token", ["token"] );
+__PACKAGE__->add_unique_constraint( "token", ["token"] );
 
 =head1 RELATIONS
 
@@ -193,8 +200,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-05 04:53:39
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:V1PBNFdpoF2npXJaZ5L48A
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-06 04:07:18
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:o2tObMfmlNlmmw6nWjP5Mg
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
