@@ -631,10 +631,11 @@ sub getOrganizationUsers {
         data   => {
             users => {},
         },
-        _hidden_data => {
-            users => {}
-        },
     };
+
+    if ($is_super_admin) {
+        $response->{_hidden_data} => { users => {} };
+    }
 
     my @organization_users = $c->model('CoreRealms::UserOrganization')
       ->search( { 'organization_id' => $organization_id } )->all();
