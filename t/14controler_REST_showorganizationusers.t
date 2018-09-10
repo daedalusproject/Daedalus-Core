@@ -195,12 +195,12 @@ my $megashops_admin_valid_token = request(
 is( $megashops_admin_valid_token->code(), 200, );
 
 my $megashops_admin_valid_token_json =
-  decode_json( $megashops_admin_invalid_token->content );
+  decode_json( $megashops_admin_valid_token->content );
 
 is( $megashops_admin_valid_token_json->{status}, 1, );
 
-is( scalar @{ $megashops_admin_valid_token_json->{data}->{users} },
-    1, 'Mega Shops has only one more user' );
+is( keys %{ $megashops_admin_valid_token_json->{data}->{users} },
+    2, 'Mega Shops has two  users' );
 
 is( $megashops_admin_valid_token_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
