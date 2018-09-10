@@ -125,4 +125,47 @@ isnt(
     undef,
 );
 
+# Register new user
+
+request(
+    POST '/confirmregistration',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                auth_token =>
+'1qYyhZWMikdm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l',
+                password => '1_HAt3_mY_L1F3',
+            },
+        }
+    )
+);
+
+my $magashops_admin_one_new_user = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            },
+        }
+    )
+);
+
+is( $magashops_admin_one_new_user->code(), 200, );
+
+my $magashops_admin_one_new_user_json =
+  decode_json( $magashops_admin_one_new_user->content );
+
+is( keys %{ $magashops_admin_one_new_user_json->{orphan_users} },
+    1, 'Marvin is orphan.' );
+
+is(
+    $magashops_admin_one_new_user_json->{orphan_users}
+      { ( keys %{ $daedalus_admin_json->{orphan_users} } )[0] }->{_hidden_data},
+    undef,
+);
+
 done_testing();

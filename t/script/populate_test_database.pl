@@ -356,3 +356,34 @@ $schema->resultset('UserOrganization')->create(
     }
 );
 
+$name       = 'Marvin';
+$surname    = 'Robot';
+$email      = 'marvin@megashops.com';
+$password   = '1_HAT3_MY_L1F3';
+$api_key    = '1TluauLErCtFhFddyxfpVHpfifoBaJb';
+$auth_token = '1qYyhZWMikdm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
+$salt =
+'13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuWkErT11QSJUkcndeGSmCVDNSL2347EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
+$password = sha512_base64("$salt$password");
+
+my $vermin_megashops = $schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 0,
+        auth_token => $auth_token,
+    }
+);
+
+$schema->resultset('RegisteredUser')->create(
+    {
+        registered_user  => $vermin_megashops->id,
+        registrator_user => $yet_other_user->id,
+    }
+);
+
