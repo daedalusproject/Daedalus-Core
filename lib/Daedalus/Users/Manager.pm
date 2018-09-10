@@ -108,7 +108,7 @@ sub authUser {
                     phone    => $user->phone,
                     api_key  => $user->api_key,
                     email    => $user->email,
-                    is_admin => is_admin_model( $c, $user->id ),
+                    is_admin => isAdminOfAnyOrganization( $c, $user->id ),
                 },
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
@@ -126,13 +126,13 @@ sub authUser {
     return $response;
 }
 
-=head2 is_admin_model
+=head2 isAdminOfAnyOrganization
 
-Return if required user is admin using model.
+Return if required user is admin in any Organization
 
 =cut
 
-sub is_admin_model {
+sub isAdminOfAnyOrganization {
     my $c       = shift;
     my $user_id = shift;
 
@@ -144,7 +144,6 @@ sub is_admin_model {
     my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { 'user_id' => $user_id } );
 
-    #if ($user_groups) {
     my @user_groups_array = $user_groups->all;
     for my $user_group (@user_groups_array) {
 
@@ -162,6 +161,49 @@ sub is_admin_model {
     }
 
     return $is_admin;
+
+}
+
+=head2 isOrganizationAdmin
+
+Return if required user is admin of required Organization
+
+=cut
+
+sub isOrganizationAdmin {
+    my $c               = shift;
+    my $user_id         = shift;
+    my $organization_id = shift;
+
+    my $response;
+
+    $response->{status}  = 0;
+    $response->{message} = "User is not an admin of this organization";
+
+    my $organization_master_role_id = $c->model('CoreRealms::Role')
+      ->find( { role_name => "organization_master" } )->id;
+
+    my @organization_groups = $c->model('CoreRealms::OrganizationGroup')
+      ->search( { organization_id => $organization_id } )->all();
+
+    my @user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { 'user_id' => $user_id } )->all();
+
+    if (@user_groups) {
+
+        for my $user_group (@user_groups) {
+            for my $organization_group (@organization_groups) {
+                if ( $organization_group->id == $user_group->group_id ) {
+                    $response->{status}  = 1;
+                    $response->{message} = "User is admin of this organization";
+
+                    return $response;
+                }
+            }
+        }
+    }
+
+    return $response;
 
 }
 
@@ -331,7 +373,7 @@ sub registerNewUser {
                 # Create a user
                 my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
                 my $auth_token =
-                  Daedalus::Utils::Crypt::generateRandomString(64);
+                  Daedalus::Utils::Crypt::generateRandomString(63);
                 my $salt = Daedalus::Utils::Crypt::generateRandomString(256);
                 my $password =
                   Daedalus::Utils::Crypt::generateRandomString(256);
@@ -424,7 +466,7 @@ sub showRegisteredUsers {
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
-                    is_admin => is_admin_model(
+                    is_admin => isAdminOfAnyOrganization(
                         $c, $registered_user->registered_user->id
                     ),
                 },
@@ -518,7 +560,167 @@ sub confirmRegistration {
     return $response;
 }
 
-=head2 Get User id
+=head2 showActiveUsers
+
+List users, show active ones.
+
+=cut
+
+sub showActiveUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my $response;
+
+    my $registered_users = $registered_users_respose->{registered_users};
+
+    my %inactive_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 1
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
+
+    $response->{status}       = 1;
+    $response->{active_users} = \%inactive_users;
+
+    return $response;
+}
+
+=head2 showInactiveUsers
+
+List users, show inactive ones.
+
+=cut
+
+sub showInactiveUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my $response;
+
+    my $registered_users = $registered_users_respose->{registered_users};
+
+    my %inactive_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 0
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
+
+    $response->{status}         = 1;
+    $response->{inactive_users} = \%inactive_users;
+
+    return $response;
+}
+
+=head2 getOrganizationUsers
+
+Get users of given organization
+
+=cut
+
+sub getOrganizationUsers {
+
+    my $c               = shift;
+    my $organization_id = shift;
+    my $is_super_admin  = shift;
+
+    my $response = {
+        status => 1,
+        data   => {
+            users => {},
+        },
+    };
+
+    if ($is_super_admin) {
+        $response->{_hidden_data} => { users => {} };
+    }
+
+    my @organization_users = $c->model('CoreRealms::UserOrganization')
+      ->search( { 'organization_id' => $organization_id } )->all();
+
+    for my $organization_user (@organization_users) {
+        my $user = $c->model('CoreRealms::User')
+          ->find( { 'id' => $organization_user->user_id } );
+        if ( !exists( $response->{data}->{users}->{ $user->email } ) ) {
+            $response->{data}->{users}->{ $user->email } = {
+                email   => $user->email,
+                name    => $user->name,
+                surname => $user->surname,
+                phone   => $user->phone,
+            };
+
+            if ($is_super_admin) {
+                $response->{_hidden_data}->{users}->{ $user->email } = {
+                    id         => $user->id,
+                    created_at => $user->created_at->strftime('%Y-%m-%d %H:%M'),
+                    modified_at =>
+                      $user->modified_at->strftime('%Y-%m-%d %H:%M'),
+                    expires => $user->expires->strftime('%Y-%m-%d %H:%M'),
+                };
+            }
+        }
+    }
+    return $response;
+}
+
+=head2 showOrphanUsers
+
+List users, show orphan ones.
+
+=cut
+
+sub showOrphanUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my %orphan_users;
+
+    my $response;
+
+    my $registered_users = $registered_users_respose->{registered_users};
+
+    my %active_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 1
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
+
+    for my $user_email ( keys %active_users ) {
+        my @organization_users =
+          $c->model('CoreRealms::UserOrganization')
+          ->search( { 'user_id' => getUserIdByEmail( $c, $user_email ) } )
+          ->all();
+        if ( !@organization_users ) {
+            $orphan_users{$user_email} = $active_users{$user_email};
+        }
+    }
+
+    $response->{status}       = 1;
+    $response->{orphan_users} = \%orphan_users;
+
+    return $response;
+}
+
+=head2 getUserIdByEmail
+
+Get user id using email
+
+=cut
+
+sub getUserIdByEmail {
+    my $c          = shift;
+    my $user_email = shift;
+
+    my $user_model = $c->model('CoreRealms::User');
+    my $user_id = $user_model->find( { email => $user_email } )->id;
+
+    return $user_id;
+}
+
+=head2 getUserId
 
 Get user id.
 
@@ -527,11 +729,7 @@ Get user id.
 sub getUserId {
     my $c = shift;
 
-    my $user_email = $c->{request}->{data}->{auth}->{email};
-    my $user_model = $c->model('CoreRealms::User');
-    my $user_id    = $user_model->find( { email => $user_email } )->id;
-
-    return $user_id;
+    return getUserIdByEmail( $c, $c->{request}->{data}->{auth}->{email} );
 }
 
 =encoding utf8

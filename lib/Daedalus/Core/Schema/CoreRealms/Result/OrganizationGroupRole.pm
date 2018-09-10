@@ -41,13 +41,6 @@ __PACKAGE__->table("organization_group_roles");
 
 =head1 ACCESSORS
 
-=head2 id
-
-  data_type: 'bigint'
-  extra: {unsigned => 1}
-  is_auto_increment: 1
-  is_nullable: 0
-
 =head2 group_id
 
   data_type: 'bigint'
@@ -71,13 +64,6 @@ __PACKAGE__->table("organization_group_roles");
 =cut
 
 __PACKAGE__->add_columns(
-    "id",
-    {
-        data_type         => "bigint",
-        extra             => { unsigned => 1 },
-        is_auto_increment => 1,
-        is_nullable       => 0,
-    },
     "group_id",
     {
         data_type      => "bigint",
@@ -104,13 +90,15 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</id>
+=item * L</role_id>
+
+=item * L</group_id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key( "role_id", "group_id" );
 
 =head1 RELATIONS
 
@@ -144,8 +132,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-07-21 18:23:12
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WoxMKtfAdrrhfXBDkH+Y3g
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-06 04:07:18
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hSnhniroKs1/F2L/NhATng
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
