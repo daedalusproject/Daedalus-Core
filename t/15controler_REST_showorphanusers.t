@@ -116,10 +116,13 @@ is( $daedalus_admin->code(), 200, );
 
 my $daedalus_admin_json = decode_json( $daedalus_admin->content );
 
-is( keys %{ $daedalus_admin_json->{data}->{users} },
-    4, 'Daedalus Project has only one user so far' );
+is( keys %{ $daedalus_admin_json->{orphan_users} },
+    2, 'Daedalus Project has only one user so far' );
 
-isnt( $daedalus_admin_json->{_hidden_data},
-    undef, 'Super admin users do receive hidden data' );
+isnt(
+    $daedalus_admin_json->{orphan_users}
+      { ( keys %{ $daedalus_admin_json->{orphan_users} } )[0] }->{_hidden_data},
+    undef,
+);
 
 done_testing();

@@ -665,7 +665,62 @@ sub getOrganizationUsers {
     return $response;
 }
 
-=head2 Get User id
+=head2 showOrphanUsers
+
+List users, show orphan ones.
+
+=cut
+
+sub showOrphanUsers {
+    my $c = shift;
+
+    my $registered_users_respose = showRegisteredUsers($c);
+
+    my %orphan_users;
+
+    my $response;
+
+    my $registered_users = $registered_users_respose->{registered_users};
+
+    my %active_users = map {
+        $registered_users->{$_}->{data}->{user}->{active} == 1
+          ? ( $_ => $registered_users->{$_} )
+          : ()
+    } keys %$registered_users;
+
+    for my $user_email ( keys %active_users ) {
+        my @organization_users =
+          $c->model('CoreRealms::UserOrganization')
+          ->search( { 'user_id' => getUserIdByEmail( $c, $user_email ) } )
+          ->all();
+        if ( !@organization_users ) {
+            $orphan_users{$user_email} = $active_users{$user_email};
+        }
+    }
+
+    $response->{status}       = 1;
+    $response->{orphan_users} = \%orphan_users;
+
+    return $response;
+}
+
+=head2 getUserIdByEmail
+
+Get user id using email
+
+=cut
+
+sub getUserIdByEmail {
+    my $c          = shift;
+    my $user_email = shift;
+
+    my $user_model = $c->model('CoreRealms::User');
+    my $user_id = $user_model->find( { email => $user_email } )->id;
+
+    return $user_id;
+}
+
+=head2 getUserId
 
 Get user id.
 
@@ -674,11 +729,7 @@ Get user id.
 sub getUserId {
     my $c = shift;
 
-    my $user_email = $c->{request}->{data}->{auth}->{email};
-    my $user_model = $c->model('CoreRealms::User');
-    my $user_id    = $user_model->find( { email => $user_email } )->id;
-
-    return $user_id;
+    return getUserIdByEmail( $c, $c->{request}->{data}->{auth}->{email} );
 }
 
 =encoding utf8
