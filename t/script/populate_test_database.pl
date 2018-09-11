@@ -356,6 +356,13 @@ $schema->resultset('UserOrganization')->create(
     }
 );
 
+$schema->resultset('RegisteredUser')->create(
+    {
+        registered_user  => $yet_other_no_admin_user->id,
+        registrator_user => $yet_other_user->id,
+    }
+);
+
 $name       = 'Marvin';
 $surname    = 'Robot';
 $email      = 'marvin@megashops.com';
