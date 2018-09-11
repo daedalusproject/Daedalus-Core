@@ -84,8 +84,21 @@ my $daedalus_manager =
 
 # Create organization
 
-my $organization =
-  $schema->resultset('Organization')->create( { name => "Daedalus Project", } );
+my $organization = $schema->resultset('Organization')->create(
+    {
+        name  => "Daedalus Project",
+        token => "FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    }
+);
+
+# admin@daedalus-project.io belongs to ""Daedalus Project"" Organization
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $organization->id,
+        user_id         => $user->id,
+    }
+);
 
 my $organization_group = $schema->resultset('OrganizationGroup')->create(
     {
@@ -269,8 +282,19 @@ my $yet_other_user = $schema->resultset('User')->create(
     }
 );
 
-my $yet_other_organization =
-  $schema->resultset('Organization')->create( { name => "Mega Shops", } );
+my $yet_other_organization = $schema->resultset('Organization')->create(
+    {
+        name  => "Mega Shops",
+        token => "ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    }
+);
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $yet_other_organization->id,
+        user_id         => $yet_other_user->id,
+    }
+);
 
 my $yet_other_organization_group =
   $schema->resultset('OrganizationGroup')->create(
@@ -298,6 +322,75 @@ $schema->resultset('OrgaizationUsersGroup')->create(
     {
         group_id => $yet_other_organization_group->id,
         user_id  => $yet_other_user->id,
+    }
+);
+
+$name       = 'No Admin';
+$surname    = 'User';
+$email      = 'noadmin@megashops.com';
+$password   = '__;;_12__Password_34';
+$api_key    = '1TluauLErCtXhFddyxfpVHpfifoBaJb';
+$auth_token = '1qYyhZWMffFm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
+$salt =
+'13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSL2347EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
+$password = sha512_base64("$salt$password");
+
+my $yet_other_no_admin_user = $schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 1,
+        auth_token => $auth_token,
+    }
+);
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $yet_other_organization->id,
+        user_id         => $yet_other_no_admin_user->id,
+    }
+);
+
+$schema->resultset('RegisteredUser')->create(
+    {
+        registered_user  => $yet_other_no_admin_user->id,
+        registrator_user => $yet_other_user->id,
+    }
+);
+
+$name       = 'Marvin';
+$surname    = 'Robot';
+$email      = 'marvin@megashops.com';
+$password   = '1_HAT3_MY_L1F3';
+$api_key    = '1TluauLErCtFhFddyxfpVHpfifoBaJb';
+$auth_token = '1qYyhZWMikdm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
+$salt =
+'13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuWkErT11QSJUkcndeGSmCVDNSL2347EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
+$password = sha512_base64("$salt$password");
+
+my $vermin_megashops = $schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 0,
+        auth_token => $auth_token,
+    }
+);
+
+$schema->resultset('RegisteredUser')->create(
+    {
+        registered_user  => $vermin_megashops->id,
+        registrator_user => $yet_other_user->id,
     }
 );
 
