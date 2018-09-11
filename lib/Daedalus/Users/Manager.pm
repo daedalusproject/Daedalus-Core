@@ -189,19 +189,23 @@ sub isOrganizationAdmin {
     my @user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { 'user_id' => $user_id } )->all();
 
-    if (@user_groups) {
+# For the time being only admin users arrive here, it always be at least one value
+# inside @user_groups
 
-        for my $user_group (@user_groups) {
-            for my $organization_group (@organization_groups) {
-                if ( $organization_group->id == $user_group->group_id ) {
-                    $response->{status}  = 1;
-                    $response->{message} = "User is admin of this organization";
+    #if (@user_groups) {
 
-                    return $response;
-                }
+    for my $user_group (@user_groups) {
+        for my $organization_group (@organization_groups) {
+            if ( $organization_group->id == $user_group->group_id ) {
+                $response->{status}  = 1;
+                $response->{message} = "User is admin of this organization";
+
+                return $response;
             }
         }
     }
+
+    #}
 
     return $response;
 
@@ -643,24 +647,26 @@ sub getOrganizationUsers {
     for my $organization_user (@organization_users) {
         my $user = $c->model('CoreRealms::User')
           ->find( { 'id' => $organization_user->user_id } );
-        if ( !exists( $response->{data}->{users}->{ $user->email } ) ) {
-            $response->{data}->{users}->{ $user->email } = {
-                email   => $user->email,
-                name    => $user->name,
-                surname => $user->surname,
-                phone   => $user->phone,
-            };
 
-            if ($is_super_admin) {
-                $response->{_hidden_data}->{users}->{ $user->email } = {
-                    id         => $user->id,
-                    created_at => $user->created_at->strftime('%Y-%m-%d %H:%M'),
-                    modified_at =>
-                      $user->modified_at->strftime('%Y-%m-%d %H:%M'),
-                    expires => $user->expires->strftime('%Y-%m-%d %H:%M'),
-                };
-            }
+        # There are always almost one user here
+        #if ( !exists( $response->{data}->{users}->{ $user->email } ) ) {
+        $response->{data}->{users}->{ $user->email } = {
+            email   => $user->email,
+            name    => $user->name,
+            surname => $user->surname,
+            phone   => $user->phone,
+        };
+
+        if ($is_super_admin) {
+            $response->{_hidden_data}->{users}->{ $user->email } = {
+                id          => $user->id,
+                created_at  => $user->created_at->strftime('%Y-%m-%d %H:%M'),
+                modified_at => $user->modified_at->strftime('%Y-%m-%d %H:%M'),
+                expires     => $user->expires->strftime('%Y-%m-%d %H:%M'),
+            };
         }
+
+        #}
     }
     return $response;
 }
@@ -693,7 +699,7 @@ sub showOrphanUsers {
           $c->model('CoreRealms::UserOrganization')
           ->search( { 'user_id' => getUserIdByEmail( $c, $user_email ) } )
           ->all();
-        if ( !@organization_users ) {
+        if ( scalar @organization_users == 0 ) {
             $orphan_users{$user_email} = $active_users{$user_email};
         }
     }

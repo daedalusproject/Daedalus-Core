@@ -93,6 +93,27 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'Invalid Organization token.', );
 
+my $failed_no_token = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            },
+            organization => {},
+        }
+    )
+);
+
+is( $failed_no_token->code(), 400, );
+
+my $failed_no_token_json = decode_json( $failed_no_token->content );
+
+is( $failed_no_token_json->{status},  0, );
+is( $failed_no_token_json->{message}, 'Invalid Organization token.', );
+
 my $megashops_admin_invalid_short_token = request(
     POST $endpoint,
     Content_Type => 'application/json',
