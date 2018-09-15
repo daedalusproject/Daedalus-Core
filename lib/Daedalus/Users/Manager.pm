@@ -107,11 +107,18 @@ sub authUser {
                     surname  => $user->surname,
                     phone    => $user->phone,
                     api_key  => $user->api_key,
-                    email    => $user->email,
                     is_admin => isAdminOfAnyOrganization( $c, $user->id ),
                 },
             };
             $response->{_hidden_data} = { user => { id => $user->id } };
+
+            $response->{data}->{session_token} =
+              Daedalus::Utils::Crypt::createAuthToken(
+                $c->config->{authTokenConfig},
+                {
+                    email => $user->email,
+                }
+              );
 
             # If user is not superAdmin remove _hidden_data
             if ( !isSuperAdmin( $c, $response ) ) {

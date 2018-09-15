@@ -15,6 +15,7 @@ use Moose;
 use Data::Password::Check;
 use String::Random;
 use Digest::SHA qw(sha512_base64);
+use Crypt::JWT qw(decode_jwt encode_jwt);
 
 use Data::Dumper;
 
@@ -90,6 +91,23 @@ sub hashPassword {
     my $salt     = shift;
 
     return sha512_base64("$salt$password");
+}
+
+sub createAuthToken {
+    my $session_token_config = shift;
+    my $data                 = shift;
+
+    my $key = Crypt::PK::RSA->new( $session_token_config->{rsa_private_key} );
+    my $relative_exp = $session_token_config->{relative_exp};
+
+    my $token = encode_jwt(
+        payload      => $data,
+        key          => $key,
+        alg          => 'RS256',
+        relative_exp => $relative_exp
+    );
+
+    return $token;
 }
 
 =encoding utf8
