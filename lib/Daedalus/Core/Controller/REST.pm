@@ -9,7 +9,6 @@ use Data::Dumper;
 
 use base qw(Catalyst::Controller::REST);
 
-use Daedalus::Users::Manager;
 use Daedalus::Organizations::Manager;
 use Daedalus::Users::Manager;
 
@@ -52,24 +51,6 @@ sub ping_GET {
             status => "pong",
         },
     );
-}
-
-=head2 loginUser
-
-Login user
-
-=cut
-
-sub loginUser : Path('/login') : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub loginUser_POST {
-    my ( $self, $c ) = @_;
-
-    my $response = Daedalus::Users::Manager::authUser($c);
-
-    $self->return_authorized_response( $c, $response );
 }
 
 =head2 imAdmin

@@ -346,7 +346,7 @@ is(
 );
 
 my $inactive_user_cant_login = request(
-    POST '/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {

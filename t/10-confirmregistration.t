@@ -239,7 +239,7 @@ is(
 );
 
 my $login_works = request(
-    POST '/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
