@@ -53,24 +53,6 @@ sub ping_GET {
     );
 }
 
-=head2 imAdmin
-
-Check if logged user is Admin
-
-=cut
-
-sub imAdmin : Path('/imadmin') : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub imAdmin_POST {
-    my ( $self, $c ) = @_;
-
-    my $response = Daedalus::Users::Manager::isAdmin($c);
-
-    $self->return_authorized_response( $c, $response );
-}
-
 =head2 createOrganization
 
 Create Organization

@@ -47,7 +47,9 @@ sub login_POST {
 
     my $response = Daedalus::Users::Manager::authUser($c);
 
-    $self->return_authorized_response( $c, $response );
+    $response->{error_code} = 403;
+
+    $self->return_response( $c, $response );
 }
 
 =head2 imAdmin
@@ -86,7 +88,9 @@ sub imAdmin_GET {
         }
     }
 
-    $self->return_authorized_response( $c, $response );
+    $response->{error_code} = 400;
+
+    $self->return_response( $c, $response );
 }
 
 =head1 Common functions
@@ -129,14 +133,17 @@ sub status_bad_request_entity {
 
 =head2 return_authorized_response
 
-Returns 200 or 403 based on response status
+Returns 200, 400 or 403 based on response status
 
 =cut
 
-sub return_authorized_response {
+sub return_response {
     my $self     = shift;
     my $c        = shift;
     my $response = shift;
+
+    my $error_code = $response->{error_code};
+    delete $response->{error_code};
 
     if ( $response->{_hidden_data} ) {
         if ( $response->{_hidden_data}->{user} ) {
@@ -150,27 +157,14 @@ sub return_authorized_response {
         return $self->status_ok( $c, entity => $response, );
     }
     else {
-        return $self->status_forbidden_entity( $c, entity => $response, );
-    }
-}
 
-=head2 return_rest_response
+        if ( $error_code == 403 ) {
+            return $self->status_forbidden_entity( $c, entity => $response, );
+        }
+        if ( $error_code == 400 ) {
+            return $self->status_bad_request_entity( $c, entity => $response, );
+        }
 
-Returns 200 or 400 based on response status
-
-=cut
-
-sub return_rest_response {
-    my $self     = shift;
-    my $c        = shift;
-    my $response = shift;
-
-    if ( $response->{status} ) {
-        return $self->status_ok( $c, entity => $response, );
-    }
-    else {
-
-        return $self->status_bad_request_entity( $c, entity => $response, );
     }
 }
 
