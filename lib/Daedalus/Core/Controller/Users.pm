@@ -60,10 +60,31 @@ sub imAdmin : Path('/user/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub imAdmin_POST {
+sub imAdmin_GET {
     my ( $self, $c ) = @_;
 
-    my $response = Daedalus::Users::Manager::isAdmin($c);
+    my $response;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+    my $user_data;
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+    }
+    else {
+        $user_data = $user->{data};
+        $response->{data} =
+          { user => { is_admin => $user_data->{data}->{user}->{is_admin} } };
+        if ( $user_data->{data}->{user}->{is_admin} ) {
+            $response->{status}  = 1;
+            $response->{message} = "You are an admin user.";
+        }
+        else {
+            $response->{status}  = 0;
+            $response->{message} = "You are not an admin user.";
+
+        }
+    }
 
     $self->return_authorized_response( $c, $response );
 }
@@ -116,6 +137,14 @@ sub return_authorized_response {
     my $self     = shift;
     my $c        = shift;
     my $response = shift;
+
+    if ( $response->{_hidden_data} ) {
+        if ( $response->{_hidden_data}->{user} ) {
+            if ( $response->{_hidden_data}->{user}->{is_super_admin} != 1 ) {
+                delete $response->{_hidden_data};
+            }
+        }
+    }
 
     if ( $response->{status} ) {
         return $self->status_ok( $c, entity => $response, );

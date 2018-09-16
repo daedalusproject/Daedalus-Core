@@ -52,20 +52,99 @@ sub check_user_passwrd {
     return $password eq $user_password;
 }
 
-=head2 get_user
+=head2 get_user_from_email
+
+Retrieve user data from model using e-mail
+
+=cut
+
+sub get_user_from_email {
+    my $c     = shift;
+    my $email = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { email => $email } );
+
+    return $user;
+}
+
+sub get_user_data {
+    my $c    = shift;
+    my $user = shift;
+
+    my $response = { data => {}, _hidden_data => {} };
+
+    $response->{data} = {
+        user => {
+            email   => $user->email,
+            name    => $user->name,
+            surname => $user->surname,
+            phone   => $user->phone,
+            api_key => $user->api_key,
+        },
+    };
+
+    $response->{_hidden_data} = { user => { id => $user->id } };
+
+    if ( $user->active ) {
+        $response->{data}->{user}->{is_admin} =
+          is_admin_of_any_organization( $c, $user->id );
+        $response->{_hidden_data}->{user}->{is_super_admin} =
+          is_super_admin( $c, $user->id );
+    }
+
+    return $response;
+}
+
+=head2 get_user_from_token
 
 Retrieve user data from model
 
 =cut
 
-sub get_user {
-    my $c     = shift;
-    my $email = shift;
+sub get_user_from_session_token {
+    my $c        = shift;
+    my $response = {
+        status  => 0,
+        message => "",
+    };
+    my $token_data;
+    my $user;
+    my $user_data;
 
-    my $user =
-      $c->model('CoreRealms::User')->find( { email => $email } );
+    my ( $session_token_name, $session_token ) =
+      $c->req->headers->authorization_basic;
 
-    return $user;
+    if ( $session_token_name ne "session_token" ) {
+        $response->{message} = "No sesion token provided.";
+    }
+    else {
+        $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
+            $c->config->{authTokenConfig},
+            $session_token );
+        if ( $token_data->{status} != 1 ) {
+
+            if ( $token_data->{message} =~ m/invalid signature/ ) {
+                $response->{message} = "Session token invalid";
+            }
+            else {
+                $response->{message} = $token_data->{message};
+            }
+        }
+        else {
+            $user = $c->model('CoreRealms::User')
+              ->find( { id => $token_data->{data}->{id} } );
+
+            if ( $user->active == 0 ) {
+                $response->{message} = "Session token invalid";
+            }
+            else {
+                $user_data = get_user_data( $c, $user );
+                $response->{status} = 1;
+                $response->{data}   = $user_data;
+            }
+        }
+    }
+    return $response;
 }
 
 =head2 authUser
@@ -80,10 +159,10 @@ sub authUser {
     my $auth = $c->{request}->{data}->{auth};
 
     my $response;
+    my $user_data;
 
     # Get user from model
-    my $user = get_user( $c, $auth->{email} );
-
+    my $user = get_user_from_email( $c, $auth->{email} );
     if ($user) {
         if (
             !(
@@ -100,30 +179,17 @@ sub authUser {
         else {
             $response->{status}  = 1;
             $response->{message} = 'Auth Successful.';
-            $response->{data}    = {
-                'user' => {
-                    email    => $user->email,
-                    name     => $user->name,
-                    surname  => $user->surname,
-                    phone    => $user->phone,
-                    api_key  => $user->api_key,
-                    is_admin => isAdminOfAnyOrganization( $c, $user->id ),
-                },
-            };
-            $response->{_hidden_data} = { user => { id => $user->id } };
+            $user_data = get_user_data( $c, $user );
+            $response->{data}         = $user_data->{data};
+            $response->{_hidden_data} = $user_data->{_hidden_data};
 
             $response->{data}->{session_token} =
-              Daedalus::Utils::Crypt::createAuthToken(
+              Daedalus::Utils::Crypt::create_session_token(
                 $c->config->{authTokenConfig},
                 {
-                    email => $user->email,
+                    id => $response->{_hidden_data}->{user}->{id},
                 }
               );
-
-            # If user is not superAdmin remove _hidden_data
-            if ( !isSuperAdmin( $c, $response ) ) {
-                delete $response->{_hidden_data};
-            }
         }
     }
     else {
@@ -133,13 +199,13 @@ sub authUser {
     return $response;
 }
 
-=head2 isAdminOfAnyOrganization
+=head2 is_admin_of_any_organization
 
 Return if required user is admin in any Organization
 
 =cut
 
-sub isAdminOfAnyOrganization {
+sub is_admin_of_any_organization {
     my $c       = shift;
     my $user_id = shift;
 
@@ -279,19 +345,19 @@ sub isSuperAdmin {
     my $is_super_admin = 0;
 
     $is_super_admin =
-      isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
+      is_super_admin( $c, $request->{_hidden_data}->{user}->{id} );
 
     return $is_super_admin;
 
 }
 
-=head2 isSuperAdminById
+=head2 is_super_admin
 
 Return if required user belongs to a group with 'daedalus_manager'role, user id is provided
 
 =cut
 
-sub isSuperAdminById {
+sub is_super_admin {
 
     my $c       = shift;
     my $user_id = shift;
@@ -420,7 +486,7 @@ sub registerNewUser {
 
                 $response->{message} = "User has been registered.";
 
-                if ( isSuperAdminById( $c, $registrator_user_id ) ) {
+                if ( is_super_admin( $c, $registrator_user_id ) ) {
                     $response->{_hidden_data} = {
                         user => {
                             email      => $registered_user->email,
@@ -477,7 +543,7 @@ sub showRegisteredUsers {
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
-                    is_admin => isAdminOfAnyOrganization(
+                    is_admin => is_admin_of_any_organization(
                         $c, $registered_user->registered_user->id
                     ),
                 },
@@ -492,7 +558,7 @@ sub showRegisteredUsers {
         $users->{ $user->{data}->{user}->{email} } = $user;
     }
 
-    if ( !( isSuperAdminById( $c, $registrator_user_id ) ) ) {
+    if ( !( is_super_admin( $c, $registrator_user_id ) ) ) {
         foreach my $userkey ( keys %{$users} ) {
             delete $users->{$userkey}->{_hidden_data};
         }

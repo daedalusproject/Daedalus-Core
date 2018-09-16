@@ -16,6 +16,7 @@ use Data::Password::Check;
 use String::Random;
 use Digest::SHA qw(sha512_base64);
 use Crypt::JWT qw(decode_jwt encode_jwt);
+use Try::Tiny;
 
 use Data::Dumper;
 
@@ -93,7 +94,13 @@ sub hashPassword {
     return sha512_base64("$salt$password");
 }
 
-sub createAuthToken {
+=head2 create_session_token
+
+Creates JSON Web Token
+
+=cut
+
+sub create_session_token {
     my $session_token_config = shift;
     my $data                 = shift;
 
@@ -108,6 +115,32 @@ sub createAuthToken {
     );
 
     return $token;
+}
+
+=head2 retrieve_token_data
+
+Retrieves user data from  JSON Web Token
+
+=cut
+
+sub retrieve_token_data {
+    my $session_token_config = shift;
+    my $session_token        = shift;
+
+    my $retreived_data = { status => 0, };
+
+    my $public_key =
+      Crypt::PK::RSA->new( $session_token_config->{rsa_public_key} );
+
+    try {
+        $retreived_data->{data} =
+          decode_jwt( token => $session_token, key => $public_key );
+        $retreived_data->{status} = 1;
+    }
+    catch {
+        $retreived_data->{message} = $_;
+    };
+    return $retreived_data;
 }
 
 =encoding utf8
