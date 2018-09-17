@@ -75,6 +75,8 @@ sub create_rganization_POST {
                 $response =
                   Daedalus::Organizations::Manager::create_organization( $c,
                     $user_data );
+                $response->{_hidden_data}->{user} =
+                  $user_data->{_hidden_data}->{user};
 
             }
         }

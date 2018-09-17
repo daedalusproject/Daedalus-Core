@@ -56,7 +56,7 @@ sub create_organization {
     else {
         chomp $request_organization_name;
 
-        $user_id = $user_data->{data}->{_hidden_data}->{id};
+        $user_id = $user_data->{_hidden_data}->{user}->{id};
 
         my @user_organizations_rs = $c->model('CoreRealms::UserOrganization')
           ->search( { user_id => $user_id } )->all;

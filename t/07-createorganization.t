@@ -100,6 +100,90 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'Invalid organization data.', );
 
+my $failed_no_name = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json( { organization_data => {} } ),
+);
+
+is( $failed_no_name->code(), 400, );
+#
+my $failed_no_name_json = decode_json( $failed_no_name->content );
+
+is( $failed_no_name_json->{status},  0, );
+is( $failed_no_name_json->{message}, 'Invalid organization data.', );
+
+my $success = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content => encode_json( { organization_data => { name => "Supershops" } } ),
+);
+
+is( $success->code(), 200, );
+#
+my $success_json = decode_json( $success->content );
+
+is( $success_json->{status},  1, );
+is( $success_json->{message}, 'Organization created.', );
+
+is( $success_json->{_hidden_data}, undef, );
+
+my $duplicated_name_fails = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content => encode_json( { organization_data => { name => "Supershops" } } ),
+);
+
+is( $duplicated_name_fails->code(), 400, );
+#
+my $duplicated_name_fails_json = decode_json( $duplicated_name_fails->content );
+
+is( $duplicated_name_fails_json->{status},  0, );
+is( $duplicated_name_fails_json->{message}, 'Duplicated organization name.', );
+
+my $superadmin_login = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+is( $superadmin_login->code(), 200, );
+
+my $superadmin_login_json = decode_json( $superadmin_login->content );
+
+is( $superadmin_login_json->{status}, 1, );
+
+my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_success = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content => encode_json( { organization_data => { name => "Supershops" } } ),
+);
+
+is( $superadmin_success->code(), 200, );
+#
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status},  1, );
+is( $superadmin_success_json->{message}, 'Organization created.', );
+
+isnt( $superadmin_success_json->{_hidden_data}, undef, );
+
 #my $success_extra_data = request(
 #    POST '/createorganization',
 #    Content_Type => 'application/json',
