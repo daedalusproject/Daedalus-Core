@@ -80,6 +80,7 @@ sub get_user_data {
             surname => $user->surname,
             phone   => $user->phone,
             api_key => $user->api_key,
+            active  => $user->active,
         },
     };
 
@@ -114,36 +115,42 @@ sub get_user_from_session_token {
     my ( $session_token_name, $session_token ) =
       $c->req->headers->authorization_basic;
 
-    if ( $session_token_name ne "session_token" ) {
+    if ( ( !$session_token_name ) or ( !$session_token ) ) {
         $response->{message} = "No sesion token provided.";
     }
     else {
-        $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
-            $c->config->{authTokenConfig},
-            $session_token );
-        if ( $token_data->{status} != 1 ) {
-
-            if ( $token_data->{message} =~ m/invalid signature/ ) {
-                $response->{message} = "Session token invalid";
-            }
-            else {
-                $response->{message} = $token_data->{message};
-            }
+        if ( $session_token_name ne "session_token" ) {
+            $response->{message} = "No sesion token provided.";
         }
         else {
-            $user = $c->model('CoreRealms::User')
-              ->find( { id => $token_data->{data}->{id} } );
+            $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
+                $c->config->{authTokenConfig},
+                $session_token );
+            if ( $token_data->{status} != 1 ) {
 
-            if ( $user->active == 0 ) {
-                $response->{message} = "Session token invalid";
+                if ( $token_data->{message} =~ m/invalid signature/ ) {
+                    $response->{message} = "Session token invalid";
+                }
+                else {
+                    $response->{message} = $token_data->{message};
+                }
             }
             else {
-                $user_data = get_user_data( $c, $user );
-                $response->{status} = 1;
-                $response->{data}   = $user_data;
+                $user = $c->model('CoreRealms::User')
+                  ->find( { id => $token_data->{data}->{id} } );
+
+                if ( $user->active == 0 ) {
+                    $response->{message} = "Session token invalid";
+                }
+                else {
+                    $user_data = get_user_data( $c, $user );
+                    $response->{status} = 1;
+                    $response->{data}   = $user_data;
+                }
             }
         }
     }
+
     return $response;
 }
 

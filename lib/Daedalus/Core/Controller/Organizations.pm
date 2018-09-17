@@ -1,4 +1,4 @@
-package Daedalus::Core::Controller::Users;
+package Daedalus::Core::Controller::Organizations;
 
 use strict;
 use warnings;
@@ -32,63 +32,53 @@ sub begin : ActionClass('Deserialize') {
     my ( $self, $c ) = @_;
 }
 
-=head2 login
+=head2 create_organization
 
-Login user
-
-=cut
-
-sub login : Path('/user/login') : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub login_POST {
-    my ( $self, $c ) = @_;
-
-    my $response = Daedalus::Users::Manager::authUser($c);
-
-    $response->{error_code} = 403;
-
-    $self->return_response( $c, $response );
-}
-
-=head2 imAdmin
-
-Check if logged user is Admin
+Create Organization
 
 =cut
 
-sub imAdmin : Path('/user/imadmin') : Args(0) : ActionClass('REST') {
+sub create_rganization : Path('/organization/create') : Args(0) :
+  ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub imAdmin_GET {
+sub create_rganization_POST {
     my ( $self, $c ) = @_;
 
     my $response;
+    my $user_data;
 
     my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-    my $user_data;
 
     if ( $user->{status} == 0 ) {
         $response = $user;
+        $response->{error_code} = 403;
     }
     else {
+        $response->{error_code} = 200;
         $user_data = $user->{data};
-        $response->{data} =
-          { user => { is_admin => $user_data->{data}->{user}->{is_admin} } };
-        if ( $user_data->{data}->{user}->{is_admin} ) {
-            $response->{status}  = 1;
-            $response->{message} = "You are an admin user.";
+        if (   ( !$user_data->{data}->{user}->{is_admin} )
+            or ( !$user_data->{data}->{user}->{active} ) )
+        {
+            $response->{status}     = 0;
+            $response->{message}    = "You are not an admin user.";
+            $response->{error_code} = 403;
         }
         else {
-            $response->{status}  = 0;
-            $response->{message} = "You are not an admin user.";
+            if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
+                $response->{status}     = 0;
+                $response->{message}    = "Invalid organization data.";
+                $response->{error_code} = 400;
+            }
+            else {
+                $response =
+                  Daedalus::Organizations::Manager::create_organization( $c,
+                    $user_data );
 
+            }
         }
     }
-
-    $response->{error_code} = 400;
 
     $self->return_response( $c, $response );
 }

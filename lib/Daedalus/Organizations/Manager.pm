@@ -31,109 +31,112 @@ Daedalus Organizations Manager
 
 =cut
 
-=head2 createOrganization
+=head2 create_organization
 
 Creates a new Organization
 
 =cut
 
-sub createOrganization {
+sub create_organization {
 
-    my $c               = shift;
-    my $admin_user_data = shift;
+    my $c         = shift;
+    my $user_data = shift;
 
     my $response;
+    my $user_id;
 
     my $organization_data = $c->{request}->{data}->{organization_data};
 
     my $request_organization_name = $organization_data->{name};
-    chomp $request_organization_name;
-
-    # Check if user has already created and organization with the same name
-
-    my $user_id;
-
-    if ( exists( $admin_user_data->{_hidden_data} ) ) {
-        $user_id = $admin_user_data->{_hidden_data}->{user}->{id};
+    if ( !$request_organization_name ) {
+        $response->{status}     = 0;
+        $response->{message}    = "Invalid organization data.";
+        $response->{error_code} = 400;
     }
     else {
-        $user_id = Daedalus::Users::Manager::getUserId($c);
-    }
+        chomp $request_organization_name;
 
-    my @user_organizations_rs = $c->model('CoreRealms::UserOrganization')
-      ->search( { user_id => $user_id } )->all;
+        $user_id = $user_data->{data}->{_hidden_data}->{id};
 
-    my @organization_names;
+        my @user_organizations_rs = $c->model('CoreRealms::UserOrganization')
+          ->search( { user_id => $user_id } )->all;
 
-    for my $user_organization (@user_organizations_rs) {
-        push @organization_names, $user_organization->organization()->name;
-    }
+        my @organization_names;
 
-    if ( grep( /^$request_organization_name$/, @organization_names ) ) {
-        $response = {
-            status  => 0,
-            message => 'Duplicated organization name.',
-        };
+        for my $user_organization (@user_organizations_rs) {
+            push @organization_names, $user_organization->organization()->name;
+        }
 
-    }
-    else {
+        if ( grep( /^$request_organization_name$/, @organization_names ) ) {
+            $response = {
+                status     => 0,
+                error_code => 400,
+                message    => 'Duplicated organization name.',
+            };
 
-        # Get organization_master role id
+        }
+        else {
 
-        my $organization_master_role_id = $c->model('CoreRealms::Role')
-          ->find( { 'role_name' => 'organization_master' } )->id;
+            # Get organization_master role id
 
-        # Create Organization
+            my $organization_master_role_id = $c->model('CoreRealms::Role')
+              ->find( { 'role_name' => 'organization_master' } )->id;
 
-        my $organization_token =
-          Daedalus::Utils::Crypt::generateRandomString(32);
-        my $organization = $c->model('CoreRealms::Organization')->create(
-            {
-                name  => $request_organization_name,
-                token => $organization_token
-            }
-        );
+            # Create Organization
 
-        # Add user to Organization
-        my $user_organization =
-          $c->model('CoreRealms::UserOrganization')->create(
-            {
-                organization_id => $organization->id,
-                user_id         => $user_id,
-            }
-          );
+            my $organization_token =
+              Daedalus::Utils::Crypt::generateRandomString(32);
+            my $organization = $c->model('CoreRealms::Organization')->create(
+                {
+                    name  => $request_organization_name,
+                    token => $organization_token
+                }
+            );
 
-        # Create an organization admin group
+            # Add user to Organization
+            my $user_organization =
+              $c->model('CoreRealms::UserOrganization')->create(
+                {
+                    organization_id => $organization->id,
+                    user_id         => $user_id,
+                }
+              );
 
-        my $organization_group =
-          $c->model('CoreRealms::OrganizationGroup')->create(
-            {
-                organization_id => $organization->id,
-                group_name => "$request_organization_name" . " Administrators",
-            }
-          );
+            # Create an organization admin group
 
-        # This group has orgaization_master role
-        my $organization_group_role =
-          $c->model('CoreRealms::OrganizationGroupRole')->create(
-            {
-                group_id => $organization_group->id,
-                role_id  => $organization_master_role_id,
-            }
-          );
+            my $organization_group =
+              $c->model('CoreRealms::OrganizationGroup')->create(
+                {
+                    organization_id => $organization->id,
+                    group_name      => "$request_organization_name"
+                      . " Administrators",
+                }
+              );
 
-        $response = {
-            status       => 1,
-            message      => 'Organization created.',
-            _hidden_data => {
-                organization_id    => $organization->id,
-                organization_token => $organization->token,
-            },
-        };
+            # This group has orgaization_master role
+            my $organization_group_role =
+              $c->model('CoreRealms::OrganizationGroupRole')->create(
+                {
+                    group_id => $organization_group->id,
+                    role_id  => $organization_master_role_id,
+                }
+              );
 
-        # Remove _hidden_data if user is not superadmin
-        if ( !( Daedalus::Users::Manager::isSuperAdminById( $c, $user_id ) ) ) {
-            delete $response->{_hidden_data};
+            $response = {
+                status  => 1,
+                message => 'Organization created.',
+                data    => {
+                    organization => {
+                        organization_token => $organization->token,
+                    },
+                },
+                _hidden_data => {
+                    organization => {
+                        organization_id => $organization->id,
+                    },
+                },
+            };
+
         }
     }
     return $response;

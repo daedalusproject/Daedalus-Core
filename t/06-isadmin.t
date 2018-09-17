@@ -113,8 +113,7 @@ my $super_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$super_admin_session_token", '' );
 
 my $super_admin_user_get = request( GET '/user/imadmin',
-    Authorization => "Basic $super_admin_authorization_basic", )
-  ;    #->authorization_basic('session_token', $not_admin_session_token);
+    Authorization => "Basic $super_admin_authorization_basic", );
 
 is( $super_admin_user_get->code(), 200, );
 

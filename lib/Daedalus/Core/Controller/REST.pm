@@ -53,48 +53,6 @@ sub ping_GET {
     );
 }
 
-=head2 createOrganization
-
-Create Organization
-
-=cut
-
-sub createOrganization : Path('/createorganization') : Args(0) :
-  ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub createOrganization_POST {
-    my ( $self, $c ) = @_;
-
-    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
-
-    my $response;
-    if ( !$is_admin->{status} ) {
-        $response = $is_admin;
-        return $self->status_forbidden_entity( $c, entity => $response, );
-    }
-    else {
-        if ( !exists( $c->{request}->{data}->{organization_data} ) ) {
-            return $self->status_bad_request_entity(
-                $c,
-                entity => {
-                    status  => 0,
-                    message => 'Invalid organization data.'
-                }
-            );
-        }
-        else {
-
-            $response =
-              Daedalus::Organizations::Manager::createOrganization( $c,
-                $is_admin );
-        }
-    }
-
-    $self->return_rest_response( $c, $response );
-}
-
 =head2 registerNewUser
 
 Admin users are able to create new users.
