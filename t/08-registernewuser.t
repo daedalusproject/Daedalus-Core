@@ -8,11 +8,11 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 
-my $registerGETcontent = get('/registernewuser');
+my $registerGETcontent = get('/user/register');
 ok( $registerGETcontent, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
-    POST '/registernewuser',
+    POST '/user/register',
     Content_Type => 'application/json',
     Content      => encode_json( {} ),
 );
@@ -25,12 +25,12 @@ my $failed_because_no_auth_json =
 is( $failed_because_no_auth_json->{status}, 0, 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_json->{message},
-    'Wrong e-mail or password.',
-    'A valid e-mail password must be provided.'
+    'No sesion token provided.',
+    'A valid session token must be provided.'
 );
 
-my $failed_no_admin = request(
-    POST '/registernewuser',
+my $non_admin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -40,6 +40,23 @@ my $failed_no_admin = request(
             }
         }
     )
+);
+
+is( $non_admin_success->code(), 200, );
+
+my $non_admin_success_json = decode_json( $non_admin_success->content );
+
+is( $non_admin_success_json->{status}, 1, );
+
+my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
+
+my $not_admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
+
+my $failed_no_admin = request(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
 );
 
 is( $failed_no_admin->code(), 403, );
@@ -53,17 +70,35 @@ is(
     'Only admin uers are able to register new users.'
 );
 
-my $failed_no_data = request(
-    POST '/registernewuser',
+my $superadmin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
             auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
+                email    => 'notanadmin@daedalus-project.io',
+                password => 'Test_is_th1s_123',
             }
         }
     )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $failed_no_data = request(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $failed_no_data->code(), 400, );
@@ -78,14 +113,11 @@ is(
 );
 
 my $failed_empty_data = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             new_user_data => {},
         }
     )
@@ -103,14 +135,11 @@ is(
 );
 
 my $failed_no_email_no_surname = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             new_user_data => {
                 name => 'John',
             },
@@ -131,14 +160,11 @@ is(
 );
 
 my $failed_no_name_no_surname = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             new_user_data => {
                 email => 'never@mind',
             },
@@ -159,14 +185,11 @@ is(
 );
 
 my $failed_invalid_email = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             new_user_data => {
                 email   => 'invalidemail_example.com',
                 name    => 'somename',
@@ -189,14 +212,11 @@ is(
 );
 
 my $failed_duplicated_email = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             new_user_data => {
                 email   => 'notanadmin@daedalus-project.io',
                 name    => 'somename',
@@ -219,15 +239,12 @@ is(
     'A non previously stored e-mail is required.'
 );
 
-my $success_not_admin = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+my $success_superadmin = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             new_user_data => {
                 email   => 'othernotanadmin@daedalus-project.io',
                 name    => 'Other',
@@ -237,55 +254,51 @@ my $success_not_admin = request(
     )
 );
 
-is( $success_not_admin->code(), 200, );
+is( $success_superadmin->code(), 200, );
 
-my $success_not_admin_json = decode_json( $success_not_admin->content );
+my $success_superadmin_json = decode_json( $success_superadmin->content );
 
-is( $success_not_admin_json->{status}, 1, 'User has been created.' );
+is( $success_superadmin_json->{status}, 1, 'User has been created.' );
 is(
-    $success_not_admin_json->{message},
+    $success_superadmin_json->{message},
     'User has been registered.',
     'User registered.'
 );
+is(
+    $success_superadmin_json->{_hidden_data}->{user}->{email},
+    'anotheradmin@daedalus-project.io',
+);
 
-my $success_admin = request(
-    POST '/registernewuser',
+my $admin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
             auth => {
-                email    => 'yetanotheradmin@daedalus-project.io',
-                password => 'Is a Password_1234',
-            },
-            new_user_data => {
-                email   => 'otheradmin@daedalus-project.io',
-                name    => 'Other',
-                surname => 'Admin',
-            },
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
+            }
         }
     )
 );
 
-is( $success_admin->code(), 200, );
+is( $admin_success->code(), 200, );
 
-my $success_admin_json = decode_json( $success_admin->content );
+my $admin_success_json = decode_json( $admin_success->content );
 
-is( $success_admin_json->{status}, 1, 'User has been created.' );
-is(
-    $success_admin_json->{message},
-    'User has been registered.',
-    'User registered.'
-);
+is( $admin_success_json->{status}, 1, );
 
-my $success_no_admin_user = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+my $admin_session_token = $admin_success_json->{data}->{session_token};
+
+my $admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$admin_session_token", '' );
+
+my $success_no_superadmin_user = request(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'yetanotheradmin@daedalus-project.io',
-                password => 'Is a Password_1234',
-            },
             new_user_data => {
                 email   => 'othernoadmin@daedalus-project.io',
                 name    => 'Other',
@@ -295,55 +308,20 @@ my $success_no_admin_user = request(
     )
 );
 
-is( $success_no_admin_user->code(), 200, );
+is( $success_no_superadmin_user->code(), 200, );
 
-my $success_no_admin_user_json = decode_json( $success_no_admin_user->content );
+my $success_no_superadmin_user_json =
+  decode_json( $success_no_superadmin_user->content );
 
-is( $success_no_admin_user_json->{status}, 1, 'User has been created.' );
+is( $success_no_superadmin_user_json->{status}, 1, 'User has been created.' );
 is(
-    $success_no_admin_user_json->{message},
+    $success_no_superadmin_user_json->{message},
     'User has been registered.',
     'User registered.'
 );
 
-my $success_superadmin_admin = request(
-    POST '/registernewuser',
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
-            new_user_data => {
-                email   => 'anotheradmin@daedalus-project.io',
-                name    => 'Another',
-                surname => 'Admin',
-            },
-        }
-    )
-);
-
-is( $success_superadmin_admin->code(), 200, );
-
-my $success_superadmin_admin_json =
-  decode_json( $success_superadmin_admin->content );
-
-is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
-is(
-    $success_superadmin_admin_json->{message},
-    'User has been registered.',
-    'User registered.'
-);
-
-is( $success_superadmin_admin_json->{status}, 1, 'User has been created.' );
-
-# Only "daedalus_manager" users receives _hidden_data
-
-is(
-    $success_superadmin_admin_json->{_hidden_data}->{user}->{email},
-    'anotheradmin@daedalus-project.io',
-);
+is( $success_no_superadmin_user_json->{_hidden_data},
+    undef, 'User is not superadmin.' );
 
 my $inactive_user_cant_login = request(
     POST '/user/login',
