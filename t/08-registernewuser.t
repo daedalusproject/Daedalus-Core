@@ -76,8 +76,8 @@ my $superadmin_success = request(
     Content      => encode_json(
         {
             auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
             }
         }
     )
@@ -265,8 +265,8 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_json->{_hidden_data}->{user}->{email},
-    'anotheradmin@daedalus-project.io',
+    $success_superadmin_json->{_hidden_data}->{new_user}->{email},
+    'othernotanadmin@daedalus-project.io',
 );
 
 my $admin_success = request(

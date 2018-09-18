@@ -93,6 +93,63 @@ sub imAdmin_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 registerNewUser
+
+Admin users are able to create new users.
+
+=cut
+
+sub register_new_user : Path('/user/register') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub register_new_user_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    my $user_data;
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+
+        if (   ( !$user_data->{data}->{user}->{is_admin} )
+            or ( !$user_data->{data}->{user}->{active} ) )
+        {
+            $response->{status}     = 0;
+            $response->{message}    = "You are not an admin user.";
+            $response->{error_code} = 403;
+        }
+        else {
+            if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
+                $response->{status}     = 0;
+                $response->{message}    = "Invalid user data.";
+                $response->{error_code} = 400;
+
+            }
+            else {
+                $response =
+                  Daedalus::Users::Manager::register_new_user( $c, $user_data );
+                $response->{error_code} = 400;
+                if ( !exists( $response->{_hidden_data} ) ) {
+                    $response->{_hidden_data} = {};
+                }
+                $response->{_hidden_data}->{user} =
+                  $user_data->{_hidden_data}->{user};
+            }
+
+        }
+    }
+
+    return $self->return_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions

@@ -53,44 +53,6 @@ sub ping_GET {
     );
 }
 
-=head2 registerNewUser
-
-Admin users are able to create new users.
-
-=cut
-
-sub registerNewUser : Path('/registernewuser') : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub registerNewUser_POST {
-    my ( $self, $c ) = @_;
-
-    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
-
-    my $response;
-    if ( !$is_admin->{status} ) {
-        $response = $is_admin;
-        return $self->status_forbidden_entity( $c, entity => $response, );
-    }
-    else {
-        if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
-            $response = {
-                status  => 0,
-                message => 'Invalid user data.'
-            };
-
-            $self->status_bad_request_entity( $c, entity => $response, );
-        }
-        else {
-            $response =
-              Daedalus::Users::Manager::registerNewUser( $c, $is_admin );
-        }
-    }
-
-    return $self->return_rest_response( $c, $response );
-}
-
 =head2 showRegisteredUsers
 
 Admin users are able to view which users has been registered by them.

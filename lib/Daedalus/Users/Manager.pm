@@ -404,16 +404,10 @@ Register a new user.
 
 =cut
 
-sub registerNewUser {
+sub register_new_user {
 
     my $c               = shift;
     my $admin_user_data = shift;
-
-    if ( !( $admin_user_data->{_hidden_data} ) ) {
-
-        #Not an admin user, get user_id
-        $admin_user_data->{_hidden_data} = { user => { id => getUserId($c) } };
-    }
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
@@ -493,15 +487,13 @@ sub registerNewUser {
 
                 $response->{message} = "User has been registered.";
 
-                if ( is_super_admin( $c, $registrator_user_id ) ) {
-                    $response->{_hidden_data} = {
-                        user => {
-                            email      => $registered_user->email,
-                            auth_token => $registered_user->auth_token,
-                        },
-                    };
-
-                }
+                $response->{_hidden_data} = {
+                    new_user => {
+                        email      => $registered_user->email,
+                        auth_token => $registered_user->auth_token,
+                        id         => $registered_user->id,
+                    },
+                };
 
                 # Send notification to new user
                 notify_new_user(
