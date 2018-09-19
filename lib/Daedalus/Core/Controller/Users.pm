@@ -193,7 +193,25 @@ sub show_registered_users_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 confirm_register
 
+Receives Auth token, if that token is owned by inactive user, user is registered.
+
+=cut
+
+sub confirm_register : Path('/user/confirm') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub confirm_register_POST {
+    my ( $self, $c ) = @_;
+    my $response;
+
+    $response = Daedalus::Users::Manager::confirm_registration($c);
+$response->{error_code} = 400;
+    $self->return_response( $c, $response );
+}
 
 =head1 Common functions
 

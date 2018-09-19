@@ -53,25 +53,7 @@ sub ping_GET {
     );
 }
 
-=head2 confrimRegister
 
-Receives Auth token, if that token is owned by unactive user, user is registered.
-
-=cut
-
-sub confrimRegister : Path('/confirmregistration') : Args(0) :
-  ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub confrimRegister_POST {
-    my ( $self, $c ) = @_;
-    my $response;
-
-    $response = Daedalus::Users::Manager::confirmRegistration($c);
-
-    $self->return_rest_response( $c, $response );
-}
 
 =head2 showinactiveusers
 

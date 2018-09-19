@@ -569,13 +569,13 @@ sub show_registered_users {
     return $response;
 }
 
-=head2 confirmRegistration
+=head2 confirm_registration
 
 Check auth token and activates inactive users
 
 =cut
 
-sub confirmRegistration {
+sub confirm_registration {
     my $c = shift;
 
     my $response = {

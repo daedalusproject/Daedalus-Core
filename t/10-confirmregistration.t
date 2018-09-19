@@ -8,11 +8,11 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 
-my $confirm_registration_GET_content = get('/confirmregistration');
+my $confirm_registration_GET_content = get('/user/confirm');
 ok( $confirm_registration_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth_token = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json( {} ),
 );
@@ -31,7 +31,7 @@ is(
 );
 
 my $failed_short_auth_token = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -56,7 +56,7 @@ is(
 );
 
 my $failed_empty_auth_token = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -79,7 +79,7 @@ is(
 );
 
 my $failed_invalid_auth_token = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -105,7 +105,7 @@ is(
 );
 
 my $failed_valid_auth_token_no_password = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -131,7 +131,7 @@ is(
 );
 
 my $failed_valid_auth_token_short_password = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -158,7 +158,7 @@ is(
 );
 
 my $failed_valid_auth_token_password_no_diverse = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -185,7 +185,7 @@ is(
 );
 
 my $success_valid_auth_token_and_password = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -212,7 +212,7 @@ is(
 );
 
 my $failed_account_activated_changed_auth_token = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
