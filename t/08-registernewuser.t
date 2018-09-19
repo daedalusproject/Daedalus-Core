@@ -7,6 +7,7 @@ use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use HTTP::Request::Common;
+use MIME::Base64;
 
 my $registerGETcontent = get('/user/register');
 ok( $registerGETcontent, qr /Method GET not implemented/ );
