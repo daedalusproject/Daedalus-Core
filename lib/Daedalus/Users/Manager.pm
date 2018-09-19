@@ -645,7 +645,7 @@ List users, show active ones.
 sub showActiveUsers {
     my $c = shift;
 
-    my $registered_users_respose = showRegisteredUsers($c);
+    my $registered_users_respose = show_registered_users($c);
 
     my $response;
 
@@ -663,19 +663,21 @@ sub showActiveUsers {
     return $response;
 }
 
-=head2 showInactiveUsers
+=head2 show_inactive_users
 
 List users, show inactive ones.
 
 =cut
 
-sub showInactiveUsers {
-    my $c = shift;
+sub show_inactive_users {
 
-    my $registered_users_respose = showRegisteredUsers($c);
+    my $c               = shift;
+    my $admin_user_data = shift;
+
+    my $registered_users_respose = show_registered_users($admin_user_data);
 
     my $response;
-
+die Dumper($registered_users_respose);
     my $registered_users = $registered_users_respose->{registered_users};
 
     my %inactive_users = map {

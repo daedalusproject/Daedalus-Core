@@ -213,6 +213,52 @@ $response->{error_code} = 400;
     $self->return_response( $c, $response );
 }
 
+
+=head2 show_inactive_users
+
+Admin users are allowed to watch which users registered by them still inactive.
+
+=cut
+
+sub show_inactive_users : Path('/users/showinactive') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_inactive_users_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    my $user_data;
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+
+        if (   ( !$user_data->{data}->{user}->{is_admin} )
+            or ( !$user_data->{data}->{user}->{active} ) )
+        {
+            $response->{status}     = 0;
+            $response->{message}    = "You are not an admin user.";
+            $response->{error_code} = 403;
+        }
+        else {
+        $response = Daedalus::Users::Manager::show_inactive_users($c);
+            $response->{error_code} = 400;
+        }
+    }
+
+    $self->return_response( $c, $response );
+}
+
+
+
 =head1 Common functions
 
 Common functions
