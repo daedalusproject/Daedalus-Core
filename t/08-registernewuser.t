@@ -270,6 +270,37 @@ is(
     'othernotanadmin@daedalus-project.io',
 );
 
+
+my $success_superadmin_other_user = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            new_user_data => {
+                email   => 'othernotanadmin2@daedalus-project.io',
+                name    => 'Other 2',
+                surname => 'Not Admin 2',
+            },
+        }
+    )
+);
+
+is( $success_superadmin_other_user->code(), 200, );
+
+my $success_superadmin_other_user_json = decode_json( $success_superadmin_other_user->content );
+
+is( $success_superadmin_other_user_json->{status}, 1, 'User has been created.' );
+is(
+    $success_superadmin_other_user_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_superadmin_other_user_json->{_hidden_data}->{new_user}->{email},
+    'othernotanadmin2@daedalus-project.io',
+);
+
 my $admin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',

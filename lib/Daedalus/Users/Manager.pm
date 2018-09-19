@@ -398,7 +398,7 @@ sub is_super_admin {
 
 }
 
-=head2 registerNewUser
+=head2 register_new_user
 
 Register a new user.
 
@@ -512,18 +512,20 @@ sub register_new_user {
     return $response;
 }
 
-=head2 showRegisteredUsers
+=head2 show_registered_users
 
 Register a new user.
 
 =cut
 
-sub showRegisteredUsers {
-    my $c = shift;
+sub show_registered_users {
 
-    my $response;
+    my $c               = shift;
+    my $admin_user_data = shift;
 
-    my $registrator_user_id = getUserId($c);
+    my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
+
+    my $response = { status => 1, message => "" };
 
     my $user_model = $c->model('CoreRealms::RegisteredUser');
 
@@ -531,13 +533,13 @@ sub showRegisteredUsers {
       $user_model->search( { registrator_user => $registrator_user_id } )
       ->all();
 
-    my $users = {};
+    my $users = {data => {registered_users => {}}, _hidden_data => {registered_users => {}}};
     my $user;
 
     for my $registered_user (@array_registered_users) {
         $user = {
             data => {
-                user => {
+                registered_user => {
                     email    => $registered_user->registered_user->email,
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
@@ -548,21 +550,19 @@ sub showRegisteredUsers {
                 },
             },
             _hidden_data => {
-                user => {
+                registered_user => {
                     id         => $registered_user->registered_user->id,
                     auth_token => $registered_user->registered_user->auth_token,
+                    is_super_admin => is_super_admin( $c, $registered_user->registered_user->id ),
                 },
             },
         };
-        $users->{ $user->{data}->{user}->{email} } = $user;
+        $users->{data}->{registered_users}->{$user->{data}->{registered_user}->{email}} = $user->{data}->{registered_user};
+        $users->{_hidden_data}->{registered_users}->{$user->{data}->{registered_user}->{email}} = $user->{_hidden_data}->{registered_user};
     }
 
-    if ( !( is_super_admin( $c, $registrator_user_id ) ) ) {
-        foreach my $userkey ( keys %{$users} ) {
-            delete $users->{$userkey}->{_hidden_data};
-        }
-    }
-    $response->{registered_users} = $users;
+    $response->{data} = $users->{data};
+    $response->{_hidden_data} = $users->{_hidden_data};
 
     $response->{status} = 1;
 

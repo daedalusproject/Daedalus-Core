@@ -53,35 +53,6 @@ sub ping_GET {
     );
 }
 
-=head2 showRegisteredUsers
-
-Admin users are able to view which users has been registered by them.
-
-=cut
-
-sub showRegisteredUsers : Path('/showmyregisteredusers') : Args(0) :
-  ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub showRegisteredUsers_POST {
-    my ( $self, $c ) = @_;
-
-    my $is_admin = Daedalus::Users::Manager::isAdmin($c);
-
-    my $response;
-
-    if ( !$is_admin->{status} ) {
-        $response = $is_admin;
-        return $self->status_forbidden_entity( $c, entity => $response, );
-    }
-    else {
-        $response = Daedalus::Users::Manager::showRegisteredUsers($c);
-    }
-
-    $self->return_rest_response( $c, $response );
-}
-
 =head2 confrimRegister
 
 Receives Auth token, if that token is owned by unactive user, user is registered.
