@@ -185,8 +185,10 @@ sub show_registered_users_GET {
             $response->{error_code} = 403;
         }
         else {
-       $response = Daedalus::Users::Manager::show_registered_users($c, $user_data);
-                 $response->{_hidden_data}->{user} =$user_data->{_hidden_data}->{user};
+            $response =
+              Daedalus::Users::Manager::show_registered_users( $c, $user_data );
+            $response->{_hidden_data}->{user} =
+              $user_data->{_hidden_data}->{user};
         }
     }
 
@@ -199,8 +201,7 @@ Receives Auth token, if that token is owned by inactive user, user is registered
 
 =cut
 
-sub confirm_register : Path('/user/confirm') : Args(0) :
-  ActionClass('REST') {
+sub confirm_register : Path('/user/confirm') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
@@ -209,10 +210,9 @@ sub confirm_register_POST {
     my $response;
 
     $response = Daedalus::Users::Manager::confirm_registration($c);
-$response->{error_code} = 400;
+    $response->{error_code} = 400;
     $self->return_response( $c, $response );
 }
-
 
 =head2 show_inactive_users
 
@@ -220,7 +220,7 @@ Admin users are allowed to watch which users registered by them still inactive.
 
 =cut
 
-sub show_inactive_users : Path('/users/showinactive') : Args(0) :
+sub show_inactive_users : Path('/user/showinactive') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
@@ -249,15 +249,16 @@ sub show_inactive_users_GET {
             $response->{error_code} = 403;
         }
         else {
-        $response = Daedalus::Users::Manager::show_inactive_users($c);
+            $response =
+              Daedalus::Users::Manager::show_inactive_users( $c, $user_data );
+            $response->{_hidden_data}->{user} =
+              $user_data->{_hidden_data}->{user};
             $response->{error_code} = 400;
         }
     }
 
     $self->return_response( $c, $response );
 }
-
-
 
 =head1 Common functions
 

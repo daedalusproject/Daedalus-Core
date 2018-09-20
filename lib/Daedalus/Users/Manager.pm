@@ -533,7 +533,10 @@ sub show_registered_users {
       $user_model->search( { registrator_user => $registrator_user_id } )
       ->all();
 
-    my $users = {data => {registered_users => {}}, _hidden_data => {registered_users => {}}};
+    my $users = {
+        data         => { registered_users => {} },
+        _hidden_data => { registered_users => {} }
+    };
     my $user;
 
     for my $registered_user (@array_registered_users) {
@@ -553,15 +556,21 @@ sub show_registered_users {
                 registered_user => {
                     id         => $registered_user->registered_user->id,
                     auth_token => $registered_user->registered_user->auth_token,
-                    is_super_admin => is_super_admin( $c, $registered_user->registered_user->id ),
+                    is_super_admin => is_super_admin(
+                        $c, $registered_user->registered_user->id
+                    ),
                 },
             },
         };
-        $users->{data}->{registered_users}->{$user->{data}->{registered_user}->{email}} = $user->{data}->{registered_user};
-        $users->{_hidden_data}->{registered_users}->{$user->{data}->{registered_user}->{email}} = $user->{_hidden_data}->{registered_user};
+        $users->{data}->{registered_users}
+          ->{ $user->{data}->{registered_user}->{email} } =
+          $user->{data}->{registered_user};
+        $users->{_hidden_data}->{registered_users}
+          ->{ $user->{data}->{registered_user}->{email} } =
+          $user->{_hidden_data}->{registered_user};
     }
 
-    $response->{data} = $users->{data};
+    $response->{data}         = $users->{data};
     $response->{_hidden_data} = $users->{_hidden_data};
 
     $response->{status} = 1;
@@ -674,20 +683,31 @@ sub show_inactive_users {
     my $c               = shift;
     my $admin_user_data = shift;
 
-    my $registered_users_respose = show_registered_users($admin_user_data);
+    my $registered_users_respose =
+      show_registered_users( $c, $admin_user_data );
 
     my $response;
-die Dumper($registered_users_respose);
-    my $registered_users = $registered_users_respose->{registered_users};
 
-    my %inactive_users = map {
-        $registered_users->{$_}->{data}->{user}->{active} == 0
-          ? ( $_ => $registered_users->{$_} )
-          : ()
-    } keys %$registered_users;
+    my $registered_users_data =
+      $registered_users_respose->{data}->{registered_users};
 
-    $response->{status}         = 1;
-    $response->{inactive_users} = \%inactive_users;
+    my @inactive_user_email =
+      map { $registered_users_data->{$_}->{active} == 0 ? ($_) : () }
+      keys %$registered_users_data;
+
+    $response = {
+        status       => 1,
+        data         => { inactive_users => {} },
+        _hidden_data => { inactive_users => {} }
+    };
+
+    for my $user_email (@inactive_user_email) {
+        $response->{data}->{inactive_users}->{$user_email} =
+          $registered_users_respose->{data}->{registered_users}->{$user_email};
+        $response->{_hidden_data}->{inactive_users}->{$user_email} =
+          $registered_users_respose->{_hidden_data}->{registered_users}
+          ->{$user_email};
+    }
 
     return $response;
 }
