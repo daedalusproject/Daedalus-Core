@@ -10,13 +10,13 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 
-my $endpoint = "showorganizations";
+my $endpoint = "/organization/show";
 
 my $show_organizations_GET_content = get($endpoint);
 ok( $show_organizations_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
-    POST $endpoint,
+    GET $endpoint,
     Content_Type => 'application/json',
     Content      => encode_json( {} ),
 );
@@ -30,31 +30,12 @@ is_deeply(
     $failed_because_no_auth_json,
     {
         'status'  => '0',
-        'message' => 'Wrong e-mail or password.',
+        'message' => 'No sesion token provided.',
     }
 );
 
-my $admin_failed_login = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_failed_Test_1234',
-            }
-        }
-    )
-);
-
-is( $admin_failed_login->code(), 403, );
-
-my $admin_failed_login_json = decode_json( $admin_failed_login->content );
-
-is( $admin_failed_login_json->{status}, 0, 'Status failed, wrong password.' );
-
-my $admin_three_organization = request(
-    POST $endpoint,
+my $superadmin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -64,6 +45,24 @@ my $admin_three_organization = request(
             }
         }
     )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $admin_three_organization = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $admin_three_organization->code(), 200, );
@@ -78,8 +77,8 @@ is( scalar @{ $admin_three_organization_json->{data}->{organizations} },
 isnt( $admin_three_organization_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
 
-my $user_without_organization = request(
-    POST $endpoint,
+my $non_admin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -89,6 +88,23 @@ my $user_without_organization = request(
             }
         }
     )
+);
+
+is( $non_admin_success->code(), 200, );
+
+my $non_admin_success_json = decode_json( $non_admin_success->content );
+
+is( $non_admin_success_json->{status}, 1, );
+
+my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
+
+my $not_admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
+
+my $user_without_organization = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
 );
 
 is( $user_without_organization->code(), 200, );
@@ -103,8 +119,8 @@ is( scalar @{ $user_without_organization_json->{data}->{organizations} },
 is( $user_without_organization_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
-my $admin_user_mega_shop_organization = request(
-    POST $endpoint,
+my $admin_megashops_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -114,6 +130,25 @@ my $admin_user_mega_shop_organization = request(
             }
         }
     )
+);
+
+is( $admin_megashops_success->code(), 200, );
+
+my $admin_megashops_success_json =
+  decode_json( $admin_megashops_success->content );
+
+is( $admin_megashops_success_json->{status}, 1, );
+
+my $admin_megashops_session_token =
+  $admin_megashops_success_json->{data}->{session_token};
+
+my $admin_megashops_authorization_basic =
+  MIME::Base64::encode( "session_token:$admin_megashops_session_token", '' );
+
+my $admin_user_mega_shop_organization = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
 );
 
 is( $admin_user_mega_shop_organization->code(), 200, );
@@ -132,17 +167,37 @@ is(
 is( $admin_user_mega_shop_organization_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
-my $no_admin_user_mega_shop_organization = request(
-    POST $endpoint,
+my $non_admin_megashops_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
             auth => {
-                email    => 'noadmin@megashops.com',
-                password => '__;;_12__Password_34',
+                email    => 'otheradminagain@megashops.com',
+                password => '__::___Password_1234',
             }
         }
     )
+);
+
+is( $non_admin_megashops_success->code(), 200, );
+
+my $non_admin_megashops_success_json =
+  decode_json( $non_admin_megashops_success->content );
+
+is( $non_admin_megashops_json->{status}, 1, );
+
+my $non_admin_megashops_session_token =
+  $non_admin_megashops_success_json->{data}->{session_token};
+
+my $non_admin_megashops_authorization_basic =
+  MIME::Base64::encode( "session_token:$non_admin_megashops_session_token",
+    '' );
+
+my $no_admin_user_mega_shop_organization = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_megashops_authorization_basic",
 );
 
 is( $no_admin_user_mega_shop_organization->code(), 200, );
