@@ -119,6 +119,74 @@ sub show_organizations_GET {
     $self->return_response( $c, $response );
 }
 
+sub show_organization_users : Path('/organization/showusers') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_organization_users_GET {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    my $user_data;
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+
+        if (   ( !$user_data->{data}->{user}->{is_admin} )
+            or ( !$user_data->{data}->{user}->{active} ) )
+        {
+            $response->{status}     = 0;
+            $response->{message}    = "You are not an admin user.";
+            $response->{error_code} = 403;
+        }
+        else {
+            my $organization_request =
+              Daedalus::Organizations::Manager::get_organization_from_token( $c,
+                $user_data );
+            if ( $organization_request->{status} == 0 ) {
+                $response = $organization_request;
+            }
+            else {
+                my $organization = $organization_request->{organization};
+
+                #Check is user is admin of $oganization
+                my $is_organization_admin =
+                  Daedalus::Users::Manager::is_organization_admin( $c,
+                    $user->id, $organization->id );
+
+                if (   $is_organization_admin->{status} == 0
+                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
+                    0 )
+                {
+                    $response->{status} = 0;
+
+                 # Do not reveal if the token exists if the user is not an admin
+                    $response->{message}    = 'Invalid Organization token';
+                    $response->{error_code} = 400;
+                }
+                else {
+                    #Get users from organization
+                    $response =
+                      Daedalus::Users::Manager::get_organization_users( $c,
+                        $organization->id, $is_super_admin );
+                }
+
+            }
+        }
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions
