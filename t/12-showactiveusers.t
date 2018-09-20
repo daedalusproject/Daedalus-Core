@@ -10,13 +10,13 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 
-my $endpoint = "showactiveusers";
+my $endpoint = "/user/showactive";
 
 my $show_inactive_users_GET_content = get($endpoint);
 ok( $show_inactive_users_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
-    POST $endpoint,
+    GET $endpoint,
     Content_Type => 'application/json',
     Content      => encode_json( {} ),
 );
@@ -30,12 +30,12 @@ is_deeply(
     $failed_because_no_auth_json,
     {
         'status'  => '0',
-        'message' => 'Wrong e-mail or password.',
+        'message' => 'No sesion token provided.',
     }
 );
 
-my $failed_no_admin = request(
-    POST $endpoint,
+my $non_admin_success = request(
+    GET '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -47,6 +47,23 @@ my $failed_no_admin = request(
     )
 );
 
+is( $non_admin_success->code(), 200, );
+
+my $non_admin_success_json = decode_json( $non_admin_success->content );
+
+is( $non_admin_success_json->{status}, 1, );
+
+my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
+
+my $not_admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
+
+my $failed_no_admin = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
+);
+
 is( $failed_no_admin->code(), 403, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
@@ -54,10 +71,10 @@ my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 is( $failed_no_admin_json->{status},  0, );
 is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
-# admin@daedalus-project.io has registered two users for the time being, these users have not confirmed its registration yet
+# admin@daedalus-project.io has registered two users for the time being, one user confirmed its registration
 
-my $admin_one_user = request(
-    POST $endpoint,
+my $superadmin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -69,18 +86,37 @@ my $admin_one_user = request(
     )
 );
 
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $admin_one_user = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
 is( $admin_one_user->code(), 200, );
 
 my $admin_one_user_json = decode_json( $admin_one_user->content );
 
 is( $admin_one_user_json->{status}, 1, 'Status success, admin.' );
-is( keys %{ $admin_one_user_json->{active_users} },
+is( keys %{ $admin_one_user_json->{data}->{active_users} },
     1, 'There is one active user' );
 
-my $anotheradmin_admin_zero_users = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
+my $other_admin_success = request(
+    POST '/user/login',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
             auth => {
                 email    => 'adminagain@daedalus-project.io',
@@ -90,6 +126,24 @@ my $anotheradmin_admin_zero_users = request(
     )
 );
 
+is( $other_admin_success->code(), 200, );
+
+my $other_admin_success_json = decode_json( $other_admin_success->content );
+
+is( $other_admin_success_json->{status}, 1, );
+
+my $other_admin_session_token =
+  $other_admin_success_json->{data}->{session_token};
+
+my $other_admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$other_admin_session_token", '' );
+
+my $anotheradmin_admin_zero_users = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $other_admin_authorization_basic",
+);
+
 is( $anotheradmin_admin_zero_users->code(), 200, );
 
 my $anotheradmin_admin_zero_users_json =
@@ -97,23 +151,19 @@ my $anotheradmin_admin_zero_users_json =
 
 is( $anotheradmin_admin_zero_users_json->{status}, 1,
     'Status success, admin.' );
-is( keys %{ $anotheradmin_admin_zero_users_json->{active_users} },
+is( keys %{ $anotheradmin_admin_zero_users_json->{data}->{active_users} },
     0, 'adminagain@daedalus-project.io has 0 users active' );
+
+is( $anotheradmin_admin_zero_users_json->{_hidden_data},
+    undef, 'adminagain@daedalus-project.io is not super admin.' );
 
 # Let's confirm one of admin@daedalus-project.io inactive users
 # othernotanadmin@daedalus-project.io
 
 my $admin_one_inactive_user = request(
-    POST '/showinactiveusers',
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
-        }
-    )
+    GET '/user/showinactive',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 #anotheradmin@daedalus-project.io
@@ -122,13 +172,12 @@ my $admin_one_inactive_user_json =
 
 is( $admin_one_inactive_user_json->{status}, 1, 'Status success, admin.' );
 
-my $inactive_user_data = $admin_one_inactive_user_json->{inactive_users}
-  ->{'anotheradmin@daedalus-project.io'};
 my $inactive_user_data_auth_token =
-  $inactive_user_data->{_hidden_data}->{user}->{auth_token};
+  $admin_one_inactive_user_json->{_hidden_data}->{inactive_users}
+  ->{'anotheradmin@daedalus-project.io'}->{auth_token};
 
 my $success_valid_auth_token_and_password = request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -143,16 +192,9 @@ my $success_valid_auth_token_and_password = request(
 is( $success_valid_auth_token_and_password->code(), 200 );
 
 my $admin_two_users = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
-        }
-    )
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $admin_two_users->code(), 200, );
@@ -160,7 +202,10 @@ is( $admin_two_users->code(), 200, );
 my $admin_two_users_json = decode_json( $admin_two_users->content );
 
 is( $admin_two_users_json->{status}, 1, 'Status success, admin.' );
-is( keys %{ $admin_two_users_json->{active_users} },
+is( keys %{ $admin_two_users_json->{data}->{active_users} },
     2, 'Now, There are two active users' );
+
+isnt( $admin_two_users_json->{_hidden_data},
+    undef, 'admin@daedalus-project.io is super admin.' );
 
 done_testing();
