@@ -35,7 +35,7 @@ is_deeply(
 );
 
 my $non_admin_success = request(
-    GET '/user/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -174,7 +174,7 @@ is( $admin_one_inactive_user_json->{status}, 1, 'Status success, admin.' );
 
 my $inactive_user_data_auth_token =
   $admin_one_inactive_user_json->{_hidden_data}->{inactive_users}
-  ->{'anotheradmin@daedalus-project.io'}->{auth_token};
+  ->{'othernotanadmin2@daedalus-project.io'}->{auth_token};
 
 my $success_valid_auth_token_and_password = request(
     POST '/user/confirm',

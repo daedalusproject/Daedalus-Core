@@ -645,29 +645,42 @@ sub confirm_registration {
     return $response;
 }
 
-=head2 showActiveUsers
+=head2 show_active_users
 
 List users, show active ones.
 
 =cut
 
-sub showActiveUsers {
-    my $c = shift;
+sub show_active_users {
 
-    my $registered_users_respose = show_registered_users($c);
+    my $c               = shift;
+    my $admin_user_data = shift;
+
+    my $registered_users_respose =
+      show_registered_users( $c, $admin_user_data );
 
     my $response;
 
-    my $registered_users = $registered_users_respose->{registered_users};
+    my $registered_users_data =
+      $registered_users_respose->{data}->{registered_users};
 
-    my %inactive_users = map {
-        $registered_users->{$_}->{data}->{user}->{active} == 1
-          ? ( $_ => $registered_users->{$_} )
-          : ()
-    } keys %$registered_users;
+    my @active_user_email =
+      map { $registered_users_data->{$_}->{active} == 1 ? ($_) : () }
+      keys %$registered_users_data;
 
-    $response->{status}       = 1;
-    $response->{active_users} = \%inactive_users;
+    $response = {
+        status       => 1,
+        data         => { active_users => {} },
+        _hidden_data => { active_users => {} }
+    };
+
+    for my $user_email (@active_user_email) {
+        $response->{data}->{active_users}->{$user_email} =
+          $registered_users_respose->{data}->{registered_users}->{$user_email};
+        $response->{_hidden_data}->{active_users}->{$user_email} =
+          $registered_users_respose->{_hidden_data}->{registered_users}
+          ->{$user_email};
+    }
 
     return $response;
 }
