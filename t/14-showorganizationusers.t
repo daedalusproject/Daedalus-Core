@@ -10,13 +10,10 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 
-my $endpoint = "showorganizationusers";
-
-my $show_organizations_GET_content = get($endpoint);
-ok( $show_organizations_GET_content, qr /Method GET not implemented/ );
+my $endpoint = "/organization/users";
 
 my $failed_because_no_auth = request(
-    POST $endpoint,
+    GET $endpoint,
     Content_Type => 'application/json',
     Content      => encode_json( {} ),
 );
@@ -30,31 +27,12 @@ is_deeply(
     $failed_because_no_auth_json,
     {
         'status'  => '0',
-        'message' => 'Wrong e-mail or password.',
+        'message' => 'No sesion token provided.',
     }
 );
 
-my $admin_failed_login = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_failed_Test_1234',
-            }
-        }
-    )
-);
-
-is( $admin_failed_login->code(), 403, );
-
-my $admin_failed_login_json = decode_json( $admin_failed_login->content );
-
-is( $admin_failed_login_json->{status}, 0, 'Status failed, wrong password.' );
-
-my $failed_no_admin = request(
-    POST $endpoint,
+my $non_admin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -66,6 +44,23 @@ my $failed_no_admin = request(
     )
 );
 
+is( $non_admin_success->code(), 200, );
+
+my $non_admin_success_json = decode_json( $non_admin_success->content );
+
+is( $non_admin_success_json->{status}, 1, );
+
+my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
+
+my $not_admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
+
+my $failed_no_admin = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
+);
+
 is( $failed_no_admin->code(), 403, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
@@ -73,8 +68,8 @@ my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 is( $failed_no_admin_json->{status},  0, );
 is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
 
-my $failed_no_data = request(
-    POST $endpoint,
+my $superadmin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -86,6 +81,25 @@ my $failed_no_data = request(
     )
 );
 
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $failed_no_data = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json( {} ),
+);
+
 is( $failed_no_data->code(), 400, );
 
 my $failed_no_data_json = decode_json( $failed_no_data->content );
@@ -94,14 +108,11 @@ is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'Invalid Organization token.', );
 
 my $failed_no_token = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            },
             organization => {},
         }
     )
@@ -114,15 +125,38 @@ my $failed_no_token_json = decode_json( $failed_no_token->content );
 is( $failed_no_token_json->{status},  0, );
 is( $failed_no_token_json->{message}, 'Invalid Organization token.', );
 
-my $megashops_admin_invalid_short_token = request(
-    POST $endpoint,
+my $admin_megashops_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
             auth => {
                 email    => 'otheradminagain@megashops.com',
                 password => '__::___Password_1234',
-            },
+            }
+        }
+    )
+);
+
+is( $admin_megashops_success->code(), 200, );
+
+my $admin_megashops_success_json =
+  decode_json( $admin_megashops_success->content );
+
+is( $admin_megashops_success_json->{status}, 1, );
+
+my $admin_megashops_session_token =
+  $admin_megashops_success_json->{data}->{session_token};
+
+my $admin_megashops_authorization_basic =
+  MIME::Base64::encode( "session_token:$admin_megashops_session_token", '' );
+
+my $megashops_admin_invalid_short_token = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content       => encode_json(
+        {
             organization => {
                 token => 'somefailedtoken',
             },
@@ -142,14 +176,11 @@ is(
 );
 
 my $megashops_admin_invalid_token = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            },
             organization => {
                 token =>
                   'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pof',    #Almost the same token
@@ -170,14 +201,11 @@ is(
 );
 
 my $megashops_admin_daedalus_token = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            },
             organization => {
                 token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO'
                 ,    #Daedalus Organization token
@@ -198,14 +226,11 @@ is(
 );
 
 my $megashops_admin_valid_token = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content       => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            },
             organization => {
                 token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             },
@@ -226,15 +251,36 @@ is( keys %{ $megashops_admin_valid_token_json->{data}->{users} },
 is( $megashops_admin_valid_token_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
-my $superadmin_token = request(
-    POST $endpoint,
+$superadmin_success = request(
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
             auth => {
                 email    => 'admin@daedalus-project.io',
                 password => 'this_is_a_Test_1234',
-            },
+            }
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+$superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+$superadmin_session_token = $superadmin_success_json->{data}->{session_token};
+
+$superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_token = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
             organization => {
                 token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
             },
