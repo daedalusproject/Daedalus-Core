@@ -172,7 +172,7 @@ my $superadmin_success = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
-    Content => encode_json( { organization_data => { name => "Supershops" } } ),
+    Content => encode_json( { organization_data => { name => "Ultrashops" } } ),
 );
 
 is( $superadmin_success->code(), 200, );

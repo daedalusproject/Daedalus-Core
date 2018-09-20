@@ -59,22 +59,22 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-my $admin_three_organization = request(
+my $admin_two_organization = request(
     GET $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
-is( $admin_three_organization->code(), 200, );
+is( $admin_two_organization->code(), 200, );
 
-my $admin_three_organization_json =
-  decode_json( $admin_three_organization->content );
+my $admin_two_organization_json =
+  decode_json( $admin_two_organization->content );
 
-is( $admin_three_organization_json->{status}, 1, 'Status success, admin.' );
-is( scalar @{ $admin_three_organization_json->{data}->{organizations} },
-    3, 'Admin belongis to 3 organizations' );
+is( $admin_two_organization_json->{status}, 1, 'Status success, admin.' );
+is( scalar @{ $admin_two_organization_json->{data}->{organizations} },
+    2, 'Admin belongis to 2 organizations' );
 
-isnt( $admin_three_organization_json->{_hidden_data},
+isnt( $admin_two_organization_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
 
 my $non_admin_success = request(
@@ -160,8 +160,8 @@ is( $admin_user_mega_shop_organization_json->{status}, 1, 'Status success.' );
 is(
     scalar @{ $admin_user_mega_shop_organization_json->{data}->{organizations}
     },
-    1,
-    'This user belongs to Mega Shops'
+    2,
+    'This user belongs to Mega Shops and Supershops'
 );
 
 is( $admin_user_mega_shop_organization_json->{_hidden_data},
@@ -185,7 +185,7 @@ is( $non_admin_megashops_success->code(), 200, );
 my $non_admin_megashops_success_json =
   decode_json( $non_admin_megashops_success->content );
 
-is( $non_admin_megashops_json->{status}, 1, );
+is( $non_admin_megashops_success_json->{status}, 1, );
 
 my $non_admin_megashops_session_token =
   $non_admin_megashops_success_json->{data}->{session_token};
@@ -210,8 +210,8 @@ is( $no_admin_user_mega_shop_organization_json->{status}, 1,
 is(
     scalar
       @{ $no_admin_user_mega_shop_organization_json->{data}->{organizations} },
-    1,
-    'This user belongs to Mega Shops'
+    2,
+    'This user belongs to Mega Shops and SuperShops'
 );
 
 is( $no_admin_user_mega_shop_organization_json->{_hidden_data},

@@ -53,35 +53,6 @@ sub ping_GET {
     );
 }
 
-=head2 showorganizations
-
-Users are allowed to show their organizations
-
-=cut
-
-sub showOrganizations : Path('/showorganizations') : Args(0) :
-  ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
-
-sub showOrganizations_POST {
-    my ( $self, $c ) = @_;
-
-    my $response;
-
-    my $auth = Daedalus::Users::Manager::authUser($c);
-
-    if ( !$auth->{status} ) {
-        return $self->status_forbidden_entity( $c, entity => $auth, );
-    }
-    else {
-        $response =
-          Daedalus::Organizations::Manager::getUserOrganizations( $c, $auth );
-    }
-
-    $self->return_rest_response( $c, $response );
-}
-
 =head2 showorganizationusers
 
 Admin users are allowed to show their organization users

@@ -142,13 +142,13 @@ sub create_organization {
     return $response;
 }
 
-=head2 getUserOrganizations
+=head2 get_organizations_from_user
 
 For a given user, show its organizations
 
 =cut
 
-sub getUserOrganizations {
+sub get_organizations_from_user {
 
     my $c         = shift;
     my $user_data = shift;
@@ -163,14 +163,7 @@ sub getUserOrganizations {
         },
     };
 
-    my $user_id;
-
-    if ( exists( $user_data->{_hidden_data} ) ) {
-        $user_id = $user_data->{_hidden_data}->{user}->{id};
-    }
-    else {
-        $user_id = Daedalus::Users::Manager::getUserId($c);
-    }
+    my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my @user_organizations = $c->model('CoreRealms::UserOrganization')
       ->search( { user_id => $user_id } )->all();
@@ -188,10 +181,6 @@ sub getUserOrganizations {
 
     $response->{data}->{organizations}         = \@organizations_names;
     $response->{_hidden_data}->{organizations} = \%organizations;
-
-    if ( !( Daedalus::Users::Manager::isSuperAdminById( $c, $user_id ) ) ) {
-        delete $response->{_hidden_data};
-    }
 
     return $response;
 }

@@ -85,6 +85,40 @@ sub create_rganization_POST {
     $self->return_response( $c, $response );
 }
 
+=head2 show_organizations
+
+Users are allowed to show their organizations
+
+=cut
+
+sub show_organizations : Path('/organization/show') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_organizations_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+        $response =
+          Daedalus::Organizations::Manager::get_organizations_from_user( $c,
+            $user_data );
+        $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions
