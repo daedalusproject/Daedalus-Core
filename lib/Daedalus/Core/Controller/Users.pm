@@ -52,17 +52,17 @@ sub login_POST {
     $self->return_response( $c, $response );
 }
 
-=head2 imAdmin
+=head2 im_admin
 
 Check if logged user is Admin
 
 =cut
 
-sub imAdmin : Path('/user/imadmin') : Args(0) : ActionClass('REST') {
+sub im_admin : Path('/user/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub imAdmin_GET {
+sub im_admin_GET {
     my ( $self, $c ) = @_;
 
     my $response;
@@ -423,7 +423,7 @@ sub return_response {
 
             return $self->status_forbidden_entity( $c, entity => $response, );
         }
-        if ( $error_code == 400 ) {
+        elsif ( $error_code == 400 ) {
             return $self->status_bad_request_entity( $c, entity => $response, );
         }
 

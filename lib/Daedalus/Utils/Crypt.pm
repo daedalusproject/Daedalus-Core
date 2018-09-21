@@ -139,6 +139,9 @@ sub retrieve_token_data {
     }
     catch {
         $retreived_data->{message} = $_;
+    }
+    finally {
+        $retreived_data->{message} = "Session token invalid";
     };
     return $retreived_data;
 }

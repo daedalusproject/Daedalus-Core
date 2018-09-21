@@ -201,4 +201,19 @@ is( keys %{ $superadmin_token_json->{data}->{users} },
 isnt( $superadmin_token_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
 
+sleep 30;
+
+my $superadmin_ekpired_token = request(
+    GET "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_ekpired_token->code(), 403, );
+
+my $superadmin_ekpired_token_json = decode_json( $superadmin_ekpired_token->content );
+
+is( $superadmin_ekpired_token_json->{status},  0, );
+is( $superadmin_ekpired_token_json->{message}, 'Session token invalid.', );
+
 done_testing();

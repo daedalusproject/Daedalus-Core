@@ -38,7 +38,7 @@ my $not_admin_authorization_basic =
 
 my $not_admin_user_get = request( GET '/user/imadmin',
     Authorization => "Basic $not_admin_authorization_basic", )
-  ;    #->authorization_basic('session_token', $not_admin_session_token);
+  ;
 
 is( $not_admin_user_get->code(), 400, );
 

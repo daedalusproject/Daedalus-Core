@@ -261,7 +261,7 @@ sub return_response {
 
             return $self->status_forbidden_entity( $c, entity => $response, );
         }
-        if ( $error_code == 400 ) {
+        elsif ( $error_code == 400 ) {
             return $self->status_bad_request_entity( $c, entity => $response, );
         }
 
