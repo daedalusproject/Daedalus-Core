@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 use Test::More;
-use Data::Dumper;
 
 use Catalyst::Test 'Daedalus::Core';
 
@@ -9,8 +8,6 @@ use Catalyst::Test 'Daedalus::Core';
 
 use JSON::XS;
 use HTTP::Request::Common;
-
-use Data::Dumper;
 
 ok( request('/')->is_success, 'Request should succeed' );
 
