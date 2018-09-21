@@ -127,26 +127,28 @@ sub get_user_from_session_token {
                 $c->config->{authTokenConfig},
                 $session_token );
             if ( $token_data->{status} != 1 ) {
+                $response->{status} = 0;
 
                 if ( $token_data->{message} =~ m/invalid signature/ ) {
-                    $response->{message} = "Session token invalid";
+                    $response->{message} = "Session token invalid.";
                 }
                 else {
-                    $response->{message} = $token_data->{message};
+                    $response->{message} = "Session token invalid.";    #Expired
                 }
             }
             else {
                 $user = $c->model('CoreRealms::User')
                   ->find( { id => $token_data->{data}->{id} } );
 
-                if ( $user->active == 0 ) {
-                    $response->{message} = "Session token invalid";
-                }
-                else {
-                    $user_data = get_user_data( $c, $user );
-                    $response->{status} = 1;
-                    $response->{data}   = $user_data;
-                }
+#if ( $user->active == 0 ) { User always is active, if it is deleted, user won't be found.
+#$response->{message} = "Session token invalid";
+#}
+#else {
+                $user_data = get_user_data( $c, $user );
+                $response->{status} = 1;
+                $response->{data}   = $user_data;
+
+                #}
             }
         }
     }
@@ -288,73 +290,6 @@ sub is_organization_admin {
     #}
 
     return $response;
-
-}
-
-=head2 isAdmin
-
-Return if required user is admin.
-
-=cut
-
-sub isAdmin {
-
-    my $c = shift;
-
-    my $user_auth = authUser($c);
-    my $response;
-
-    if ( !$user_auth->{status} ) {
-        $response = $user_auth;
-    }
-    else {
-        $response = {
-            status  => 0,
-            message => "You are not an admin user.",
-            data    => { imadmin => 0 },
-        };
-
-        my $user_id = -1;
-
-        if ( exists $user_auth->{_hidden_data} ) {
-            $response->{_hidden_data} = $user_auth->{_hidden_data};
-            $user_id = $user_auth->{_hidden_data}->{user}->{id};
-        }
-        else {
-            $user_id = get_user( $c, $user_auth->{data}->{user}->{email} )->id;
-        }
-
-        # Check if logged user is admin
-
-        my $is_admin = $user_auth->{data}->{user}->{is_admin};
-
-        if ( $is_admin == 1 ) {
-            $response->{status}          = 1;
-            $response->{message}         = "You are an admin user.";
-            $response->{data}->{imadmin} = 1;
-        }
-    }
-    return $response;
-
-}
-
-=head2 isSuperAdmin
-
-Return if required user belongs to a group with 'daedalus_manager' role
-
-=cut
-
-sub isSuperAdmin {
-
-    my $c       = shift;
-    my $request = shift;
-
-    my $is_super_admin = 0;
-
-    $is_super_admin =
-      is_super_admin( $c, $request->{_hidden_data}->{user}->{id} );
-
-    return $is_super_admin;
 
 }
 
