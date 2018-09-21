@@ -185,41 +185,33 @@ sub get_organizations_from_user {
     return $response;
 }
 
-=head2 showOrganizationUsers
+=head2 show_organization_users
 
 For a given organization token, show its users
 
 =cut
 
-=head2 _getOrganizationFromToken
+=head2 get_organization_from_token
 
 For a given organization token, return organization data
 
-Private method
-
 =cut
 
-sub _getOrganizationFromToken {
+sub get_organization_from_token {
 
-    my $c = shift;
+    my $c                  = shift;
+    my $organization_token = shift;
 
     my $response;
     $response->{status}  = 0;
     $response->{message} = 'Invalid Organization token.';
 
-    my $organization_request_data = $c->{request}->{data}->{organization};
-    if ($organization_request_data) {
-        if ( $organization_request_data->{token} ) {
+    my $organization = $c->model('CoreRealms::Organization')
+      ->find( { token => $organization_token } );
 
-            my $organization = $c->model('CoreRealms::Organization')
-              ->find( { token => $organization_request_data->{token} } );
-
-            if ($organization) {
-                $response->{status}       = 1;
-                $response->{organization} = $organization;
-            }
-
-        }
+    if ($organization) {
+        $response->{status}       = 1;
+        $response->{organization} = $organization;
     }
 
     return $response;

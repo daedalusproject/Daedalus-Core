@@ -119,7 +119,7 @@ sub show_organizations_GET {
     $self->return_response( $c, $response );
 }
 
-sub show_organization_users : Path('/organization/showusers') : Args(0) :
+sub show_organization_users : Path('/organization/showusers') : Args(1) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
@@ -129,10 +129,10 @@ sub show_organization_users_GET {
     my ( $self, $c ) = @_;
 
     my $response;
+    my $user_data;
+    my $organization_token;    # Token will be acquired only y user is an admin
 
     my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
-    my $user_data;
 
     if ( $user->{status} == 0 ) {
         $response = $user;
@@ -149,11 +149,14 @@ sub show_organization_users_GET {
             $response->{error_code} = 403;
         }
         else {
+            $organization_token = $c->{request}->{arguments}[0]
+              ;    # I'm sure that there is only one argument
             my $organization_request =
               Daedalus::Organizations::Manager::get_organization_from_token( $c,
-                $user_data );
+                $organization_token );
             if ( $organization_request->{status} == 0 ) {
                 $response = $organization_request;
+                $response->{error_code} = 400;
             }
             else {
                 my $organization = $organization_request->{organization};
@@ -161,7 +164,8 @@ sub show_organization_users_GET {
                 #Check is user is admin of $oganization
                 my $is_organization_admin =
                   Daedalus::Users::Manager::is_organization_admin( $c,
-                    $user->id, $organization->id );
+                    $user_data->{_hidden_data}->{user}->{id},
+                    $organization->id );
 
                 if (   $is_organization_admin->{status} == 0
                     && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
@@ -177,7 +181,8 @@ sub show_organization_users_GET {
                     #Get users from organization
                     $response =
                       Daedalus::Users::Manager::get_organization_users( $c,
-                        $organization->id, $is_super_admin );
+                        $organization->id,
+                        $user_data->{_hidden_data}->{user}->{is_super_admin} );
                 }
 
             }

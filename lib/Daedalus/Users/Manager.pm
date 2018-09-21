@@ -244,13 +244,13 @@ sub is_admin_of_any_organization {
 
 }
 
-=head2 isOrganizationAdmin
+=head2 is_organization_admin
 
 Return if required user is admin of required Organization
 
 =cut
 
-sub isOrganizationAdmin {
+sub is_organization_admin {
     my $c               = shift;
     my $user_id         = shift;
     my $organization_id = shift;
@@ -725,13 +725,13 @@ sub show_inactive_users {
     return $response;
 }
 
-=head2 getOrganizationUsers
+=head2 get_organization_userss
 
 Get users of given organization
 
 =cut
 
-sub getOrganizationUsers {
+sub get_organization_users {
 
     my $c               = shift;
     my $organization_id = shift;
