@@ -13,11 +13,8 @@ use MIME::Base64;
 
 my $endpoint = '/organization/showusers';
 
-my $failed_because_no_organization_token = request(
-    GET $endpoint,
-    Content_Type => 'application/json',
-    Content      => encode_json( {} ),
-);
+my $failed_because_no_organization_token =
+  request( GET $endpoint, Content_Type => 'application/json', );
 
 is( $failed_because_no_organization_token->code(), 404, );
 
