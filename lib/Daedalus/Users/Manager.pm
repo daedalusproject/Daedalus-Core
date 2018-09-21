@@ -778,41 +778,53 @@ sub get_organization_users {
     return $response;
 }
 
-=head2 showOrphanUsers
+=head2 show_orphan_users
 
 List users, show orphan ones.
 
 =cut
 
-sub showOrphanUsers {
-    my $c = shift;
+sub show_orphan_users {
+    my $c               = shift;
+    my $admin_user_data = shift;
 
-    my $registered_users_respose = showRegisteredUsers($c);
+    my $registered_users_respose =
+      show_registered_users( $c, $admin_user_data );
 
-    my %orphan_users;
+    my $response = {
+        data         => { orphan_users => {} },
+        _hidden_data => { orphan_users => {} }
+    };
 
-    my $response;
+    my $registered_users_data =
+      $registered_users_respose->{data}->{registered_users};
 
-    my $registered_users = $registered_users_respose->{registered_users};
+    my $registered_users_hidden_data =
+      $registered_users_respose->{_hidden_data}->{registered_users};
 
-    my %active_users = map {
-        $registered_users->{$_}->{data}->{user}->{active} == 1
-          ? ( $_ => $registered_users->{$_} )
-          : ()
-    } keys %$registered_users;
-
-    for my $user_email ( keys %active_users ) {
-        my @organization_users =
-          $c->model('CoreRealms::UserOrganization')
-          ->search( { 'user_id' => getUserIdByEmail( $c, $user_email ) } )
-          ->all();
-        if ( scalar @organization_users == 0 ) {
-            $orphan_users{$user_email} = $active_users{$user_email};
+    for my $user_email ( keys %$registered_users_hidden_data ) {
+        if ( $registered_users_data->{$user_email}->{active} == 1 ) {
+            if (
+                scalar(
+                    $c->model('CoreRealms::UserOrganization')->search(
+                        {
+                            'user_id' =>
+                              $registered_users_hidden_data->{$user_email}->{id}
+                        }
+                    )
+                )
+              )
+            {
+                $response->{data}->{orphan_users}->{$user_email} =
+                  $registered_users_data->{$user_email};
+                $response->{_hidden_data}->{orphan_users}->{$user_email} =
+                  $registered_users_hidden_data->{$user_email};
+            }
         }
+
     }
 
-    $response->{status}       = 1;
-    $response->{orphan_users} = \%orphan_users;
+    $response->{status} = 1;
 
     return $response;
 }

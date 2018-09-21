@@ -307,6 +307,53 @@ sub show_active_users_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 show_orphan_users
+
+Admin users are allowed to list their registered users who has no organization
+
+=cut
+
+sub show_orphan_users : Path('/user/showorphan') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_orphan_users_GET {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    my $user_data;
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+
+        if (   ( !$user_data->{data}->{user}->{is_admin} )
+            or ( !$user_data->{data}->{user}->{active} ) )
+        {
+            $response->{status}     = 0;
+            $response->{message}    = "You are not an admin user.";
+            $response->{error_code} = 403;
+        }
+        else {
+
+            $response =
+              Daedalus::Users::Manager::show_orphan_users( $c, $user_data );
+            $response->{_hidden_data}->{user} =
+              $user_data->{_hidden_data}->{user};
+
+        }
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =head1 Common functions
 
 Common functions

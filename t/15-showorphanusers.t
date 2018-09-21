@@ -155,14 +155,11 @@ is( $daedalus_admin->code(), 200, );
 
 my $daedalus_admin_json = decode_json( $daedalus_admin->content );
 
-is( keys %{ $daedalus_admin_json->{orphan_users} },
+is( keys %{ $daedalus_admin_json->{data}->{orphan_users} },
     2, 'Daedalus Project has only one user so far' );
 
-isnt(
-    $daedalus_admin_json->{orphan_users}
-      { ( keys %{ $daedalus_admin_json->{orphan_users} } )[0] }->{_hidden_data},
-    undef,
-);
+isnt( $daedalus_admin_json->{_hidden_data},
+    undef, "Superadmin users see hidden_data" );
 
 # Register new user
 
@@ -191,13 +188,10 @@ is( $magashops_admin_one_new_user->code(), 200, );
 my $magashops_admin_one_new_user_json =
   decode_json( $magashops_admin_one_new_user->content );
 
-is( keys %{ $magashops_admin_one_new_user_json->{orphan_users} },
+is( keys %{ $magashops_admin_one_new_user_json->{data}->{orphan_users} },
     1, 'Marvin is orphan.' );
 
-is(
-    $magashops_admin_one_new_user_json->{orphan_users}
-      { ( keys %{ $daedalus_admin_json->{orphan_users} } )[0] }->{_hidden_data},
-    undef,
-);
+is( $magashops_admin_one_new_user_json->{_hidden_data},
+    undef, "Non Superadmin users do not see hidden_data" );
 
 done_testing();
