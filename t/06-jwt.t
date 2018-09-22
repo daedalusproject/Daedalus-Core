@@ -44,8 +44,9 @@ is( $not_admin_no_session_token->code(), 400, );
 my $not_admin_no_session_token_json =
   decode_json( $not_admin_no_session_token->content );
 
-is( $not_admin_no_session_token_json->{status},  0, );
-is( $not_admin_no_session_token_json->{message}, 'No sesion token provided.', );
+is( $not_admin_no_session_token_json->{status}, 0, );
+is( $not_admin_no_session_token_json->{message}, 'No session token provided.',
+);
 
 my $not_admin_authorization_basic_broken =
   MIME::Base64::encode( "session_token:notoken", '' );

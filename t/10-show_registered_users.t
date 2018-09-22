@@ -9,7 +9,6 @@ use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
 
-
 my $failed_because_no_auth = request(
     GET '/user/showregistered',
     Content_Type => 'application/json',
@@ -24,7 +23,7 @@ my $failed_because_no_auth_json =
 is( $failed_because_no_auth_json->{status}, 0, 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_json->{message},
-    'No sesion token provided.',
+    'No session token provided.',
     'A valid session token must be provided.'
 );
 
@@ -54,7 +53,7 @@ my $not_admin_authorization_basic =
 
 my $failed_no_admin = request(
     GET '/user/showregistered',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
@@ -94,10 +93,9 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-
 my $admin_admin_two_users = request(
     GET '/user/showregistered',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
@@ -108,16 +106,14 @@ my $admin_admin_two_users_json = decode_json( $admin_admin_two_users->content );
 is( $admin_admin_two_users_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_admin_two_users_json->{data}->{registered_users} },
     2, 'admin@daedalus-project.io has 2 users registered' );
-isnt(
-    $admin_admin_two_users_json->{_hidden_data}, undef,
-    'admin@daedalus-project.io is super admin.'
-);
+isnt( $admin_admin_two_users_json->{_hidden_data},
+    undef, 'admin@daedalus-project.io is super admin.' );
 
 my $other_admin_success = request(
     POST '/user/login',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
-    Content      => encode_json(
+    Content       => encode_json(
         {
             auth => {
                 email    => 'adminagain@daedalus-project.io',
@@ -141,7 +137,7 @@ my $other_admin_authorization_basic =
 
 my $anotheradmin_admin_zero_users = request(
     GET '/user/showregistered',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $other_admin_authorization_basic",
 );
 
@@ -157,9 +153,9 @@ is( keys %{ $anotheradmin_admin_zero_users_json->{registered_users} },
 
 my $yet_other_admin_success = request(
     POST '/user/login',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
-    Content      => encode_json(
+    Content       => encode_json(
         {
             auth => {
                 email    => 'yetanotheradmin@daedalus-project.io',
@@ -171,7 +167,8 @@ my $yet_other_admin_success = request(
 
 is( $yet_other_admin_success->code(), 200, );
 
-my $yet_other_admin_success_json = decode_json( $yet_other_admin_success->content );
+my $yet_other_admin_success_json =
+  decode_json( $yet_other_admin_success->content );
 
 is( $yet_other_admin_success_json->{status}, 1, );
 
@@ -183,22 +180,20 @@ my $yet_other_admin_authorization_basic =
 
 my $yet_other_admin_zero_users = request(
     GET '/user/showregistered',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $yet_other_admin_authorization_basic",
 );
 
-
 is( $yet_other_admin_zero_users->code(), 200, );
 
-my $yet_other_admin_zero_users_json = decode_json( $yet_other_admin_zero_users->content );
+my $yet_other_admin_zero_users_json =
+  decode_json( $yet_other_admin_zero_users->content );
 
 is( $yet_other_admin_zero_users_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $yet_other_admin_zero_users_json->{data}->{registered_users} },
     0, 'There are no  users registered' );
-is(
-    $yet_other_admin_zero_users_json->{_hidden_data}, undef,
-    'yetanotheradmin@daedalus-project.io is not super admin.'
-);
+is( $yet_other_admin_zero_users_json->{_hidden_data},
+    undef, 'yetanotheradmin@daedalus-project.io is not super admin.' );
 
 # Create new user
 
@@ -219,7 +214,8 @@ my $yet_other_admin_create_user = request(
 
 is( $yet_other_admin_create_user->code(), 200, );
 
-my $yet_other_admin_create_user_json = decode_json( $yet_other_admin_create_user->content );
+my $yet_other_admin_create_user_json =
+  decode_json( $yet_other_admin_create_user->content );
 
 is( $yet_other_admin_create_user_json->{status}, 1, 'User has been created.' );
 is(
@@ -230,21 +226,19 @@ is(
 
 my $yet_other_admin_one_user = request(
     GET '/user/showregistered',
-    Content_Type => 'application/json',
+    Content_Type  => 'application/json',
     Authorization => "Basic $yet_other_admin_authorization_basic",
 );
 
-
 is( $yet_other_admin_one_user->code(), 200, );
 
-my $yet_other_admin_one_user_json = decode_json( $yet_other_admin_one_user->content );
+my $yet_other_admin_one_user_json =
+  decode_json( $yet_other_admin_one_user->content );
 
 is( $yet_other_admin_one_user_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $yet_other_admin_one_user_json->{data}->{registered_users} },
     1, 'There is one user registered' );
-is(
-    $yet_other_admin_one_user_json->{_hidden_data}, undef,
-    'yetanotheradmin@daedalus-project.io is not super admin.'
-);
+is( $yet_other_admin_one_user_json->{_hidden_data},
+    undef, 'yetanotheradmin@daedalus-project.io is not super admin.' );
 
 done_testing();

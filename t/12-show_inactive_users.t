@@ -28,7 +28,7 @@ is_deeply(
     $failed_because_no_auth_json,
     {
         'status'  => '0',
-        'message' => 'No sesion token provided.',
+        'message' => 'No session token provided.',
     }
 );
 
