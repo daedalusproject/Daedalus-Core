@@ -86,12 +86,11 @@ sub get_user_data {
 
     $response->{_hidden_data} = { user => { id => $user->id } };
 
-    if ( $user->active ) {
-        $response->{data}->{user}->{is_admin} =
-          is_admin_of_any_organization( $c, $user->id );
-        $response->{_hidden_data}->{user}->{is_super_admin} =
-          is_super_admin( $c, $user->id );
-    }
+#if ( $user->active ) { User is always active, innactive ones cannot login, deleted ones are no present in this model
+    $response->{data}->{user}->{is_admin} =
+      is_admin_of_any_organization( $c, $user->id );
+    $response->{_hidden_data}->{user}->{is_super_admin} =
+      is_super_admin( $c, $user->id );
 
     return $response;
 }
@@ -762,34 +761,6 @@ sub show_orphan_users {
     $response->{status} = 1;
 
     return $response;
-}
-
-=head2 getUserIdByEmail
-
-Get user id using email
-
-=cut
-
-sub getUserIdByEmail {
-    my $c          = shift;
-    my $user_email = shift;
-
-    my $user_model = $c->model('CoreRealms::User');
-    my $user_id = $user_model->find( { email => $user_email } )->id;
-
-    return $user_id;
-}
-
-=head2 getUserId
-
-Get user id.
-
-=cut
-
-sub getUserId {
-    my $c = shift;
-
-    return getUserIdByEmail( $c, $c->{request}->{data}->{auth}->{email} );
 }
 
 =encoding utf8
