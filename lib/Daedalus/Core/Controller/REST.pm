@@ -53,6 +53,80 @@ sub ping_GET {
     );
 }
 
+=head1 Common functions
+
+Common functions
+
+=cut
+
+=head2 status_forbidden_entity
+
+Returns forbidden status using custom response based on controller $response
+
+=cut
+
+sub status_forbidden_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(403);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
+
+=head2 status_bad_request_entity
+
+Returns bad requests status using custom response based on controller $response
+
+=cut
+
+sub status_bad_request_entity {
+    my $self = shift;
+    my $c    = shift;
+    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+
+    $c->response->status(400);
+    $self->_set_entity( $c, $p{'entity'} );
+    return 1;
+}
+
+=head2 return_response
+
+Returns 200, 400 or 403 based on response status
+
+=cut
+
+sub return_response {
+    my $self     = shift;
+    my $c        = shift;
+    my $response = shift;
+
+    my $error_code = $response->{error_code};
+    delete $response->{error_code};
+
+    if ( $response->{_hidden_data} && $response->{_hidden_data}->{user} ) {
+        if ( $response->{_hidden_data}->{user}->{is_super_admin} != 1 ) {
+            delete $response->{_hidden_data};
+        }
+    }
+
+    if ( $response->{status} ) {
+        return $self->status_ok( $c, entity => $response, );
+    }
+    else {
+
+        if ( $error_code == 403 ) {
+
+            return $self->status_forbidden_entity( $c, entity => $response, );
+        }
+        elsif ( $error_code == 400 ) {
+            return $self->status_bad_request_entity( $c, entity => $response, );
+        }
+
+    }
+}
+
 =encoding utf8
 
 =head1 AUTHOR

@@ -4,7 +4,7 @@ package Daedalus::Utils::Responses;
 =encoding UTF-8
 =head1 NAME
 
-Daedalus::Core::Utils::Responsesr
+Daedalus::Core::Utils::Responses
 
 =cut
 
