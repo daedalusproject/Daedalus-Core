@@ -133,15 +133,15 @@ sub retrieve_token_data {
       Crypt::PK::RSA->new( $session_token_config->{rsa_public_key} );
 
     try {
+        $retreived_data->{status} = 1;
         $retreived_data->{data} =
           decode_jwt( token => $session_token, key => $public_key );
-        $retreived_data->{status} = 1;
     }
     catch {
         $retreived_data->{message} = $_;
     }
     finally {
-        $retreived_data->{message} = $_;
+        $retreived_data->{status} = 0;
     };
     return $retreived_data;
 }
