@@ -26,7 +26,7 @@ my $failed_because_no_auth_json =
 is( $failed_because_no_auth_json->{status}, 0, 'Status failed, no auth.' );
 is(
     $failed_because_no_auth_json->{message},
-    'No sesion token provided.',
+    'No session token provided.',
     'A valid session token must be provided.'
 );
 
@@ -270,7 +270,6 @@ is(
     'othernotanadmin@daedalus-project.io',
 );
 
-
 my $success_superadmin_other_user = request(
     POST '/user/register',
     Authorization => "Basic $superadmin_authorization_basic",
@@ -288,9 +287,11 @@ my $success_superadmin_other_user = request(
 
 is( $success_superadmin_other_user->code(), 200, );
 
-my $success_superadmin_other_user_json = decode_json( $success_superadmin_other_user->content );
+my $success_superadmin_other_user_json =
+  decode_json( $success_superadmin_other_user->content );
 
-is( $success_superadmin_other_user_json->{status}, 1, 'User has been created.' );
+is( $success_superadmin_other_user_json->{status}, 1,
+    'User has been created.' );
 is(
     $success_superadmin_other_user_json->{message},
     'User has been registered.',
