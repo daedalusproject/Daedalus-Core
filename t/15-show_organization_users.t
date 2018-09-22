@@ -201,20 +201,37 @@ is( keys %{ $superadmin_token_json->{data}->{users} },
 isnt( $superadmin_token_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
 
+my $superadmin_megashops_token = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    #Megashops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_megashops_token->code(), 200, );
+
+my $superadmin_megashops_token_json =
+  decode_json( $superadmin_megashops_token->content );
+
+is( keys %{ $superadmin_megashops_token_json->{data}->{users} },
+    2, 'Mega Shops has two  users' );
+
+isnt( $superadmin_megashops_token_json->{_hidden_data},
+    undef, 'Super admin users receive hidden data' );
+
 sleep 30;
 
-my $superadmin_ekpired_token = request(
+my $superadmin_expired_token = request(
     GET "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO",
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
-is( $superadmin_ekpired_token->code(), 403, );
+is( $superadmin_expired_token->code(), 403, );
 
-my $superadmin_ekpired_token_json =
-  decode_json( $superadmin_ekpired_token->content );
+my $superadmin_expired_token_json =
+  decode_json( $superadmin_expired_token->content );
 
-is( $superadmin_ekpired_token_json->{status},  0, );
-is( $superadmin_ekpired_token_json->{message}, 'Session token expired.', );
+is( $superadmin_expired_token_json->{status},  0, );
+is( $superadmin_expired_token_json->{message}, 'Session token expired.', );
 
 done_testing();
