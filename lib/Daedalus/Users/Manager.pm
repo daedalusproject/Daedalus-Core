@@ -132,7 +132,7 @@ sub get_user_from_session_token {
                     $response->{message} = "Session token invalid.";
                 }
                 else {
-                    $response->{message} = "Session token invalid.";    #Expired
+                    $response->{message} = "Session token expired.";    #Expired
                 }
             }
             else {

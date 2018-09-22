@@ -10,7 +10,6 @@ use Data::Dumper;
 use base qw(Daedalus::Core::Controller::REST);
 
 use Daedalus::Users::Manager;
-use Daedalus::Utils::Responses;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );

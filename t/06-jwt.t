@@ -80,7 +80,7 @@ my $not_admin_expired_session_token_json =
 is( $not_admin_expired_session_token_json->{status}, 0, );
 is(
     $not_admin_expired_session_token_json->{message},
-    'Session token invalid.',
+    'Session token expired.',
 );
 
 done_testing();

@@ -35,10 +35,6 @@ Returns "pong"
 
 =cut
 
-sub begin : ActionClass('Deserialize') {
-    my ( $self, $c ) = @_;
-}
-
 sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
