@@ -9,25 +9,16 @@ use Catalyst::Test 'Daedalus::Core';
 use JSON::XS;
 use HTTP::Request::Common;
 
-use Data::Dumper;
-
-ok( request('/ping')->is_success, 'Request should succeed' );
-
-my $content      = get('/ping');
-my $ping_content = decode_json($content);
-
-is_deeply( $ping_content->{'status'}, 'pong' );
-
 # Login User
 
 ## GET
 
-my $login_get_content = get('/login');
+my $login_get_content = get('/user/login');
 
 ok( $login_get_content, qr /Method GET not implemented/ );
 
 my $failed_login_user_post_content = request(
-    POST '/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -53,7 +44,7 @@ is_deeply(
 );
 
 my $failed_login_password_post_content = request(
-    POST '/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -79,7 +70,7 @@ is_deeply(
 );
 
 my $login_non_admin_post_success = request(
-    POST '/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
@@ -107,7 +98,7 @@ is( $login_non_admin_post_success_json->{_hidden_data},
     undef, 'Non admin users do no receive hidden data' );
 
 my $login_admin_post_success = request(
-    POST '/login',
+    POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {

@@ -52,38 +52,154 @@ sub check_user_passwrd {
     return $password eq $user_password;
 }
 
-=head2 get_user
+=head2 get_user_from_email
+
+Retrieve user data from model using e-mail
+
+=cut
+
+sub get_user_from_email {
+    my $c     = shift;
+    my $email = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { email => $email } );
+
+    return $user;
+}
+
+sub get_user_data {
+    my $c    = shift;
+    my $user = shift;
+
+    my $response = { data => {}, _hidden_data => {} };
+
+    $response->{data} = {
+        user => {
+            email   => $user->email,
+            name    => $user->name,
+            surname => $user->surname,
+            phone   => $user->phone,
+            api_key => $user->api_key,
+            active  => $user->active,
+        },
+    };
+
+    $response->{_hidden_data} = { user => { id => $user->id } };
+
+#if ( $user->active ) { User is always active, innactive ones cannot login, deleted ones are no present in this model
+    $response->{data}->{user}->{is_admin} =
+      is_admin_of_any_organization( $c, $user->id );
+    $response->{_hidden_data}->{user}->{is_super_admin} =
+      is_super_admin( $c, $user->id );
+
+    return $response;
+}
+
+=head2 get_user_from_token
 
 Retrieve user data from model
 
 =cut
 
-sub get_user {
-    my $c     = shift;
-    my $email = shift;
+sub get_user_from_session_token {
+    my $c = shift;
 
-    my $user =
-      $c->model('CoreRealms::User')->find( { email => $email } );
+    my $response = {
+        status  => 0,
+        message => "",
+    };
+    my $token_data;
+    my $user;
+    my $user_data;
 
-    return $user;
+    my ( $session_token_name, $session_token ) =
+      $c->req->headers->authorization_basic;
+
+    if ( ( !$session_token_name ) or ( !$session_token ) ) {
+        $response->{message} = "No session token provided.";
+    }
+    else {
+        if ( $session_token_name ne "session_token" ) {
+            $response->{message} = "No session token provided.";
+        }
+        else {
+            $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
+                $c->config->{authTokenConfig},
+                $session_token );
+            if ( $token_data->{status} != 1 ) {
+                $response->{status} = 0;
+                if ( $token_data->{message} =~ m/invalid/ ) {
+                    $response->{message} = "Session token invalid.";
+                }
+                else {
+                    $response->{message} = "Session token expired.";    #Expired
+                }
+            }
+            else {
+                $user = $c->model('CoreRealms::User')
+                  ->find( { id => $token_data->{data}->{id} } );
+
+#if ( $user->active == 0 ) { User always is active, if it is deleted, user won't be found.
+#$response->{message} = "Session token invalid";
+#}
+#else {
+                $user_data = get_user_data( $c, $user );
+                $response->{status} = 1;
+                $response->{data}   = $user_data;
+
+                #}
+            }
+        }
+    }
+
+    return $response;
 }
 
-=head2 authUser
+=head2 is_admin_from_session_token
 
-Auths user, returns auth data if submitted credentials match
+Gets user form session token and check if its an admin one.
+=cut
+
+sub is_admin_from_session_token {
+    my $c = shift;
+
+    my $response;
+
+    my $user = get_user_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+    }
+    else {
+        if ( $user->{data}->{data}->{user}->{is_admin} ) {
+            $response->{status} = 1;
+            $response->{data}   = $user->{data};
+        }
+        else {
+            $response->{status}  = 0;
+            $response->{message} = "You are not an admin user.";
+        }
+    }
+
+    return $response;
+}
+
+=head2 auth_user
+
+Authorize user, returns user data if submitted credentials match
 with database info.
 =cut
 
-sub authUser {
+sub auth_user {
 
     my $c    = shift;
     my $auth = $c->{request}->{data}->{auth};
 
     my $response;
+    my $user_data;
 
     # Get user from model
-    my $user = get_user( $c, $auth->{email} );
-
+    my $user = get_user_from_email( $c, $auth->{email} );
     if ($user) {
         if (
             !(
@@ -100,23 +216,17 @@ sub authUser {
         else {
             $response->{status}  = 1;
             $response->{message} = 'Auth Successful.';
-            $response->{data}    = {
-                'user' => {
-                    email    => $user->email,
-                    name     => $user->name,
-                    surname  => $user->surname,
-                    phone    => $user->phone,
-                    api_key  => $user->api_key,
-                    email    => $user->email,
-                    is_admin => isAdminOfAnyOrganization( $c, $user->id ),
-                },
-            };
-            $response->{_hidden_data} = { user => { id => $user->id } };
+            $user_data = get_user_data( $c, $user );
+            $response->{data}         = $user_data->{data};
+            $response->{_hidden_data} = $user_data->{_hidden_data};
 
-            # If user is not superAdmin remove _hidden_data
-            if ( !isSuperAdmin( $c, $response ) ) {
-                delete $response->{_hidden_data};
-            }
+            $response->{data}->{session_token} =
+              Daedalus::Utils::Crypt::create_session_token(
+                $c->config->{authTokenConfig},
+                {
+                    id => $response->{_hidden_data}->{user}->{id},
+                }
+              );
         }
     }
     else {
@@ -126,13 +236,13 @@ sub authUser {
     return $response;
 }
 
-=head2 isAdminOfAnyOrganization
+=head2 is_admin_of_any_organization
 
 Return if required user is admin in any Organization
 
 =cut
 
-sub isAdminOfAnyOrganization {
+sub is_admin_of_any_organization {
     my $c       = shift;
     my $user_id = shift;
 
@@ -164,13 +274,13 @@ sub isAdminOfAnyOrganization {
 
 }
 
-=head2 isOrganizationAdmin
+=head2 is_organization_admin
 
 Return if required user is admin of required Organization
 
 =cut
 
-sub isOrganizationAdmin {
+sub is_organization_admin {
     my $c               = shift;
     my $user_id         = shift;
     my $organization_id = shift;
@@ -211,80 +321,13 @@ sub isOrganizationAdmin {
 
 }
 
-=head2 isAdmin
-
-Return if required user is admin.
-
-=cut
-
-sub isAdmin {
-
-    my $c = shift;
-
-    my $user_auth = authUser($c);
-    my $response;
-
-    if ( !$user_auth->{status} ) {
-        $response = $user_auth;
-    }
-    else {
-        $response = {
-            status  => 0,
-            message => "You are not an admin user.",
-            data    => { imadmin => 0 },
-        };
-
-        my $user_id = -1;
-
-        if ( exists $user_auth->{_hidden_data} ) {
-            $response->{_hidden_data} = $user_auth->{_hidden_data};
-            $user_id = $user_auth->{_hidden_data}->{user}->{id};
-        }
-        else {
-            $user_id = get_user( $c, $user_auth->{data}->{user}->{email} )->id;
-        }
-
-        # Check if logged user is admin
-
-        my $is_admin = $user_auth->{data}->{user}->{is_admin};
-
-        if ( $is_admin == 1 ) {
-            $response->{status}          = 1;
-            $response->{message}         = "You are an admin user.";
-            $response->{data}->{imadmin} = 1;
-        }
-    }
-    return $response;
-
-}
-
-=head2 isSuperAdmin
-
-Return if required user belongs to a group with 'daedalus_manager' role
-
-=cut
-
-sub isSuperAdmin {
-
-    my $c       = shift;
-    my $request = shift;
-
-    my $is_super_admin = 0;
-
-    $is_super_admin =
-      isSuperAdminById( $c, $request->{_hidden_data}->{user}->{id} );
-
-    return $is_super_admin;
-
-}
-
-=head2 isSuperAdminById
+=head2 is_super_admin
 
 Return if required user belongs to a group with 'daedalus_manager'role, user id is provided
 
 =cut
 
-sub isSuperAdminById {
+sub is_super_admin {
 
     my $c       = shift;
     my $user_id = shift;
@@ -318,22 +361,16 @@ sub isSuperAdminById {
 
 }
 
-=head2 registerNewUser
+=head2 register_new_user
 
 Register a new user.
 
 =cut
 
-sub registerNewUser {
+sub register_new_user {
 
     my $c               = shift;
     my $admin_user_data = shift;
-
-    if ( !( $admin_user_data->{_hidden_data} ) ) {
-
-        #Not an admin user, get user_id
-        $admin_user_data->{_hidden_data} = { user => { id => getUserId($c) } };
-    }
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
@@ -413,15 +450,13 @@ sub registerNewUser {
 
                 $response->{message} = "User has been registered.";
 
-                if ( isSuperAdminById( $c, $registrator_user_id ) ) {
-                    $response->{_hidden_data} = {
-                        user => {
-                            email      => $registered_user->email,
-                            auth_token => $registered_user->auth_token,
-                        },
-                    };
-
-                }
+                $response->{_hidden_data} = {
+                    new_user => {
+                        email      => $registered_user->email,
+                        auth_token => $registered_user->auth_token,
+                        id         => $registered_user->id,
+                    },
+                };
 
                 # Send notification to new user
                 notify_new_user(
@@ -440,18 +475,20 @@ sub registerNewUser {
     return $response;
 }
 
-=head2 showRegisteredUsers
+=head2 show_registered_users
 
 Register a new user.
 
 =cut
 
-sub showRegisteredUsers {
-    my $c = shift;
+sub show_registered_users {
 
-    my $response;
+    my $c               = shift;
+    my $admin_user_data = shift;
 
-    my $registrator_user_id = getUserId($c);
+    my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
+
+    my $response = { status => 1, message => "" };
 
     my $user_model = $c->model('CoreRealms::RegisteredUser');
 
@@ -459,51 +496,58 @@ sub showRegisteredUsers {
       $user_model->search( { registrator_user => $registrator_user_id } )
       ->all();
 
-    my $users = {};
+    my $users = {
+        data         => { registered_users => {} },
+        _hidden_data => { registered_users => {} }
+    };
     my $user;
 
     for my $registered_user (@array_registered_users) {
         $user = {
             data => {
-                user => {
+                registered_user => {
                     email    => $registered_user->registered_user->email,
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
-                    is_admin => isAdminOfAnyOrganization(
+                    is_admin => is_admin_of_any_organization(
                         $c, $registered_user->registered_user->id
                     ),
                 },
             },
             _hidden_data => {
-                user => {
+                registered_user => {
                     id         => $registered_user->registered_user->id,
                     auth_token => $registered_user->registered_user->auth_token,
+                    is_super_admin => is_super_admin(
+                        $c, $registered_user->registered_user->id
+                    ),
                 },
             },
         };
-        $users->{ $user->{data}->{user}->{email} } = $user;
+        $users->{data}->{registered_users}
+          ->{ $user->{data}->{registered_user}->{email} } =
+          $user->{data}->{registered_user};
+        $users->{_hidden_data}->{registered_users}
+          ->{ $user->{data}->{registered_user}->{email} } =
+          $user->{_hidden_data}->{registered_user};
     }
 
-    if ( !( isSuperAdminById( $c, $registrator_user_id ) ) ) {
-        foreach my $userkey ( keys %{$users} ) {
-            delete $users->{$userkey}->{_hidden_data};
-        }
-    }
-    $response->{registered_users} = $users;
+    $response->{data}         = $users->{data};
+    $response->{_hidden_data} = $users->{_hidden_data};
 
     $response->{status} = 1;
 
     return $response;
 }
 
-=head2 confirmRegistration
+=head2 confirm_registration
 
 Check auth token and activates inactive users
 
 =cut
 
-sub confirmRegistration {
+sub confirm_registration {
     my $c = shift;
 
     my $response = {
@@ -564,67 +608,93 @@ sub confirmRegistration {
     return $response;
 }
 
-=head2 showActiveUsers
+=head2 show_active_users
 
 List users, show active ones.
 
 =cut
 
-sub showActiveUsers {
-    my $c = shift;
+sub show_active_users {
 
-    my $registered_users_respose = showRegisteredUsers($c);
+    my $c               = shift;
+    my $admin_user_data = shift;
+
+    my $registered_users_respose =
+      show_registered_users( $c, $admin_user_data );
 
     my $response;
 
-    my $registered_users = $registered_users_respose->{registered_users};
+    my $registered_users_data =
+      $registered_users_respose->{data}->{registered_users};
 
-    my %inactive_users = map {
-        $registered_users->{$_}->{data}->{user}->{active} == 1
-          ? ( $_ => $registered_users->{$_} )
-          : ()
-    } keys %$registered_users;
+    my @active_user_email =
+      map { $registered_users_data->{$_}->{active} == 1 ? ($_) : () }
+      keys %$registered_users_data;
 
-    $response->{status}       = 1;
-    $response->{active_users} = \%inactive_users;
+    $response = {
+        status       => 1,
+        data         => { active_users => {} },
+        _hidden_data => { active_users => {} }
+    };
+
+    for my $user_email (@active_user_email) {
+        $response->{data}->{active_users}->{$user_email} =
+          $registered_users_respose->{data}->{registered_users}->{$user_email};
+        $response->{_hidden_data}->{active_users}->{$user_email} =
+          $registered_users_respose->{_hidden_data}->{registered_users}
+          ->{$user_email};
+    }
 
     return $response;
 }
 
-=head2 showInactiveUsers
+=head2 show_inactive_users
 
 List users, show inactive ones.
 
 =cut
 
-sub showInactiveUsers {
-    my $c = shift;
+sub show_inactive_users {
 
-    my $registered_users_respose = showRegisteredUsers($c);
+    my $c               = shift;
+    my $admin_user_data = shift;
+
+    my $registered_users_respose =
+      show_registered_users( $c, $admin_user_data );
 
     my $response;
 
-    my $registered_users = $registered_users_respose->{registered_users};
+    my $registered_users_data =
+      $registered_users_respose->{data}->{registered_users};
 
-    my %inactive_users = map {
-        $registered_users->{$_}->{data}->{user}->{active} == 0
-          ? ( $_ => $registered_users->{$_} )
-          : ()
-    } keys %$registered_users;
+    my @inactive_user_email =
+      map { $registered_users_data->{$_}->{active} == 0 ? ($_) : () }
+      keys %$registered_users_data;
 
-    $response->{status}         = 1;
-    $response->{inactive_users} = \%inactive_users;
+    $response = {
+        status       => 1,
+        data         => { inactive_users => {} },
+        _hidden_data => { inactive_users => {} }
+    };
+
+    for my $user_email (@inactive_user_email) {
+        $response->{data}->{inactive_users}->{$user_email} =
+          $registered_users_respose->{data}->{registered_users}->{$user_email};
+        $response->{_hidden_data}->{inactive_users}->{$user_email} =
+          $registered_users_respose->{_hidden_data}->{registered_users}
+          ->{$user_email};
+    }
 
     return $response;
 }
 
-=head2 getOrganizationUsers
+=head2 get_organization_userss
 
 Get users of given organization
 
 =cut
 
-sub getOrganizationUsers {
+sub get_organization_users {
 
     my $c               = shift;
     my $organization_id = shift;
@@ -671,71 +741,55 @@ sub getOrganizationUsers {
     return $response;
 }
 
-=head2 showOrphanUsers
+=head2 show_orphan_users
 
 List users, show orphan ones.
 
 =cut
 
-sub showOrphanUsers {
-    my $c = shift;
+sub show_orphan_users {
+    my $c               = shift;
+    my $admin_user_data = shift;
 
-    my $registered_users_respose = showRegisteredUsers($c);
+    my $registered_users_respose =
+      show_registered_users( $c, $admin_user_data );
 
-    my %orphan_users;
+    my $response = {
+        data         => { orphan_users => {} },
+        _hidden_data => { orphan_users => {} }
+    };
 
-    my $response;
+    my $registered_users_data =
+      $registered_users_respose->{data}->{registered_users};
 
-    my $registered_users = $registered_users_respose->{registered_users};
+    my $registered_users_hidden_data =
+      $registered_users_respose->{_hidden_data}->{registered_users};
 
-    my %active_users = map {
-        $registered_users->{$_}->{data}->{user}->{active} == 1
-          ? ( $_ => $registered_users->{$_} )
-          : ()
-    } keys %$registered_users;
-
-    for my $user_email ( keys %active_users ) {
-        my @organization_users =
-          $c->model('CoreRealms::UserOrganization')
-          ->search( { 'user_id' => getUserIdByEmail( $c, $user_email ) } )
-          ->all();
-        if ( scalar @organization_users == 0 ) {
-            $orphan_users{$user_email} = $active_users{$user_email};
+    for my $user_email ( keys %$registered_users_hidden_data ) {
+        if ( $registered_users_data->{$user_email}->{active} == 1 ) {
+            if (
+                scalar(
+                    $c->model('CoreRealms::UserOrganization')->search(
+                        {
+                            'user_id' =>
+                              $registered_users_hidden_data->{$user_email}->{id}
+                        }
+                    )->all()
+                ) == 0
+              )
+            {
+                $response->{data}->{orphan_users}->{$user_email} =
+                  $registered_users_data->{$user_email};
+                $response->{_hidden_data}->{orphan_users}->{$user_email} =
+                  $registered_users_hidden_data->{$user_email};
+            }
         }
+
     }
 
-    $response->{status}       = 1;
-    $response->{orphan_users} = \%orphan_users;
+    $response->{status} = 1;
 
     return $response;
-}
-
-=head2 getUserIdByEmail
-
-Get user id using email
-
-=cut
-
-sub getUserIdByEmail {
-    my $c          = shift;
-    my $user_email = shift;
-
-    my $user_model = $c->model('CoreRealms::User');
-    my $user_id = $user_model->find( { email => $user_email } )->id;
-
-    return $user_id;
-}
-
-=head2 getUserId
-
-Get user id.
-
-=cut
-
-sub getUserId {
-    my $c = shift;
-
-    return getUserIdByEmail( $c, $c->{request}->{data}->{auth}->{email} );
 }
 
 =encoding utf8
