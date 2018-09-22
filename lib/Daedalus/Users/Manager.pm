@@ -127,8 +127,7 @@ sub get_user_from_session_token {
                 $session_token );
             if ( $token_data->{status} != 1 ) {
                 $response->{status} = 0;
-
-                if ( $token_data->{message} =~ m/invalid signature/ ) {
+                if ( $token_data->{message} =~ m/invalid/ ) {
                     $response->{message} = "Session token invalid.";
                 }
                 else {
