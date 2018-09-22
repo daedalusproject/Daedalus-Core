@@ -138,10 +138,8 @@ sub retrieve_token_data {
           decode_jwt( token => $session_token, key => $public_key );
     }
     catch {
+        $retreived_data->{status}  = 0;
         $retreived_data->{message} = $_;
-    }
-    finally {
-        $retreived_data->{status} = 0;
     };
     return $retreived_data;
 }

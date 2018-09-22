@@ -211,9 +211,10 @@ my $superadmin_ekpired_token = request(
 
 is( $superadmin_ekpired_token->code(), 403, );
 
-my $superadmin_ekpired_token_json = decode_json( $superadmin_ekpired_token->content );
+my $superadmin_ekpired_token_json =
+  decode_json( $superadmin_ekpired_token->content );
 
 is( $superadmin_ekpired_token_json->{status},  0, );
-is( $superadmin_ekpired_token_json->{message}, 'Session token invalid.', );
+is( $superadmin_ekpired_token_json->{message}, 'Session token expired.', );
 
 done_testing();
