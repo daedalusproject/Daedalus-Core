@@ -115,11 +115,11 @@ sub get_user_from_session_token {
       $c->req->headers->authorization_basic;
 
     if ( ( !$session_token_name ) or ( !$session_token ) ) {
-        $response->{message} = "No sesion token provided.";
+        $response->{message} = "No session token provided.";
     }
     else {
         if ( $session_token_name ne "session_token" ) {
-            $response->{message} = "No sesion token provided.";
+            $response->{message} = "No session token provided.";
         }
         else {
             $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
