@@ -45,7 +45,7 @@ sub login : Path('/user/login') : Args(0) : ActionClass('REST') {
 sub login_POST {
     my ( $self, $c ) = @_;
 
-    my $response = Daedalus::Users::Manager::authUser($c);
+    my $response = Daedalus::Users::Manager::auth_user($c);
 
     $response->{error_code} = 403;
 
@@ -67,28 +67,17 @@ sub im_admin_GET {
 
     my $response;
 
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
     my $user_data;
 
     if ( $user->{status} == 0 ) {
         $response = $user;
+        $response->{error_code} = 400;
     }
     else {
-        $user_data = $user->{data};
-        $response->{data} =
-          { user => { is_admin => $user_data->{data}->{user}->{is_admin} } };
-        if ( $user_data->{data}->{user}->{is_admin} ) {
-            $response->{status}  = 1;
-            $response->{message} = "You are an admin user.";
-        }
-        else {
-            $response->{status}  = 0;
-            $response->{message} = "You are not an admin user.";
-
-        }
+        $response->{status}  = 1;
+        $response->{message} = "You are an admin user.";
     }
-
-    $response->{error_code} = 400;
 
     $self->return_response( $c, $response );
 }
@@ -107,10 +96,9 @@ sub register_new_user_POST {
     my ( $self, $c ) = @_;
 
     my $response;
-
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
     my $user_data;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     if ( $user->{status} == 0 ) {
         $response = $user;
@@ -118,32 +106,21 @@ sub register_new_user_POST {
     }
     else {
         $user_data = $user->{data};
-
-        if (   ( !$user_data->{data}->{user}->{is_admin} )
-            or ( !$user_data->{data}->{user}->{active} ) )
-        {
+        if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
             $response->{status}     = 0;
-            $response->{message}    = "You are not an admin user.";
-            $response->{error_code} = 403;
+            $response->{message}    = "Invalid user data.";
+            $response->{error_code} = 400;
+
         }
         else {
-            if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
-                $response->{status}     = 0;
-                $response->{message}    = "Invalid user data.";
-                $response->{error_code} = 400;
-
+            $response =
+              Daedalus::Users::Manager::register_new_user( $c, $user_data );
+            $response->{error_code} = 400;
+            if ( !exists( $response->{_hidden_data} ) ) {
+                $response->{_hidden_data} = {};
             }
-            else {
-                $response =
-                  Daedalus::Users::Manager::register_new_user( $c, $user_data );
-                $response->{error_code} = 400;
-                if ( !exists( $response->{_hidden_data} ) ) {
-                    $response->{_hidden_data} = {};
-                }
-                $response->{_hidden_data}->{user} =
-                  $user_data->{_hidden_data}->{user};
-            }
-
+            $response->{_hidden_data}->{user} =
+              $user_data->{_hidden_data}->{user};
         }
     }
 
@@ -165,10 +142,9 @@ sub show_registered_users_GET {
     my ( $self, $c ) = @_;
 
     my $response;
-
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
     my $user_data;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     if ( $user->{status} == 0 ) {
         $response = $user;
@@ -176,20 +152,10 @@ sub show_registered_users_GET {
     }
     else {
         $user_data = $user->{data};
-
-        if (   ( !$user_data->{data}->{user}->{is_admin} )
-            or ( !$user_data->{data}->{user}->{active} ) )
-        {
-            $response->{status}     = 0;
-            $response->{message}    = "You are not an admin user.";
-            $response->{error_code} = 403;
-        }
-        else {
-            $response =
-              Daedalus::Users::Manager::show_registered_users( $c, $user_data );
-            $response->{_hidden_data}->{user} =
-              $user_data->{_hidden_data}->{user};
-        }
+        $response =
+          Daedalus::Users::Manager::show_registered_users( $c, $user_data );
+        $response->{_hidden_data}->{user} =
+          $user_data->{_hidden_data}->{user};
     }
 
     $self->return_response( $c, $response );
@@ -229,10 +195,9 @@ sub show_inactive_users_GET {
     my ( $self, $c ) = @_;
 
     my $response;
-
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
     my $user_data;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     if ( $user->{status} == 0 ) {
         $response = $user;
@@ -240,21 +205,11 @@ sub show_inactive_users_GET {
     }
     else {
         $user_data = $user->{data};
-
-        if (   ( !$user_data->{data}->{user}->{is_admin} )
-            or ( !$user_data->{data}->{user}->{active} ) )
-        {
-            $response->{status}     = 0;
-            $response->{message}    = "You are not an admin user.";
-            $response->{error_code} = 403;
-        }
-        else {
-            $response =
-              Daedalus::Users::Manager::show_inactive_users( $c, $user_data );
-            $response->{_hidden_data}->{user} =
-              $user_data->{_hidden_data}->{user};
-            $response->{error_code} = 400;
-        }
+        $response =
+          Daedalus::Users::Manager::show_inactive_users( $c, $user_data );
+        $response->{_hidden_data}->{user} =
+          $user_data->{_hidden_data}->{user};
+        $response->{error_code} = 400;
     }
 
     $self->return_response( $c, $response );
@@ -276,10 +231,9 @@ sub show_active_users_GET {
     my ( $self, $c ) = @_;
 
     my $response;
-
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
     my $user_data;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     if ( $user->{status} == 0 ) {
         $response = $user;
@@ -287,21 +241,11 @@ sub show_active_users_GET {
     }
     else {
         $user_data = $user->{data};
-
-        if (   ( !$user_data->{data}->{user}->{is_admin} )
-            or ( !$user_data->{data}->{user}->{active} ) )
-        {
-            $response->{status}     = 0;
-            $response->{message}    = "You are not an admin user.";
-            $response->{error_code} = 403;
-        }
-        else {
-            $response =
-              Daedalus::Users::Manager::show_active_users( $c, $user_data );
-            $response->{_hidden_data}->{user} =
-              $user_data->{_hidden_data}->{user};
-            $response->{error_code} = 400;
-        }
+        $response =
+          Daedalus::Users::Manager::show_active_users( $c, $user_data );
+        $response->{_hidden_data}->{user} =
+          $user_data->{_hidden_data}->{user};
+        $response->{error_code} = 400;
     }
 
     $self->return_response( $c, $response );
@@ -323,32 +267,20 @@ sub show_orphan_users_GET {
     my ( $self, $c ) = @_;
 
     my $response;
-
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
     my $user_data;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+
     if ( $user->{status} == 0 ) {
         $response = $user;
         $response->{error_code} = 403;
     }
     else {
         $user_data = $user->{data};
-
-        if (   ( !$user_data->{data}->{user}->{is_admin} )
-            or ( !$user_data->{data}->{user}->{active} ) )
-        {
-            $response->{status}     = 0;
-            $response->{message}    = "You are not an admin user.";
-            $response->{error_code} = 403;
-        }
-        else {
-
-            $response =
-              Daedalus::Users::Manager::show_orphan_users( $c, $user_data );
-            $response->{_hidden_data}->{user} =
-              $user_data->{_hidden_data}->{user};
-
-        }
+        $response =
+          Daedalus::Users::Manager::show_orphan_users( $c, $user_data );
+        $response->{_hidden_data}->{user} =
+          $user_data->{_hidden_data}->{user};
     }
 
     $self->return_response( $c, $response );

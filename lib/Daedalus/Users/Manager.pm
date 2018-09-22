@@ -102,7 +102,8 @@ Retrieve user data from model
 =cut
 
 sub get_user_from_session_token {
-    my $c        = shift;
+    my $c = shift;
+
     my $response = {
         status  => 0,
         message => "",
@@ -154,13 +155,42 @@ sub get_user_from_session_token {
     return $response;
 }
 
-=head2 authUser
+=head2 is_admin_from_session_token
 
-Auths user, returns auth data if submitted credentials match
+Gets user form session token and check if its an admin one.
+=cut
+
+sub is_admin_from_session_token {
+    my $c = shift;
+
+    my $response;
+
+    my $user = get_user_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+    }
+    else {
+        if ( $user->{data}->{data}->{user}->{is_admin} ) {
+            $response->{status} = 1;
+            $response->{data}   = $user->{data};
+        }
+        else {
+            $response->{status}  = 0;
+            $response->{message} = "You are not an admin user.";
+        }
+    }
+
+    return $response;
+}
+
+=head2 auth_user
+
+Authorize user, returns user data if submitted credentials match
 with database info.
 =cut
 
-sub authUser {
+sub auth_user {
 
     my $c    = shift;
     my $auth = $c->{request}->{data}->{auth};
