@@ -164,7 +164,7 @@ isnt( $daedalus_admin_json->{_hidden_data},
 # Register new user
 
 request(
-    POST '/confirmregistration',
+    POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {

@@ -141,7 +141,7 @@ sub retrieve_token_data {
         $retreived_data->{message} = $_;
     }
     finally {
-        $retreived_data->{message} = "Session token invalid";
+        $retreived_data->{message} = $_;
     };
     return $retreived_data;
 }
