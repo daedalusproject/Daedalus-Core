@@ -48,7 +48,7 @@ is( $not_admin_no_session_token_json->{status},  0, );
 is( $not_admin_no_session_token_json->{message}, 'No sesion token provided.', );
 
 my $not_admin_authorization_basic_broken =
-  MIME::Base64::encode( "session_toke:notoken", '' );
+  MIME::Base64::encode( "session_token:notoken", '' );
 
 my $not_admin_invalid_session_token = request( GET '/user/imadmin',
     Authorization => "Basic $not_admin_authorization_basic_broken", );
@@ -61,7 +61,7 @@ my $not_admin_invalid_session_token_json =
 is( $not_admin_invalid_session_token_json->{status}, 0, );
 is(
     $not_admin_invalid_session_token_json->{message},
-    'No sesion token provided.',
+    'Session token invalid.',
 );
 
 my $expired_admin_authorization_basic_failed =
