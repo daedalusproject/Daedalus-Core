@@ -745,8 +745,8 @@ sub show_orphan_users {
                             'user_id' =>
                               $registered_users_hidden_data->{$user_email}->{id}
                         }
-                    )
-                )
+                    )->all()
+                ) == 0
               )
             {
                 $response->{data}->{orphan_users}->{$user_email} =
