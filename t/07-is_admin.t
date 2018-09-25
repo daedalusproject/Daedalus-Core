@@ -37,10 +37,9 @@ my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
 my $not_admin_user_get = request( GET '/user/imadmin',
-    Authorization => "Basic $not_admin_authorization_basic", )
-  ;
+    Authorization => "Basic $not_admin_authorization_basic", );
 
-is( $not_admin_user_get->code(), 400, );
+is( $not_admin_user_get->code(), 403, );
 
 my $not_admin_user_get_json = decode_json( $not_admin_user_get->content );
 
