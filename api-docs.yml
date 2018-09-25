@@ -181,6 +181,8 @@ paths:
                     type: string
                   status:
                     type: integer
+                    enum:
+                      - 1
               examples:
                 '0':
                   value: >-
@@ -207,6 +209,8 @@ paths:
                     type: string
                   status:
                     type: integer
+                    enum:
+                      - 0
               examples:
                 '0':
                   value: >-
@@ -216,6 +220,25 @@ paths:
                   value: >-
                     {"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"Invalid
                     organization data.","status":0}
+        '403':
+          description: Non admin users are not allowed to create organizations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+                       
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
   /ping:
     get:
       description: Checks API
@@ -232,6 +255,7 @@ paths:
               examples:
                 '0':
                   value: '{"status":"pong"}'
+                  
   /user/imadmin:
     get:
       description: Returns if user is admin
@@ -292,6 +316,206 @@ paths:
               examples:
                 '0':
                   value: '{"message":"You are not an admin user.","status":0}'
+
+  /user/register:
+    post:
+      description: Admin users can register new users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_user_data:
+                  type: object
+                  properties:
+                    surname:
+                      type: string
+                    name:
+                      type: string
+                    email:
+                      type: string
+            examples:
+              '0':
+                value: >-
+                  {"new_user_data":{"name":"Marvin", "surname":"The Robot",
+                  "email":"marvin@robot.com"}}
+              '1':
+                value: >-
+                  {"new_user_data":{"name":"Marvin", "surname":"The Robot",
+                  "email":"john@daedalus-project.io"}}
+              '2':
+                value: >-
+                  {"new_user_data":{"name":"Marvin", "surname":"The Robot",
+                  "email":"marvin@daedalus-project.io"}}
+      responses:
+        '200':
+          description: User has been created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      new_user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          auth_token:
+                            type: string
+                          email:
+                            type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                    enum:
+                      - "User has been registered."
+                  status:
+                    type: integer
+                    enum:
+                      - 1
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"message":"User has been
+                    registered.","_hidden_data":{"new_user":{"email":"marvin@daedalus-project.io","id":"3","auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j"},"user":{"is_super_admin":1,"id":1}}}
+                '1':
+                  value: >-
+                    {"status":1,"message":"User has been registered.",}                    
+        '400':
+          description: Wrong data responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: >-
+                    {"message":"There already exists a user using this
+                    e-mail.","_hidden_data":{"user":{"id":1,"is_super_admin":1}},"status":0}
+        '403':
+          description: Non admin user response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+
+  /user/confirm:
+    post:
+      description: Registerd users must activate their account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auth:
+                  type: object
+                  properties:
+                    password:
+                      type: string
+                    auth_token:
+                      type: string
+            examples:
+              '0':
+                value: '{"auth":{}}'
+              '1':
+                value: '{"auth":{"auth_token":"invaid_token"}}'
+              '2':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc"}}
+              '3':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"poorone"}}
+              '4':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}}
+              '5':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}}
+      responses:
+        '200':
+          description: Correct response, auth and correct password are provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":1,"message":"Account activated."}'
+        '400':
+          description: Failed examples
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"Invalid Auth Token.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid Auth Token."}'
+                '2':
+                  value: '{"message":"Invalid Auth Token.","status":0}'
+                '3':
+                  value: >-
+                    {"status":0,"message":"Valid Auth Token found, enter your
+                    new password."}
+                '4':
+                  value: '{"status":0,"message":"Password is invalid."}'
+                '5':
+                  value: '{"message":"Invalid Auth Token.","status":0}'
+
 components:
   securitySchemes:
     basic:
