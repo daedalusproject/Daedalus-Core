@@ -169,8 +169,10 @@ sub is_admin_from_session_token {
 
     if ( $user->{status} == 0 ) {
         $response = $user;
+        $response->{error_code} = 400;
     }
     else {
+        $response->{error_code} = 403;
         if ( $user->{data}->{data}->{user}->{is_admin} ) {
             $response->{status} = 1;
             $response->{data}   = $user->{data};

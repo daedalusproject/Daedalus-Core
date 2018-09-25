@@ -72,7 +72,6 @@ sub im_admin_GET {
 
     if ( $user->{status} == 0 ) {
         $response = $user;
-        $response->{error_code} = 400;
     }
     else {
         $response->{status}  = 1;
