@@ -74,11 +74,15 @@ Generate Random String, lenght is provided.
 sub generateRandomString {
     my $lenght = shift;
 
-    my $string = 's' x $lenght;
+    # Generate random strings without dots
 
-    my $random_string = new String::Random;
+    my $generator = String::Random->new;
+    $generator->{'A'} = [ @{ $generator->{'C'} }, @{ $generator->{'c'} },
+        @{ $generator->{'n'} } ];
 
-    return $random_string->randpattern($string);
+    my $string = 'A' x $lenght;
+
+    return $generator->randpattern($string);
 }
 
 =head2 hashPassword
