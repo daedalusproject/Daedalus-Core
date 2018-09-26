@@ -7,6 +7,24 @@ info:
 servers:
   - url: 'https://api-dev.daedalus-project.io'
 paths:
+
+  /ping:
+    get:
+      description: Checks API
+      responses:
+        '200':
+          description: If API is working it returns "pong"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              examples:
+                '0':
+                  value: '{"status":"pong"}'
+
   /user/login:
     post:
       description: Users are allowed to log in into Daedalus Core
@@ -15,9 +33,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - auth
               properties:
                 auth:
                   type: object
+                  required:
+                    - password
+                    - email
                   properties:
                     password:
                       type: string
@@ -113,6 +136,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - status
+                  - message
                 properties:
                   message:
                     type: string
@@ -239,22 +265,7 @@ paths:
               examples:
                 '0':
                   value: '{"status":0,"message":"You are not an admin user."}'
-  /ping:
-    get:
-      description: Checks API
-      responses:
-        '200':
-          description: If API is working it returns "pong"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-              examples:
-                '0':
-                  value: '{"status":"pong"}'
+
                   
   /user/imadmin:
     get:
@@ -516,8 +527,195 @@ paths:
                 '5':
                   value: '{"message":"Invalid Auth Token.","status":0}'
 
+  /user/showactive:
+    get:
+      description: Admin users are allowed to see its active registered users
+      responses:
+        '403':
+          description: I said only andmins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"message":"You are not an admin user.","status":0}'
+  /user/showinactive:
+    get:
+      description: Admin users are allowed its registered user who has not activated their accounts
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      inactive_users:
+                        type: object
+                        properties:
+                          user:
+                            type: object
+                            properties:
+                              is_admin:
+                                type: integer
+                              surname:
+                                type: string
+                              name:
+                                type: string
+                              active:
+                                type: integer
+                              email:
+                                type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      inactive_users:
+                        type: object
+                        properties:
+                          user:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              is_super_admin:
+                                type: integer
+                              auth_token:
+                                type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"_hidden_data":{"inactive_users":{"marvin@daedalus-project.io":{"id":3,"auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j","is_super_admin":0}},"user":{"is_super_admin":1,"id":1}},"status":1,"data":{"inactive_users":{"marvin@daedalus-project.io":{"surname":"The
+                    Robot","active":0,"is_admin":0,"email":"marvin@daedalus-project.io","name":"Marvin"}}}}
+        '403':
+          description: I said only admins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+                  
+  /user/showregistered:
+    get:
+      description: Admin useres are allowed to see their registered users.
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      registered_users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string
+
+                  _hidden_data:
+                    type: object
+                    properties:
+                      registered_users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            is_super_admin:
+                              type: integer
+                            auth_token:
+                              type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"registered_users":{"john@daedalus-project.io":{"surname":"The
+                    Ripper","active":0,"is_admin":0,"email":"john@daedalus-project.io","name":"John"}}},"status":1,"_hidden_data":{"registered_users":{"john@daedalus-project.io":{"is_super_admin":0,"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc","id":2}},"user":{"is_super_admin":1,"id":1}},"message":""}
+                '1':
+                  value: >-
+                    {"status":1,"data":{"registered_users":{"john@daedalus-project.io":{"name":"John","email":"john@daedalus-project.io","is_admin":0,"active":1,"surname":"The
+                    Ripper"}}},"message":"","_hidden_data":{"user":{"is_super_admin":1,"id":1},"registered_users":{"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}}}}
+                '2':
+                  value: >-
+                    {"status":1,"data":{"registered_users":{"john@daedalus-project.io":{"active":1,"surname":"The
+                    Ripper","name":"John","is_admin":0,"email":"john@daedalus-project.io"},"marvin@daedalus-project.io":{"email":"marvin@daedalus-project.io","is_admin":0,"name":"Marvin","surname":"The
+                    Robot","active":0}}},"message":"","_hidden_data":{"user":{"is_super_admin":1,"id":1},"registered_users":{"marvin@daedalus-project.io":{"id":3,"auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j","is_super_admin":0},"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}}}}
+        '403':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+                  
 components:
   securitySchemes:
-    basic:
+    AdminSecurity:
       type: http
       scheme: basic
+      description: Username is session_token
