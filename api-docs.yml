@@ -154,6 +154,8 @@ paths:
   /organization/create:
     post:
       description: Admin users are allowed to create organizations
+      security:
+        - AdminSecurity: []
       requestBody:
         content:
           application/json:
@@ -162,6 +164,8 @@ paths:
               properties:
                 organization_data:
                   type: object
+                  required:
+                    - name
                   properties:
                     name: 
                       type: string
@@ -179,12 +183,18 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     type: object
+                    required:
+                      - oganization
                     properties:
                       organization:
                         type: object
+                        required:
+                          - organization_token
                         properties:
                           organization_token:
                             type: string
@@ -220,6 +230,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - message
+                  - status
                 properties:
                   _hidden_data:
                     type: object
@@ -252,6 +265,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - message
+                  - status
                 properties:
                   message:
                     type: string
@@ -270,6 +286,8 @@ paths:
   /user/imadmin:
     get:
       description: Returns if user is admin
+      security:
+        - AdminSecurity: []
       responses:
         '200':
           description: Examples of success responses
@@ -331,6 +349,8 @@ paths:
   /user/register:
     post:
       description: Admin users can register new users
+      security:
+        - AdminSecurity: []      
       requestBody:
         content:
           application/json:
@@ -457,9 +477,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - auth
               properties:
                 auth:
                   type: object
+                  required:
+                    - auth_token
+                    - password
                   properties:
                     password:
                       type: string
@@ -530,13 +555,52 @@ paths:
   /user/showactive:
     get:
       description: Admin users are allowed to see its active registered users
+      security:
+        - AdminSecurity: []
       responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - active_users
+                    properties:
+                      active_users:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string      
         '403':
           description: I said only andmins
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - message
+                  - status
                 properties:
                   message:
                     type: string
@@ -549,9 +613,12 @@ paths:
               examples:
                 '0':
                   value: '{"message":"You are not an admin user.","status":0}'
+                  
   /user/showinactive:
     get:
       description: Admin users are allowed its registered user who has not activated their accounts
+      security:
+        - AdminSecurity: []      
       responses:
         '200':
           description: Success response
@@ -559,41 +626,49 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     type: object
+                    required:
+                      - inactive_users
                     properties:
                       inactive_users:
-                        type: object
-                        properties:
-                          user:
-                            type: object
-                            properties:
-                              is_admin:
-                                type: integer
-                              surname:
-                                type: string
-                              name:
-                                type: string
-                              active:
-                                type: integer
-                              email:
-                                type: string
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - active
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string
                   _hidden_data:
                     type: object
                     properties:
                       inactive_users:
-                        type: object
-                        properties:
-                          user:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              is_super_admin:
-                                type: integer
-                              auth_token:
-                                type: string
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            is_super_admin:
+                              type: integer
+                            auth_token:
+                              type: string
                       user:
                         type: object
                         properties:
@@ -614,6 +689,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - message
+                  - status
                 properties:
                   message:
                     type: string
@@ -647,6 +725,12 @@ paths:
                         type: array
                         items:
                           type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - active
+                            - email
                           properties:
                             is_admin:
                               type: integer
@@ -699,7 +783,7 @@ paths:
                     Ripper","name":"John","is_admin":0,"email":"john@daedalus-project.io"},"marvin@daedalus-project.io":{"email":"marvin@daedalus-project.io","is_admin":0,"name":"Marvin","surname":"The
                     Robot","active":0}}},"message":"","_hidden_data":{"user":{"is_super_admin":1,"id":1},"registered_users":{"marvin@daedalus-project.io":{"id":3,"auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j","is_super_admin":0},"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}}}}
         '403':
-          description: Auto generated using Swagger Inspector
+          description: I said only admins
           content:
             application/json:
               schema:
@@ -712,6 +796,189 @@ paths:
               examples:
                 '0':
                   value: '{"status":0,"message":"You are not an admin user."}'
+           
+  /user/showorphan:
+    get:
+      description: Admin users are allowed to see registers users without any organization
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - orphan_users
+                    properties:
+                      orphan_users:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - active
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                      orphan_users:
+                        type: object
+                        properties:
+                          john@daedalus-project.io:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              is_super_admin:
+                                type: integer
+                              auth_token:
+                                type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"orphan_users":{"john@daedalus-project.io":{"active":1,"surname":"The
+                    Ripper","name":"John","is_admin":0,"email":"john@daedalus-project.io"}}},"status":1,"_hidden_data":{"orphan_users":{"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}},"user":{"is_super_admin":1,"id":1}}}
+        '403':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+                  
+  /organization/show:
+    get:
+      description: Users are allowed to show their organizations names and tokens
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      organizations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            organization_token:
+                              type: string
+                              
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organizations:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                          properties:
+                            id:
+                              type: integer
+
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"organizations":["Daedalus Project","Mega
+                    Shops"]},"status":1,"_hidden_data":{"organizations":{"Mega
+                    Shops":{"token":"s.Q8Ymu8q/yqAgZtdAnxyN4Exrwldp0S","id":2},"Daedalus
+                    Project":{"id":1,"token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn"}},"user":{"is_super_admin":1,"id":1}}}
+                '1':
+                  value: '{"data":{"organizations":[]},"status":1}'
+                  
+  /organization/showusers/organization_token:
+    get:
+      description: Admin users are allowed to see its organization user
+      security:
+        - AdminSecurity: []
+      responses:
+        '400':
+          description: Wrong organization token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"Invalid Organization token."}'
+        '403':
+          description: I said only admins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"You are not an admin user.","status":0}'           
                   
 components:
   securitySchemes:
