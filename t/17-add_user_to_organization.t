@@ -357,6 +357,26 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-#othernotanadmin2@daedalus-project.io
+my $add_user_success_superuser = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_session_token",
+    Content       => encode_json(
+        {
+            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            user_email         => 'othernotanadmin2@daedalus-project.io',
+        }
+    ),
+);
+
+is( $add_user_success_superuser->code(), 200, );
+#
+my $add_user_success_superuser_json =
+  decode_json( $add_user_success_superuser->content );
+
+is( $add_user_success_superuser_json->{status},  1, );
+is( $add_user_success_superuser_json->{message}, 'User registered.', );
+
+isnt( $add_user_success_superuser_json->{_hidden_data}, undef, );
 
 done_testing();
