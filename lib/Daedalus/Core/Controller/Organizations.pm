@@ -162,6 +162,57 @@ sub show_organization_users_GET {
     $self->return_response( $c, $response );
 }
 
+sub add_user_to_organization : Path('/organization/adduser') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub add_user_to_organization_POST {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+    my $organization_token;    # Token will be acquired only if user is an admin
+    my $organization_token_check;
+    my $user_email;    # e-mail will be acquired only if user is an admin
+    my $user_email_check;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+
+        $response->{status} = 1;
+
+        $user_data = $user->{data};
+
+        $organization_token = $c->{request}->{organization_token};
+        $user_email         = $c->{request}->{user_email};
+
+        # Organization token
+        if ( !$organization_token ) {
+            $response->{status} = 0;
+        }
+        else {
+            $organization_token_check =
+              Daedalus::Organizations::Manager::check_organization_token( $c,
+                $organization_token );
+            if ( !$organization_token_check->{status} ) {
+                $response->{status} = 0;
+            }
+        }
+
+        $response->{message} = "Invalid Organization token.";
+        if ();
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 AUTHOR
