@@ -113,6 +113,9 @@ is(
     'It is required user data to register a new user.'
 );
 
+is( $failed_no_data_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
+
 my $failed_empty_data = request(
     POST '/user/register',
     Content_Type  => 'application/json',
@@ -134,6 +137,9 @@ is(
     'No email supplied.No name supplied.No surname supplied.',
     'new_user_data is empty.'
 );
+
+is( $failed_empty_data_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
 
 my $failed_no_email_no_surname = request(
     POST '/user/register',
@@ -160,6 +166,9 @@ is(
     'new_user_data only contains a name.'
 );
 
+is( $failed_no_email_no_surname_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
+
 my $failed_no_name_no_surname = request(
     POST '/user/register',
     Content_Type  => 'application/json',
@@ -184,6 +193,9 @@ is(
     'No name supplied.No surname supplied.',
     'new_user_data only contains an email.'
 );
+
+is( $failed_no_name_no_surname_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
 
 my $failed_invalid_email = request(
     POST '/user/register',
@@ -212,6 +224,9 @@ is(
     'A valid e-mail is required.'
 );
 
+is( $failed_invalid_email_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
+
 my $failed_duplicated_email = request(
     POST '/user/register',
     Content_Type  => 'application/json',
@@ -239,6 +254,9 @@ is(
     'There already exists a user using this e-mail.',
     'A non previously stored e-mail is required.'
 );
+
+is( $failed_duplicated_email_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
 
 my $success_superadmin = request(
     POST '/user/register',

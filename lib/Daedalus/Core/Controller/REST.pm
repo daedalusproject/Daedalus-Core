@@ -111,6 +111,8 @@ sub return_response {
         return $self->status_ok( $c, entity => $response, );
     }
     else {
+        # Request has failed, remove _hidden_data
+        delete $response->{_hidden_data};
 
         if ( $error_code == 403 ) {
 
