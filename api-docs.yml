@@ -910,7 +910,7 @@ paths:
                           properties:
                             name:
                               type: string
-                            organization_token:
+                            token:
                               type: string
                               
                   _hidden_data:

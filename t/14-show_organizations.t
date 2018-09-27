@@ -2,8 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 
-use Data::Dumper;
-
 use Catalyst::Test 'Daedalus::Core';
 use Daedalus::Core::Controller::REST;
 
@@ -72,8 +70,14 @@ my $admin_two_organization_json =
   decode_json( $admin_two_organization->content );
 
 is( $admin_two_organization_json->{status}, 1, 'Status success, admin.' );
-is( scalar @{ $admin_two_organization_json->{data}->{organizations} },
+is( keys %{ $admin_two_organization_json->{data}->{organizations} },
     2, 'Admin belongis to 2 organizations' );
+
+isnt(
+    $admin_two_organization_json->{data}->{organizations}->{'Daedalus Project'}
+      ->{token},
+    undef, 'API response contains organization token'
+);
 
 isnt( $admin_two_organization_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
@@ -114,7 +118,7 @@ my $user_without_organization_json =
   decode_json( $user_without_organization->content );
 
 is( $user_without_organization_json->{status}, 1, 'Status success.' );
-is( scalar @{ $user_without_organization_json->{data}->{organizations} },
+is( keys %{ $user_without_organization_json->{data}->{organizations} },
     0, 'This user does not belong to any organization' );
 
 is( $user_without_organization_json->{_hidden_data},
@@ -159,10 +163,15 @@ my $admin_user_mega_shop_organization_json =
 
 is( $admin_user_mega_shop_organization_json->{status}, 1, 'Status success.' );
 is(
-    scalar @{ $admin_user_mega_shop_organization_json->{data}->{organizations}
-    },
+    keys %{ $admin_user_mega_shop_organization_json->{data}->{organizations} },
     2,
     'This user belongs to Mega Shops and Supershops'
+);
+
+isnt(
+    $admin_user_mega_shop_organization_json->{data}->{organizations}
+      ->{'Supershops'}->{token},
+    undef, 'API response contains organization token'
 );
 
 is( $admin_user_mega_shop_organization_json->{_hidden_data},
@@ -208,11 +217,18 @@ my $no_admin_user_mega_shop_organization_json =
 
 is( $no_admin_user_mega_shop_organization_json->{status}, 1,
     'Status success.' );
+
 is(
-    scalar
-      @{ $no_admin_user_mega_shop_organization_json->{data}->{organizations} },
+    keys %{ $no_admin_user_mega_shop_organization_json->{data}->{organizations}
+    },
     2,
-    'This user belongs to Mega Shops and SuperShops'
+    'This user belongs to Mega Shops and Supershops'
+);
+
+isnt(
+    $no_admin_user_mega_shop_organization_json->{data}->{organizations}
+      ->{'Supershops'}->{token},
+    undef, 'API response contains organization token'
 );
 
 is( $no_admin_user_mega_shop_organization_json->{_hidden_data},
