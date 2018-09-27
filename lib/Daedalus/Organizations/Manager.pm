@@ -156,7 +156,7 @@ sub get_organizations_from_user {
     my $response = {
         status => 1,
         data   => {
-            organizations => [],
+            organizations => {},
         },
         _hidden_data => {
             organizations => {}
@@ -174,13 +174,11 @@ sub get_organizations_from_user {
     for my $user_organization (@user_organizations) {
         my $organization = $c->model('CoreRealms::Organization')
           ->find( { id => $user_organization->organization_id } );
-        push @organizations_names, $organization->name;
-        $organizations{ $organization->name } =
-          { id => $organization->id, token => $organization->token };
+        $response->{data}->{organizations}->{ $organization->name } =
+          { name => $organization->name, token => $organization->token };
+        $response->{_hidden_data}->{organizations}->{ $organization->name } =
+          { id => $organization->id };
     }
-
-    $response->{data}->{organizations}         = \@organizations_names;
-    $response->{_hidden_data}->{organizations} = \%organizations;
 
     return $response;
 }
