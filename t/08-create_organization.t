@@ -184,4 +184,26 @@ is( $superadmin_success_json->{message}, 'Organization created.', );
 
 isnt( $superadmin_success_json->{_hidden_data}, undef, );
 
+my $superadmin_failed_duplicated_name = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content => encode_json( { organization_data => { name => "Ultrashops" } } )
+    ,    #Repeated name
+);
+
+is( $superadmin_failed_duplicated_name->code(), 400, );
+#
+my $superadmin_failed_duplicated_name_json =
+  decode_json( $superadmin_failed_duplicated_name->content );
+
+is( $superadmin_failed_duplicated_name_json->{status}, 0, );
+is(
+    $superadmin_failed_duplicated_name_json->{message},
+    'Duplicated organization name.',
+);
+
+is( $superadmin_failed_duplicated_name_json->{_hidden_data},
+    undef, 'If response code is not 2xx there is no hidden_data' );
+
 done_testing();
