@@ -51,23 +51,6 @@ my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
 my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-my $success_register_megashops_user = request(
-    POST '/user/register',
-    Authorization => "Basic $not_admin_authorization_basic",
-    Content_Type  => 'application/json',
-    Content       => encode_json(
-        {
-            new_user_data => {
-                email   => 'shirorobot@megashops.com',
-                name    => 'Shiro',
-                surname => 'Robot',
-            },
-        }
-    )
-);
-
-is( $success_register_megashops_user->code(), 200, );
-
 my $failed_no_admin = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -105,6 +88,23 @@ my $admin_session_token = $admin_success_json->{data}->{session_token};
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
+my $success_register_megashops_user = request(
+    POST '/user/register',
+    Authorization => "Basic $admin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            new_user_data => {
+                email   => 'shirorobot@megashops.com',
+                name    => 'Shiro',
+                surname => 'Robot',
+            },
+        }
+    )
+);
+
+is( $success_register_megashops_user->code(), 200, );
+
 my $failed_no_data = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -134,7 +134,7 @@ is( $failed_no_user_data->code(), 400, );
 my $failed_no_user_data_json = decode_json( $failed_no_user_data->content );
 
 is( $failed_no_user_data_json->{status},  0, );
-is( $failed_no_user_data_json->{message}, 'No user data provided.', );
+is( $failed_no_user_data_json->{message}, 'No user e-mail provided.', );
 
 my $failed_no_organization_data = request(
     POST $endpoint,
@@ -233,7 +233,7 @@ my $failed_email_not_found_json =
   decode_json( $failed_email_not_found->content );
 
 is( $failed_email_not_found_json->{status},  0, );
-is( $failed_email_not_found_json->{message}, 'User e-mail not found.', );
+is( $failed_email_not_found_json->{message}, 'User e-mail invalid.', );
 
 my $failed_inactive_user = request(
     POST $endpoint,
@@ -252,7 +252,7 @@ is( $failed_inactive_user->code(), 400, );
 my $failed_inactive_user_json = decode_json( $failed_inactive_user->content );
 
 is( $failed_inactive_user_json->{status},  0, );
-is( $failed_inactive_user_json->{message}, 'Inactive user.', );
+is( $failed_inactive_user_json->{message}, 'Required user is not active.', );
 
 my $failed_not_my_organization = request(
     POST $endpoint,
