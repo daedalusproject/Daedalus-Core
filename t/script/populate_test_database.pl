@@ -81,7 +81,6 @@ my $fireman =
 $schema->resultset('Role')->create( { role_name => "fireman_commando", } );
 my $daedalus_manager =
   $schema->resultset('Role')->create( { role_name => "daedalus_manager", } );
-$schema->resultset('Role')->create( { role_name => "organization_member", } );
 
 # Create organization
 

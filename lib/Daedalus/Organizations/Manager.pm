@@ -183,12 +183,6 @@ sub get_organizations_from_user {
     return $response;
 }
 
-=head2 show_organization_users
-
-For a given organization token, show its users
-
-=cut
-
 =head2 get_organization_from_token
 
 For a given organization token, return organization data
@@ -209,8 +203,38 @@ sub get_organization_from_token {
 
     if ($organization) {
         $response->{status}       = 1;
-        $response->{organization} = $organization;
+        $response->{organization} = {
+            data => {
+                organization => {
+                    name  => $organization->name,
+                    token => $organization->token,
+                },
+            },
+            _hiden_data => { organization => { id => $organization->id } }
+        };
     }
+
+    return $response;
+}
+
+=head2 add_user_to_organization_group
+
+Adds user to organization token
+
+=cut
+
+sub add_user_to_organization {
+
+    my $c                = shift;
+    my $user_data        = shift;
+    my $organizaion_data = shift;
+
+    my $response;
+
+    my $user_organizations = get_organizations_from_user( $c, $user_data );
+
+    #if $user_organizations->{data}->{organizations}->{}
+    #die Dumper($organizaion_data);
 
     return $response;
 }
