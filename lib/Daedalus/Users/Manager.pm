@@ -33,6 +33,19 @@ Daedalus Users Manager
 
 =cut
 
+=head2 check_email_valid
+
+Checks if provided user_email is valid.
+
+=cut
+
+sub check_email_valid {
+
+    my $email = shift;
+
+    return Email::Valid->address($email);
+}
+
 =head2 check_user_passwrd
 
 Checks user password, this methods receives submitted user,
@@ -395,7 +408,7 @@ sub register_new_user {
 
     # Check if email is valid
     if ( $response->{status} != 0 ) {
-        if ( !( Email::Valid->address( $requested_user_data->{email} ) ) ) {
+        if ( !( check_email_valid( $requested_user_data->{email} ) ) ) {
             $response->{status}  = 0;
             $response->{message} = "Provided e-mail is invalid.";
         }
