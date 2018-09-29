@@ -162,6 +162,7 @@ sub show_organization_users_GET {
         }
     }
 
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
 }
 
@@ -184,6 +185,7 @@ sub add_user_to_organization_POST {
     my $target_user;
     my $target_user_data;
 
+    my $is_organization_admin;
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     $response->{message} = "";
@@ -210,10 +212,20 @@ sub add_user_to_organization_POST {
                 $organization_token );
             $target_organization_data =
               $organization_token_check->{organization};
+            $is_organization_admin =
+              Daedalus::Users::Manager::is_organization_admin(
+                $c,
+                $user_data->{_hidden_data}->{user}->{id},
+                $target_organization_data->{_hidden_data}->{organization}->{id}
+              );
+            if ( !$is_organization_admin->{status} ) {
+                $organization_token_check->{status} = 0;
+            }
         }
 
         $response->{message} = "Invalid Organization token."
-          unless ( $organization_token_check->{status} );
+          unless ( $organization_token_check->{status} == 1 );
+
         if ( !$target_user_email ) {
             $target_user_email_check->{status}  = 0;
             $target_user_email_check->{message} = "No user e-mail provided.";
@@ -254,9 +266,11 @@ sub add_user_to_organization_POST {
                 }
             }
         }
+
         $response->{message} =
           $response->{message} . " " . $target_user_email_check->{message}
-          unless ( $organization_token_check->{status} );
+          unless ( $target_user_email_check->{status} );
+
         if (    $organization_token_check->{status}
             and $target_user_email_check->{status} )
         {
@@ -273,7 +287,8 @@ sub add_user_to_organization_POST {
         }
         $response->{error_code} = 400;
     }
-
+    $response->{message} =~ s/^\s+|\s+$//g;
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
 }
 

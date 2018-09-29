@@ -126,7 +126,9 @@ my $failed_no_user_data = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( { organization_token => 'sometoken' } ),
+    Content       => encode_json(
+        { organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf' }
+    ),
 );
 
 is( $failed_no_user_data->code(), 400, );
@@ -148,8 +150,11 @@ is( $failed_no_organization_data->code(), 400, );
 my $failed_no_organization_data_json =
   decode_json( $failed_no_organization_data->content );
 
-is( $failed_no_organization_data_json->{status},  0, );
-is( $failed_no_organization_data_json->{message}, 'No user data provided.', );
+is( $failed_no_organization_data_json->{status}, 0, );
+is(
+    $failed_no_organization_data_json->{message},
+    'Invalid Organization token. User e-mail invalid.',
+);
 
 my $failed_invalid_data = request(
     POST $endpoint,
@@ -170,7 +175,7 @@ my $failed_invalid_data_json = decode_json( $failed_invalid_data->content );
 is( $failed_invalid_data_json->{status}, 0, );
 is(
     $failed_invalid_data_json->{message},
-    'Organization token invalid. User e-mail invalid.',
+    'Invalid Organization token. User e-mail invalid.',
 );
 
 my $failed_invalid_organization_data_email_not_found = request(
@@ -193,7 +198,7 @@ my $failed_invalid_organization_data_email_not_found_json =
 is( $failed_invalid_organization_data_email_not_found_json->{status}, 0, );
 is(
     $failed_invalid_organization_data_email_not_found_json->{message},
-'Organization token invalid. There is not registered user with that e-mail address.',
+'Invalid Organization token. There is not registered user with that e-mail address.',
 );
 
 my $failed_invalid_email = request(
@@ -274,7 +279,7 @@ my $failed_not_my_organization_json =
 is( $failed_not_my_organization_json->{status}, 0, );
 is(
     $failed_not_my_organization_json->{message},
-    'Organization token invalid.',
+    'Invalid Organization token.',
 );
 
 my $add_user_success = request(
@@ -295,7 +300,7 @@ is( $add_user_success->code(), 200, );
 my $add_user_success_json = decode_json( $add_user_success->content );
 
 is( $add_user_success_json->{status},  1, );
-is( $add_user_success_json->{message}, 'User registered.', );
+is( $add_user_success_json->{message}, 'User has been registered.', );
 
 is( $add_user_success_json->{_hidden_data}, undef, );
 
@@ -313,24 +318,31 @@ my $failed_already_registered = request(
 
 is( $failed_already_registered->code(), 400, );
 
-my $failed_already_registered_json = decode_json( $add_user_success->content );
+my $failed_already_registered_json =
+  decode_json( $failed_already_registered->content );
 
-is( $failed_already_registered_json->{status},  0, );
-is( $failed_already_registered_json->{message}, 'User already registered.', );
+is( $failed_already_registered_json->{status}, 0, );
+is(
+    $failed_already_registered_json->{message},
+    'User already belongs to this organization.',
+);
 
-my $confirm_marvin_ins_registered = request(
-    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
+my $confirm_marvin_is_registered = request(
+    GET "/organization/showusers/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $confirm_marvin_ins_registered->code(), 200, );
+is( $confirm_marvin_is_registered->code(), 200, );
 
-my $confirm_marvin_ins_registered_json =
-  decode_json( $confirm_marvin_ins_registered->content );
+my $confirm_marvin_is_registered_json =
+  decode_json( $confirm_marvin_is_registered->content );
 
-isnt( $confirm_marvin_ins_registered->{data}->{users}->{'marvin@megashops.com'},
-    undef, 'Marvin has been registered' );
+isnt(
+    $confirm_marvin_is_registered_json->{data}->{users}
+      ->{'marvin@megashops.com'},
+    undef, 'Marvin has been registered'
+);
 
 my $superadmin_success = request(
     POST '/user/login',
@@ -360,7 +372,7 @@ my $superadmin_authorization_basic =
 my $add_user_success_superuser = request(
     POST $endpoint,
     Content_Type  => 'application/json',
-    Authorization => "Basic $superadmin_session_token",
+    Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
@@ -370,12 +382,11 @@ my $add_user_success_superuser = request(
 );
 
 is( $add_user_success_superuser->code(), 200, );
-#
 my $add_user_success_superuser_json =
   decode_json( $add_user_success_superuser->content );
 
 is( $add_user_success_superuser_json->{status},  1, );
-is( $add_user_success_superuser_json->{message}, 'User registered.', );
+is( $add_user_success_superuser_json->{message}, 'User has been registered.', );
 
 isnt( $add_user_success_superuser_json->{_hidden_data}, undef, );
 

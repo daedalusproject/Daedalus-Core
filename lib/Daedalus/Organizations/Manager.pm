@@ -152,6 +152,7 @@ sub get_organizations_from_user {
 
     my $c         = shift;
     my $user_data = shift;
+    my $short_key = shift;
 
     my $response = {
         status => 1,
@@ -171,13 +172,26 @@ sub get_organizations_from_user {
     my @organizations_names;
     my %organizations;
 
-    for my $user_organization (@user_organizations) {
-        my $organization = $c->model('CoreRealms::Organization')
-          ->find( { id => $user_organization->organization_id } );
-        $response->{data}->{organizations}->{ $organization->name } =
-          { name => $organization->name, token => $organization->token };
-        $response->{_hidden_data}->{organizations}->{ $organization->name } =
-          { id => $organization->id };
+    if ( $short_key eq 'token' ) {
+        for my $user_organization (@user_organizations) {
+            my $organization = $c->model('CoreRealms::Organization')
+              ->find( { id => $user_organization->organization_id } );
+            $response->{data}->{organizations}->{ $organization->token } =
+              { name => $organization->name, token => $organization->token };
+            $response->{_hidden_data}->{organizations}->{ $organization->token }
+              = { id => $organization->id };
+        }
+
+    }
+    else {
+        for my $user_organization (@user_organizations) {
+            my $organization = $c->model('CoreRealms::Organization')
+              ->find( { id => $user_organization->organization_id } );
+            $response->{data}->{organizations}->{ $organization->name } =
+              { name => $organization->name, token => $organization->token };
+            $response->{_hidden_data}->{organizations}->{ $organization->name }
+              = { id => $organization->id };
+        }
     }
 
     return $response;
@@ -210,7 +224,7 @@ sub get_organization_from_token {
                     token => $organization->token,
                 },
             },
-            _hiden_data => { organization => { id => $organization->id } }
+            _hidden_data => { organization => { id => $organization->id } }
         };
     }
 
@@ -231,10 +245,28 @@ sub add_user_to_organization {
 
     my $response;
 
-    my $user_organizations = get_organizations_from_user( $c, $user_data );
+    my $user_organizations =
+      get_organizations_from_user( $c, $user_data, 'token' );
 
-    #if $user_organizations->{data}->{organizations}->{}
-    #die Dumper($organizaion_data);
+    my $organization_token = $organizaion_data->{data}->{organization}->{token};
+
+    if ( $user_organizations->{data}->{organizations}->{$organization_token} ) {
+        $response->{status}  = 0;
+        $response->{message} = "User already belongs to this organization.";
+    }
+    else {
+        # Add user to Organization
+        $c->model('CoreRealms::UserOrganization')->create(
+            {
+                organization_id =>
+                  $organizaion_data->{_hidden_data}->{organization}->{id},
+                user_id => $user_data->{_hidden_data}->{user}->{id},
+            }
+        );
+
+        $response->{status}  = 1;
+        $response->{message} = "User has been registered.";
+    }
 
     return $response;
 }
