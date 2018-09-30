@@ -60,7 +60,7 @@ my $admin_authorization_basic =
 my $admin_user_mega_shop_groups = request(
     GET $endpoint,
     Content_Type  => 'application/json',
-    Authorization => "Basic $admin_megashops_authorization_basic",
+    Authorization => "Basic $admin_authorization_basic",
 );
 
 is( $admin_user_mega_shop_groups->code(), 200, );
@@ -73,14 +73,14 @@ is( keys %{ $admin_user_mega_shop_groups_json->{data}->{organizations} },
     2, 'This user belongs to Mega Shops and Supershops' );
 
 isnt(
-    $admin_user_mega_shop_organization_json->{data}->{organizations}
-      ->{'Supershops'}->{token},
+    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
+      ->{token},
     undef, 'API response contains organization token'
 );
 
 isnt(
-    $admin_user_mega_shop_organization_json->{data}->{organizations}
-      ->{'Supershops'}->{groups},
+    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
+      ->{groups},
     undef, 'API response contains organization groups'
 );
 
@@ -94,8 +94,8 @@ is(
 );
 
 isnt(
-    $admin_user_mega_shop_organization_json->{data}->{organizations}
-      ->{'Supershops'}->{groups}->{'Supershops Administrators'},
+    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
+      ->{groups}->{'Supershops Administrators'},
     undef,
 'For the time being there is only a group in this organization, Supershops Administrators'
 );
@@ -109,7 +109,94 @@ is(
     'For the time being Supershops Administrators has only one role'
 );
 
-is( $admin_user_mega_shop_organization_json->{_hidden_data},
+is( $admin_user_mega_shop_groups_json->{_hidden_data},
     undef, 'Non Super admin users do not receive hidden data' );
+
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_user_mega_shop_groups = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_user_mega_shop_groups->code(), 200, );
+
+my $superadmin_user_mega_shop_groups_json =
+  decode_json( $superadmin_user_mega_shop_groups->content );
+
+is( $superadmin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
+is( keys %{ $superadmin_user_mega_shop_groups_json->{data}->{organizations} },
+    2, 'This user belongs to Mega Shops and Supershops' );
+
+isnt(
+    $superadmin_user_mega_shop_groups_json->{data}->{organizations}
+      ->{'Ultrashops'}->{token},
+    undef, 'API response contains organization token'
+);
+
+isnt(
+    $superadmin_user_mega_shop_groups_json->{data}->{organizations}
+      ->{'Ultrashops'}->{groups},
+    undef, 'API response contains organization groups'
+);
+
+is(
+    keys %{
+        $superadmin_user_mega_shop_groups_json->{data}->{organizations}
+          ->{'Ultrashops'}->{groups}
+    },
+    1,
+'For the time being there is only a group in this organization, Supershops Administrators'
+);
+
+isnt(
+    $superadmin_user_mega_shop_groups_json->{data}->{organizations}
+      ->{'Ultrashops'}->{groups}->{'Ultrashops Administrators'},
+    undef,
+'For the time being there is only a group in this organization, Ultrashops Administrators'
+);
+
+is(
+    scalar @{
+        $superadmin_user_mega_shop_groups_json->{data}->{organizations}
+          ->{'Ultrashops'}->{groups}->{'Ultrashops Administrators'}->{roles}
+    },
+    1,
+    'For the time being Ultrashops Administrators has only one role'
+);
+
+isnt( $superadmin_user_mega_shop_groups_json->{_hidden_data},
+    undef, 'Super admin users receive hidden data' );
+
+is(
+    $superadmin_user_mega_shop_groups_json->{_hidden_data}->{organizations}
+      ->{'Ultrashops'}->{groups}->{'Ultrashops Administrators'}->{roles}
+      ->{organization_master}->{id},
+    1, 'Check ids'
+);
 
 done_testing();
