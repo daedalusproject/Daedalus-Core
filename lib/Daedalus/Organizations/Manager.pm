@@ -271,5 +271,21 @@ sub add_user_to_organization {
     return $response;
 }
 
+=head2 get_user_organization_groups
+
+Get user groups for each organization
+
+=cut
+
+sub get_user_organization_groups {
+
+    my $c         = shift;
+    my $user_data = shift;
+
+    my $response;
+
+    return $response;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

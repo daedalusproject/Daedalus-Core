@@ -292,6 +292,33 @@ sub add_user_to_organization_POST {
     $self->return_response( $c, $response );
 }
 
+sub show_organization_groups : Path('/organization/showgroups') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_organization_groups_GET {
+
+    my ( $self, $c ) = @_;
+    my $response;
+    my $user_data;
+
+    my $user_groups;
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+# my $cache = $c->cache;
+#$user_groups = Daedalus::Organizations::Manager::get_user_organization_groups($c, $user_data);
+    }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 AUTHOR
