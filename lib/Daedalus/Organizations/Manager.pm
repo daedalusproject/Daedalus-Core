@@ -330,7 +330,7 @@ Get user groups for each organization
 
 =cut
 
-sub get_user_organization_groups {
+sub get_user_organizations_groups {
 
     my $c         = shift;
     my $user_data = shift;

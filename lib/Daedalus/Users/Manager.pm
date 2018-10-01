@@ -336,6 +336,34 @@ sub is_organization_admin {
 
 }
 
+=head2 is_organization_member
+
+Return if required user is member of required Organization
+
+=cut
+
+sub is_organization_member {
+    my $c               = shift;
+    my $user_id         = shift;
+    my $organization_id = shift;
+
+    my $response;
+
+    $response->{status}  = 0;
+    $response->{message} = "User is not a memeber of this organization";
+
+    my $organization_member = $c->model('CoreRealms::UserOrganization')
+      ->find( { user_id => $user_id, organization_id => $organization_id } );
+
+    if ($organization_member) {
+        $response->{status}  = 1;
+        $response->{message} = "User is a memeber of this organization";
+    }
+
+    return $response;
+
+}
+
 =head2 is_super_admin
 
 Return if required user belongs to a group with 'daedalus_manager'role, user id is provided

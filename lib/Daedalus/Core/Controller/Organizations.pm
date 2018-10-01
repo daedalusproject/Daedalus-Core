@@ -292,12 +292,12 @@ sub add_user_to_organization_POST {
     $self->return_response( $c, $response );
 }
 
-sub show_organization_groups : Path('/organization/showusergroups') : Args(0) :
-  ActionClass('REST') {
+sub show_organizations_groups : Path('/organization/showusergroups') : Args(0)
+  : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub show_organization_groups_GET {
+sub show_organizations_groups_GET {
 
     my ( $self, $c ) = @_;
     my $response;
@@ -314,9 +314,66 @@ sub show_organization_groups_GET {
     else {
         $user_data = $user->{data};
         $response =
-          Daedalus::Organizations::Manager::get_user_organization_groups( $c,
+          Daedalus::Organizations::Manager::get_user_organizations_groups( $c,
             $user_data );
     }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
+}
+
+sub show_organization_groups : Path('/organization/showorganizationusergroups')
+  : Args(1) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_organization_groups_GET {
+
+    my ( $self, $c ) = @_;
+    my $response;
+    my $user_data;
+    my $organization_data;
+    my $organization_member;
+
+    my $user_groups;
+
+    my $organization_token = $c->{request}->{arguments}[0];
+
+    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+        $organization_data =
+          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+            $organization_token );
+
+        if ( $organization_data->{status} == 0 ) {
+            $response = $organization_data;
+        }
+        else {
+
+            $organization_member =
+              Daedalus::Users::Manager::is_organization_member(
+                $c,
+                $user_data->{_hidden_data}->{user}->{id},
+                $organization_data->{_hidden_data}->{organization}->{id}
+              );
+            if ( $organization_member->{status} == 0 ) {
+                $response->{status}  = 0;
+                $response->{message} = "Invalid organization token.";
+            }
+            else {
+                $response =
+                  Daedalus::Organizations::Manager::get_user_organization_groups(
+                    $c, $user_data, $organization_data );
+
+            }
+        }
+    }
+    $response->{error_code} = 400;
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
 }
