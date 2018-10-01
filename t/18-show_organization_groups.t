@@ -150,7 +150,7 @@ my $superadmin_user_mega_shop_groups_json =
 
 is( $superadmin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $superadmin_user_mega_shop_groups_json->{data}->{organizations} },
-    2, 'This user belongs to Mega Shops and Supershops' );
+    2, 'This user belongs to Daedalus Project and Ultrashops' );
 
 isnt(
     $superadmin_user_mega_shop_groups_json->{data}->{organizations}
