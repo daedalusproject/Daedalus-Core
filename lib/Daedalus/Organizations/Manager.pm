@@ -271,6 +271,59 @@ sub add_user_to_organization {
     return $response;
 }
 
+=head2 get_organization_group_roles
+
+Get organization group roles using organization_group id
+
+=cut
+
+sub get_organization_group_roles {
+
+    my $c                     = shift;
+    my $organization_group_id = shift;
+
+    my $response = { data => [], _hidden_data => {} };
+
+    my @roles = $c->model('CoreRealms::OrganizationGroupRole')
+      ->search( { group_id => $organization_group_id } )->all;
+
+    for my $role (@roles) {
+        my $role_info =
+          $c->model('CoreRealms::Role')->find( { id => $role->id } );
+        push @{ $response->{data} }, $role_info->role_name;
+        $response->{_hidden_data}->{ $role_info->role_name } = $role_info->id;
+    }
+
+    return $response;
+}
+
+=head2 get_organization_groups
+
+Get organization groups using organization id
+
+=cut
+
+sub get_organization_groups {
+
+    my $c               = shift;
+    my $organization_id = shift;
+
+    my $response = { data => {}, _hidden_data => {} };
+
+    my @organization_groups = $c->model('CoreRealms::OrganizationGroup')
+      ->search( { organization_id => $organization_id } )->all;
+
+    for my $organization_group (@organization_groups) {
+        my $roles = get_organization_group_roles( $c, $organization_group->id );
+        $response->{data}->{ $organization_group->group_name } =
+          { roles => $roles->{data} };
+        $response->{_hidden_data}->{ $organization_group->group_name } =
+          { id => $organization_group->id, roles => $roles->{_hidden_data} };
+    }
+
+    return $response;
+}
+
 =head2 get_user_organization_groups
 
 Get user groups for each organization
@@ -282,9 +335,25 @@ sub get_user_organization_groups {
     my $c         = shift;
     my $user_data = shift;
 
-    my $response;
+    my $user_organizations = get_organizations_from_user( $c, $user_data );
 
-    return $response;
+    for my $organization_name (
+        keys %{ $user_organizations->{data}->{organizations} } )
+    {
+        my $organization_id =
+          $user_organizations->{_hidden_data}->{organizations}
+          ->{$organization_name}->{id};
+        my $organization_groups =
+          get_organization_groups( $c, $organization_id );
+        $user_organizations->{data}->{organizations}->{$organization_name}
+          ->{groups} = $organization_groups->{data};
+        $user_organizations->{_hidden_data}->{organizations}
+          ->{$organization_name}->{groups} =
+          $organization_groups->{_hidden_data};
+
+    }
+
+    return $user_organizations;
 }
 
 __PACKAGE__->meta->make_immutable;
