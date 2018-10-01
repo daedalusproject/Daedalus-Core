@@ -194,8 +194,8 @@ isnt( $superadmin_user_mega_shop_groups_json->{_hidden_data},
 
 is(
     $superadmin_user_mega_shop_groups_json->{_hidden_data}->{organizations}
-      ->{'Ultrashops'}->{groups}->{'Ultrashops Administrators'}->{roles}
-      ->{organization_master}->{id},
+      ->{'Ultrashops'}->{'groups'}->{'Ultrashops Administrators'}->{'roles'}
+      ->{'organization_master'},
     1, 'Check ids'
 );
 
