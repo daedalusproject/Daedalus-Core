@@ -58,7 +58,7 @@ my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
 my $admin_user_mega_shop_groups = request(
-    GET $endpoint,
+    GET "$endpoint/Z2cP8K0SXggRzeYUpQlxWLNEst3hs8CS",    #Supershops token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -70,7 +70,7 @@ my $admin_user_mega_shop_groups_json =
 
 is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $admin_user_mega_shop_groups_json->{data}->{organizations} },
-    2, 'This user belongs to Mega Shops and Supershops' );
+    1, 'This response only contains one organization' );
 
 isnt(
     $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
@@ -112,6 +112,42 @@ is(
 is( $admin_user_mega_shop_groups_json->{_hidden_data},
     undef, 'Non Super admin users do not receive hidden data' );
 
+my $invalid_token_failed = request(
+    GET "$endpoint/Z2cP8KLNEst3hs8CS",    #Invalid token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $invalid_token_failed->code(), 400, );
+
+my $invalid_token_failed_json = decode_json( $invalid_token_failed->content );
+
+is( $admin_user_mega_shop_groups_json->{status}, 0, 'Invalid token.' );
+is(
+    $admin_user_mega_shop_groups_json->{message},
+    'Invalid token.',
+    'Of course.'
+);
+
+my $valid_token_not_my_organization_failed = request(
+    GET "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO",    #Daedalus Project
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $valid_token_not_my_organization_failed->code(), 400, );
+
+my $valid_token_not_my_organization_failed_json =
+  decode_json( $valid_token_not_my_organization_failed->content );
+
+is( $valid_token_not_my_organization_failed_json->{status},
+    0, 'Not your organization.' );
+is(
+    $valid_token_not_my_organization_failed_json->{message},
+    'Invalid token.',
+    'Not really but Daedalus-Core is not going to tell you.'
+);
+
 my $superadmin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
@@ -138,7 +174,7 @@ my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
 my $superadmin_user_ultra_shop_groups = request(
-    GET $endpoint,
+    GET "$endpoint/EUgX3WhPHkFxjtC6Tu6xF9O99CE9MHCG",
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
@@ -151,8 +187,8 @@ my $superadmin_user_ultra_shop_groups_json =
 is( $superadmin_user_ultra_shop_groups_json->{status}, 1, 'Status success.' );
 is(
     keys %{ $superadmin_user_ultra_shop_groups_json->{data}->{organizations} },
-    2,
-    'This user belongs to Daedalus Project and Ultrashops'
+    1,
+    'This request contains only Ultrashops info'
 );
 
 isnt(
