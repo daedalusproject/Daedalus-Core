@@ -365,8 +365,9 @@ sub show_organization_groups_GET {
                 $organization_data->{_hidden_data}->{organization}->{id}
               );
             if ( $organization_member->{status} == 0 ) {
-                $response->{status}  = 0;
-                $response->{message} = "Invalid organization token.";
+                $response->{status}     = 0;
+                $response->{message}    = "Invalid organization token.";
+                $response->{error_code} = 400;
             }
             else {
                 $response =
