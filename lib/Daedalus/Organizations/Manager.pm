@@ -356,5 +356,30 @@ sub get_user_organizations_groups {
     return $user_organizations;
 }
 
+=head2 get_user_organization_groups
+
+Get user groups for given organization
+
+=cut
+
+sub get_user_organization_groups {
+
+    my $c                 = shift;
+    my $user_data         = shift;
+    my $organization_data = shift;
+
+    my $user_organization_groups;
+    my $organization_id =
+      $organization_data->{_hidden_data}->{organization}->{id};
+
+    my $organization_groups = get_organization_groups( $c,
+        $organization_data->{_hidden_data}->{organization}->{id} );
+    $user_organization_groups->{data}->{groups} = $organization_groups->{data};
+    $user_organization_groups->{_hidden_data}->{groups} =
+      $organization_groups->{_hidden_data};
+
+    return $user_organization_groups;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

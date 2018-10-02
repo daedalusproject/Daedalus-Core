@@ -15,7 +15,7 @@ my $show_organizations_GET_content = get($endpoint);
 ok( $show_organizations_GET_content, qr /Method GET not implemented/ );
 
 my $failed_because_no_auth = request(
-    GET $endpoint,
+    GET "$endpoint/sometoken",
     Content_Type => 'application/json',
     Content      => encode_json( {} ),
 );
@@ -58,7 +58,7 @@ my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
 my $admin_user_mega_shop_groups = request(
-    GET "$endpoint/Z2cP8K0SXggRzeYUpQlxWLNEst3hs8CS",    #Supershops token
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -69,44 +69,32 @@ my $admin_user_mega_shop_groups_json =
   decode_json( $admin_user_mega_shop_groups->content );
 
 is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
-is( keys %{ $admin_user_mega_shop_groups_json->{data}->{organizations} },
+is( keys %{ $admin_user_mega_shop_groups_json->{data} },
     1, 'This response only contains one organization' );
 
-isnt(
-    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
-      ->{token},
-    undef, 'API response contains organization token'
-);
-
-isnt(
-    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
-      ->{groups},
-    undef, 'API response contains organization groups'
-);
+isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
+    undef, 'API response contains organization groups' );
 
 is(
-    keys %{
-        $admin_user_mega_shop_groups_json->{data}->{organizations}
-          ->{'Supershops'}->{groups}
-    },
+    keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
     1,
-'For the time being there is only a group in this organization, Supershops Administrators'
+'For the time being there is only a group in this organization, Mega Shops Administrators'
 );
 
 isnt(
-    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
-      ->{groups}->{'Supershops Administrators'},
+    $admin_user_mega_shop_groups_json->{data}->{groups}
+      ->{'Mega Shops Administrators'},
     undef,
-'For the time being there is only a group in this organization, Supershops Administrators'
+'For the time being there is only a group in this organization, Mega Shops Administrators'
 );
 
 is(
     scalar @{
-        $admin_user_mega_shop_groups_json->{data}->{organizations}
-          ->{'Supershops'}->{groups}->{'Supershops Administrators'}->{roles}
+        $admin_user_mega_shop_groups_json->{data}->{groups}
+          ->{'Mega Shops Administrators'}->{roles}
     },
-    1,
-    'For the time being Supershops Administrators has only one role'
+    2,
+'For the time being Supershops Administrators has two roles, firemen and organization master'
 );
 
 is( $admin_user_mega_shop_groups_json->{_hidden_data},
@@ -122,12 +110,8 @@ is( $invalid_token_failed->code(), 400, );
 
 my $invalid_token_failed_json = decode_json( $invalid_token_failed->content );
 
-is( $admin_user_mega_shop_groups_json->{status}, 0, 'Invalid token.' );
-is(
-    $admin_user_mega_shop_groups_json->{message},
-    'Invalid token.',
-    'Of course.'
-);
+is( $invalid_token_failed_json->{status}, 0, 'Invalid token.' );
+is( $invalid_token_failed_json->{message}, 'Invalid token.', 'Of course.' );
 
 my $valid_token_not_my_organization_failed = request(
     GET "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO",    #Daedalus Project

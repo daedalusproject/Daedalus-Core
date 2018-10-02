@@ -331,6 +331,7 @@ sub show_organization_groups_GET {
     my ( $self, $c ) = @_;
     my $response;
     my $user_data;
+    my $organization;
     my $organization_data;
     my $organization_member;
 
@@ -346,15 +347,17 @@ sub show_organization_groups_GET {
     }
     else {
         $user_data = $user->{data};
-        $organization_data =
+        $organization =
           Daedalus::Organizations::Manager::get_organization_from_token( $c,
             $organization_token );
 
-        if ( $organization_data->{status} == 0 ) {
-            $response = $organization_data;
+        if ( $organization->{status} == 0 ) {
+            $response = $organization;
+            $response->{error_code} = 400;
+
         }
         else {
-
+            $organization_data = $organization->{organization};
             $organization_member =
               Daedalus::Users::Manager::is_organization_member(
                 $c,
@@ -370,10 +373,12 @@ sub show_organization_groups_GET {
                   Daedalus::Organizations::Manager::get_user_organization_groups(
                     $c, $user_data, $organization_data );
 
+                $response->{error_code} = 400;
+                $response->{status}     = 1;
+
             }
         }
     }
-    $response->{error_code} = 400;
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
 }
