@@ -109,12 +109,6 @@ is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
 isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
     undef, 'API response contains organization groups' );
 
-is(
-    keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
-    1,
-'For the time being there is only a group in this organization, Mega Shops Administrators'
-);
-
 isnt(
     $admin_user_mega_shop_groups_json->{data}->{groups}
       ->{'Mega Shops Administrators'},

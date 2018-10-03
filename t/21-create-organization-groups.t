@@ -176,7 +176,7 @@ my $create_group_success = request(
 );
 
 is( $add_user_success->code(), 200, );
-#
+
 my $add_user_success_json = decode_json( $add_user_success->content );
 
 is( $add_user_success_json->{status},  1, );
@@ -204,6 +204,179 @@ my $failed_already_registered_json =
 is( $failed_already_registered_json->{status},  0, );
 is( $failed_already_registered_json->{message}, 'Duplicated group name.', );
 
-##### TO DO
+# Check group
+
+my $admin_user_mega_shop_groups = request(
+    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $admin_user_mega_shop_groups->code(), 200, );
+
+my $admin_user_mega_shop_groups_json =
+  decode_json( $admin_user_mega_shop_groups->content );
+
+is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
+is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
+    2, 'This response contains two group' );
+
+isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
+    undef, 'API response contains organization groups' );
+
+isnt(
+    $admin_user_mega_shop_groups_json->{data}->{groups}
+      ->{'Mega Shop Sysadmins'},
+    undef, 'Now, Mega Shop Sysadmins exists'
+);
+
+is(
+    scalar @{
+        $admin_user_mega_shop_groups_json->{data}->{groups}
+          ->{'Mega Shop Sysadmins'}->{roles}
+    },
+    0,
+    'For the time being Mega Shop Sysadmins has no roles'
+);
+
+my $failed_not_your_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token =>
+              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
+            user_email => 'Daedalus Project Sysadmins'
+        }
+    ),
+);
+
+is( $failed_not_your_organization->code(), 400, );
+
+my $failed_not_your_organization_json =
+  decode_json( $failed_not_your_organization->content );
+
+is( $failed_not_your_organization_json->{status}, 0, );
+is(
+    $failed_not_your_organization_json->{message},
+    'Invalid organization data.',
+);
+
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth => {
+                email    => 'admin@daedalus-project.io',
+                password => 'this_is_a_Test_1234',
+            }
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_create_group_success = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            group_name         => 'Daedalus Core Sysadmins'
+        }
+    ),
+);
+
+is( $superadmin_create_group_success->code(), 200, );
+
+my $superadmin_create_group_success_json =
+  decode_json( $superadmin_create_group_success->content );
+
+is( $superadmin_create_group_success_json->{status}, 1, );
+is(
+    $superadmin_create_group_success_json->{message},
+    'User group has been created.',
+);
+
+isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
+
+my $superadmin_create_group_other_organization_success = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_name => 'Mega Shop SuperSysadmins'
+        }
+    ),
+);
+
+is( $superadmin_create_group_other_organization_success->code(), 200, );
+
+my $superadmin_create_group_other_organization_success_json =
+  decode_json( $superadmin_create_group_other_organization_success->content );
+
+is( $superadmin_create_group_other_organization_success_json->{status}, 1, );
+is(
+    $superadmin_create_group_other_organization_success_json->{message},
+    'User group has been created.',
+);
+
+isnt( $superadmin_create_group_other_organization_success_json->{_hidden_data},
+    undef, );
+
+my $admin_user_mega_shop_three_groups = request(
+    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $admin_user_mega_shop_three_groups->code(), 200, );
+
+my $admin_user_mega_shop_three_groups_json =
+  decode_json( $admin_user_mega_shop_three_groups->content );
+
+is( $admin_user_mega_shop_three_groups_json->{status}, 1, 'Status success.' );
+is( keys %{ $admin_user_mega_shop_three_groups_json->{data}->{groups} },
+    3, 'This response contains three groups' );
+
+isnt( $admin_user_mega_shop_three_groups->{data}->{groups},
+    undef, 'API response contains organization groups' );
+
+isnt(
+    $admin_user_mega_shop_three_groups_json->{data}->{groups}
+      ->{'Mega Shop SuperSysadmins'},
+    undef, 'Now, Mega Shop SuperSysadmins exists'
+);
+
+is(
+    scalar @{
+        $admin_user_mega_shop_groups_json->{data}->{groups}
+          ->{'Mega Shop SuperSysadmins'}->{roles}
+    },
+    0,
+    'For the time being Mega Shop SuperSysadmins has no roles'
+);
+
+# Check groups
 
 done_testing();
