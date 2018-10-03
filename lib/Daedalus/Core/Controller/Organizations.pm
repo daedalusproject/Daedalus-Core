@@ -398,6 +398,8 @@ sub show_organization_groups_GET {
     my $organization;
     my $organization_data;
 
+    my $is_organization_admin;
+
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     my $organization_token = $c->{request}->{arguments}[0];
@@ -417,13 +419,12 @@ sub show_organization_groups_GET {
 
         }
         else {
-            $target_organization_data =
-              $organization_token_check->{organization};
+            $organization_data = $organization->{organization};
             $is_organization_admin =
               Daedalus::Users::Manager::is_organization_admin(
                 $c,
                 $user_data->{_hidden_data}->{user}->{id},
-                $target_organization_data->{_hidden_data}->{organization}->{id}
+                $organization_data->{_hidden_data}->{organization}->{id}
               );
             if (   $is_organization_admin->{status} == 0
                 && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
