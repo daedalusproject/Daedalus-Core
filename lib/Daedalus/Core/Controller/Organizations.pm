@@ -399,6 +399,8 @@ sub show_all_organization_groups_GET {
 
     my $is_organization_admin;
 
+    my $groups;
+
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
     my $organization_token = $c->{request}->{arguments}[0];
@@ -431,15 +433,18 @@ sub show_all_organization_groups_GET {
 
             {
                 $response->{status}     = 0;
-                $response->{message}    = "Invalid Organization token.";
+                $response->{message}    = "Invalid organization token.";
                 $response->{error_code} = 400;
 
             }
             else {
-                $response =
+                $groups =
                   Daedalus::Organizations::Manager::get_organization_groups( $c,
                     $organization_data->{_hidden_data}->{organization}->{id} );
-                $response->{error_code} = 400;
+                $response->{data}->{groups}         = $groups->{data};
+                $response->{_hidden_data}->{groups} = $groups->{_hidden_data};
+                $response->{status}                 = 1;
+                $response->{error_code}             = 400;
 
             }
         }

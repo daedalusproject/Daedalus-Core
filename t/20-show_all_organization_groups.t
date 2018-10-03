@@ -91,8 +91,6 @@ my $admin_session_token = $admin_success_json->{data}->{session_token};
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
-die "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf";
-
 my $admin_user_mega_shop_groups = request(
     GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega Shops Token
     Content_Type  => 'application/json',
