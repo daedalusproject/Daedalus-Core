@@ -217,6 +217,7 @@ sub get_organization_from_token {
 
     if ($organization) {
         $response->{status}       = 1;
+        $response->{message}      = 'Organization token is valid.';
         $response->{organization} = {
             data => {
                 organization => {

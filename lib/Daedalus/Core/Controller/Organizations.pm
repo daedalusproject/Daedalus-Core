@@ -350,7 +350,6 @@ sub show_organization_groups_GET {
         $organization =
           Daedalus::Organizations::Manager::get_organization_from_token( $c,
             $organization_token );
-
         if ( $organization->{status} == 0 ) {
             $response = $organization;
             $response->{error_code} = 400;
@@ -409,6 +408,7 @@ sub show_all_organization_groups_GET {
         $response->{error_code} = 403;
     }
     else {
+        $user_data = $user->{data};
         $organization =
           Daedalus::Organizations::Manager::get_organization_from_token( $c,
             $organization_token );
