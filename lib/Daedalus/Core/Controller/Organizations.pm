@@ -321,12 +321,12 @@ sub show_organizations_groups_GET {
     $self->return_response( $c, $response );
 }
 
-sub show_all_organization_groups : Path('/organization/showoallgroups')
+sub show_organization_groups : Path('/organization/showorganizationusergroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub show_all_organization_groups_GET {
+sub show_organization_groups_GET {
 
     my ( $self, $c ) = @_;
     my $response;
@@ -384,12 +384,12 @@ sub show_all_organization_groups_GET {
     $self->return_response( $c, $response );
 }
 
-sub show_organization_groups : Path('/organization/showorganizationusergroups')
+sub show_all_organization_groups : Path('/organization/showoallgroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub show_organization_groups_GET {
+sub show_all_organization_groups_GET {
 
     my ( $self, $c ) = @_;
     my $response;
