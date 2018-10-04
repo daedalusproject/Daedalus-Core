@@ -175,14 +175,17 @@ my $create_group_success = request(
     ),
 );
 
-is( $add_user_success->code(), 200, );
+is( $create_group_success->code(), 200, );
 
-my $add_user_success_json = decode_json( $add_user_success->content );
+my $create_group_success_json = decode_json( $create_group_success->content );
 
-is( $add_user_success_json->{status},  1, );
-is( $add_user_success_json->{message}, 'User group has been created.', );
+is( $create_group_success_json->{status}, 1, );
+is(
+    $create_group_success_json->{message},
+    'Organization group has been created.',
+);
 
-is( $add_user_success_json->{_hidden_data}, undef, );
+is( $create_group_success_json->{_hidden_data}, undef, );
 
 my $failed_already_created = request(
     POST $endpoint,
@@ -196,13 +199,13 @@ my $failed_already_created = request(
     ),
 );
 
-is( $failed_already_registered->code(), 400, );
+is( $failed_already_created->code(), 400, );
 
-my $failed_already_registered_json =
-  decode_json( $failed_already_registered->content );
+my $failed_already_created_json =
+  decode_json( $failed_already_created->content );
 
-is( $failed_already_registered_json->{status},  0, );
-is( $failed_already_registered_json->{message}, 'Duplicated group name.', );
+is( $failed_already_created_json->{status},  0, );
+is( $failed_already_created_json->{message}, 'Duplicated group name.', );
 
 # Check group
 
