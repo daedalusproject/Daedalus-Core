@@ -455,6 +455,116 @@ sub show_all_organization_groups_GET {
 
 }
 
+sub create_organization_group : Path('/organization/creategroup') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub create_organization_group_POST {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my %organization_token;
+    my $organization;
+    my $organization_data;
+
+    my $is_organization_admin;
+
+    my $groups;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+
+        $organization_token = $c->{request}->{data}->{organization_token};
+        $group_name         = $c->{request}->{data}->{group_name};
+
+        $response->{message} = "";
+
+        # Organization token and group name must be defined
+        if ( !$organization_token ) {
+            $response->{message} = "Organization token not provided.";
+        }
+        if ( !$group_name ) {
+            $response->{message} =
+              $response->{message} . " Group name not provided.";
+        }
+
+        if ( $response->{message} ne "" ) {
+            $response->{error_code} = 400;
+            $response->{status}     = 0;
+        }
+        else {
+
+            $organization =
+              Daedalus::Organizations::Manager::get_organization_from_token( $c,
+                $organization_token );
+
+            if ( $organization->{status} == 0 ) {
+                $response = $organization;
+                $response->{error_code} = 400;
+
+            }
+            else {
+                $organization_data = $organization->{organization};
+                $is_organization_admin =
+                  Daedalus::Users::Manager::is_organization_admin(
+                    $c,
+                    $user_data->{_hidden_data}->{user}->{id},
+                    $organization_data->{_hidden_data}->{organization}->{id}
+                  );
+                if (   $is_organization_admin->{status} == 0
+                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
+                    0 )
+
+                {
+                    $response->{status}     = 0;
+                    $response->{message}    = "Invalid organization token.";
+                    $response->{error_code} = 400;
+
+                }
+                else {
+                    $groups =
+                      Daedalus::Organizations::Manager::get_organization_groups(
+                        $c,
+                        $organization_data->{_hidden_data}->{organization}->{id}
+                      );
+
+                    if ( exists $groups->{data}->{$group_name} ) {
+                        $response->{status}     = 0;
+                        $response->{message}    = "Duplicated group name.";
+                        $response->{error_code} = 400;
+                    }
+                    else {
+                        $response =
+                          Daedalus::Organizations::Manager::create_organization_group(
+                            $c,
+                            $organization_data->{_hidden_data}->{organization}
+                              ->{id},
+                            $group_name
+                          );
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
+
+}
+
 =encoding utf8
 
 =head1 AUTHOR

@@ -9,7 +9,7 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
 
-my $endpoint = '/organization/addgroup';
+my $endpoint = '/organization/creategroup';
 
 my $failed_because_no_auth_token =
   request( POST $endpoint, Content_Type => 'application/json', );
@@ -102,7 +102,7 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status}, 0, );
 is(
     $failed_no_data_json->{message},
-    'No organization data neither group info provided.',
+    'Organization token not provided. Group name not provided.',
 );
 
 my $failed_no_group_data = request(
@@ -136,7 +136,7 @@ my $failed_no_organization_data_json =
 is( $failed_no_organization_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_json->{message},
-    'Invalid Organization token. User e-mail invalid.',
+    'Invalid Organization token.',
 );
 
 my $failed_invalid_organization_data = request(
