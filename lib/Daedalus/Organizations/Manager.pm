@@ -382,5 +382,36 @@ sub get_user_organization_groups {
     return $user_organization_groups;
 }
 
+=head2 create_organization_group
+
+Creates new organization group
+
+=cut
+
+sub create_organization_group {
+    my $c               = shift;
+    my $organization_id = shift;
+    my $group_name      = shift;
+
+    my $response;
+    my $organization_group;
+
+    $organization_group = $c->model('CoreRealms::OrganizationGroup')->create(
+        {
+            organization_id => $organization_id,
+            group_name      => $group_name
+        }
+    );
+
+    $response->{status} = 1;
+    $response->{data}->{organization_groups} =
+      { "group_name" => $organization_group->group_name };
+    $response->{_hidden_data}->{organization_groups} =
+      { "id" => $organization_group->id };
+    $response->{message} = "Organization group has been created.";
+
+    return $response;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

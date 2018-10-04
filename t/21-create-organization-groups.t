@@ -136,7 +136,7 @@ my $failed_no_organization_data_json =
 is( $failed_no_organization_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_json->{message},
-    'Invalid Organization token.',
+    'Organization token not provided.',
 );
 
 my $failed_invalid_organization_data = request(
@@ -194,7 +194,7 @@ my $failed_already_created = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'Mega Shop Sysadmins'
+            group_name         => 'Mega Shop Sysadmins'
         }
     ),
 );
@@ -251,7 +251,7 @@ my $failed_not_your_organization = request(
         {
             organization_token =>
               'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
-            user_email => 'Daedalus Project Sysadmins'
+            group_name => 'Daedalus Project Sysadmins'
         }
     ),
 );
@@ -264,7 +264,7 @@ my $failed_not_your_organization_json =
 is( $failed_not_your_organization_json->{status}, 0, );
 is(
     $failed_not_your_organization_json->{message},
-    'Invalid organization data.',
+    'Invalid organization token.',
 );
 
 my $superadmin_success = request(
@@ -313,7 +313,7 @@ my $superadmin_create_group_success_json =
 is( $superadmin_create_group_success_json->{status}, 1, );
 is(
     $superadmin_create_group_success_json->{message},
-    'User group has been created.',
+    'Organization group has been created.',
 );
 
 isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
@@ -340,7 +340,7 @@ my $superadmin_create_group_other_organization_success_json =
 is( $superadmin_create_group_other_organization_success_json->{status}, 1, );
 is(
     $superadmin_create_group_other_organization_success_json->{message},
-    'User group has been created.',
+    'Organization group has been created.',
 );
 
 isnt( $superadmin_create_group_other_organization_success_json->{_hidden_data},
@@ -362,7 +362,7 @@ is( $admin_user_mega_shop_three_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $admin_user_mega_shop_three_groups_json->{data}->{groups} },
     3, 'This response contains three groups' );
 
-isnt( $admin_user_mega_shop_three_groups->{data}->{groups},
+isnt( $admin_user_mega_shop_three_groups_json->{data}->{groups},
     undef, 'API response contains organization groups' );
 
 isnt(

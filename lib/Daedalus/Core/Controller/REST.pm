@@ -101,7 +101,7 @@ sub return_response {
     my $error_code = $response->{error_code};
     delete $response->{error_code};
 
-    $response->{message} =~ s/^\s+|\s+$//g;
+    $response->{message} =~ s/^\s+|\s+$//g if ( exists $response->{message} );
 
     if ( $response->{_hidden_data} && $response->{_hidden_data}->{user} ) {
         if ( $response->{_hidden_data}->{user}->{is_super_admin} != 1 ) {
