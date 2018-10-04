@@ -287,7 +287,6 @@ sub add_user_to_organization_POST {
         }
         $response->{error_code} = 400;
     }
-    $response->{message} =~ s/^\s+|\s+$//g;
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
 }
@@ -467,13 +466,14 @@ sub create_organization_group_POST {
     my $response;
     my $user_data;
 
-    my %organization_token;
+    my $organization_token;
     my $organization;
     my $organization_data;
 
     my $is_organization_admin;
 
     my $groups;
+    my $group_name;
 
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 

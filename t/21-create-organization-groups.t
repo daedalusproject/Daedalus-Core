@@ -119,7 +119,7 @@ is( $failed_no_group_data->code(), 400, );
 my $failed_no_group_data_json = decode_json( $failed_no_group_data->content );
 
 is( $failed_no_group_data_json->{status},  0, );
-is( $failed_no_group_data_json->{message}, 'No group name provided.', );
+is( $failed_no_group_data_json->{message}, 'Group name not provided.', );
 
 my $failed_no_organization_data = request(
     POST $endpoint,
