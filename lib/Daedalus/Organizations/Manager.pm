@@ -413,5 +413,54 @@ sub create_organization_group {
     return $response;
 }
 
+=head2 list_roles
+
+Lists available roles
+
+=cut
+
+sub list_roles {
+    my $c = shift;
+
+    my $roles = { data => [], _hidden_data => {} };
+
+    my @available_roles = $c->model('CoreRealms::Role')
+      ->search( { role_name => { 'not in' => ['daedalus_manager'] } } )->all;
+
+    for my $role (@available_roles) {
+        push @{ $roles->{data} }, $role->role_name;
+        $roles->{_hidden_data}->{ $role->role_name } = { id => $role->id };
+    }
+    return $roles;
+}
+
+=head2 add_role_to_organization_group
+
+Adds role to organization group.
+
+=cut
+
+sub add_role_to_organization_group {
+    my $c        = shift;
+    my $group_id = shift;
+    my $role_id  = shift;
+
+    my $response;
+    my $role_group = $c->model('CoreRealms::OrganizationGroupRole')->create(
+        {
+            group_id => $group_id,
+            role_id  => $role_id
+        }
+    );
+    $response->{status}     = 1;
+    $response->{error_code} = 400;
+    $response->{message} =
+      'Selected role has been added to organization group.';
+    $response->{_hidden_data}->{organization_group_role}->{id} =
+      $role_group->id;
+
+    return $response;
+
+}
 __PACKAGE__->meta->make_immutable;
 1;
