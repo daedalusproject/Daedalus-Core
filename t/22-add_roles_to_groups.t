@@ -158,7 +158,7 @@ my $failed_no_organization_data_no_group_data_json =
 is( $failed_no_organization_data_no_group_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_group_data_json->{message},
-    'Organization data not provided. Role name not provided.',
+    'Organization token not provided. Group name not provided.',
 );
 
 my $failed_no_organization_data_no_role_data = request(
@@ -294,7 +294,7 @@ my $add_role_to_group_success_json =
 is( $add_role_to_group_success_json->{status}, 1, );
 is(
     $add_role_to_group_success_json->{message},
-    'Organization group has been created.',
+    'Selected role has been added to organization group.',
 );
 
 is( $add_role_to_group_success_json->{_hidden_data}, undef, );
@@ -316,8 +316,11 @@ is( $failed_already_added->code(), 400, );
 
 my $failed_already_added_json = decode_json( $failed_already_added->content );
 
-is( $failed_already_added_json->{status},  0, );
-is( $failed_already_added_json->{message}, 'Duplicated group name.', );
+is( $failed_already_added_json->{status}, 0, );
+is(
+    $failed_already_added_json->{message},
+    'Required role is already assigned to this group.',
+);
 
 # Check group
 
@@ -335,7 +338,7 @@ my $admin_user_mega_shop_groups_json =
 
 is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
-    2, 'This response contains two group' );
+    3, 'This response contains three groups' );
 
 isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
     undef, 'API response contains organization groups' );
@@ -427,7 +430,7 @@ my $superadmin_add_role_success_json =
 is( $superadmin_add_role_success_json->{status}, 1, );
 is(
     $superadmin_add_role_success_json->{message},
-    'Organization group has been created.',
+    'Selected role has been added to organization group.',
 );
 
 isnt( $superadmin_add_role_success_json->{_hidden_data}, undef, );
@@ -441,7 +444,7 @@ my $superadmin_add_role_other_organization_success = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop SuperSysadmins',
+            group_name => 'Mega Shop Sysadmins',
             role_name  => 'health_watcher'
         }
     ),
@@ -455,7 +458,7 @@ my $superadmin_add_role_other_organization_success_json =
 is( $superadmin_add_role_other_organization_success_json->{status}, 1, );
 is(
     $superadmin_add_role_other_organization_success_json->{message},
-    'Organization group has been created.',
+    'Selected role has been added to organization group.',
 );
 
 isnt( $superadmin_add_role_other_organization_success_json->{_hidden_data},

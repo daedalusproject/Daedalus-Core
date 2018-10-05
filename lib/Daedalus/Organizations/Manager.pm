@@ -454,7 +454,8 @@ sub add_role_to_organization_group {
     );
     $response->{status}     = 1;
     $response->{error_code} = 400;
-    $response->{message}    = "Role added.";
+    $response->{message} =
+      'Selected role has been added to organization group.';
     $response->{_hidden_data}->{organization_group_role}->{id} =
       $role_group->id;
 

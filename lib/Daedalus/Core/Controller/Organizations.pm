@@ -671,7 +671,7 @@ sub add_role_group_POST {
                         {
                             $response->{status} = 0;
                             $response->{message} =
-                              "Required is already assigned to this group.";
+"Required role is already assigned to this group.";
                             $response->{error_code} = 400;
                         }
                         else {
