@@ -434,5 +434,32 @@ sub list_roles {
     return $roles;
 }
 
+=head2 add_role_to_organization_group
+
+Adds role to organization group.
+
+=cut
+
+sub add_role_to_organization_group {
+    my $c        = shift;
+    my $group_id = shift;
+    my $role_id  = shift;
+
+    my $response;
+    my $role_group = $c->model('CoreRealms::OrganizationGroupRole')->create(
+        {
+            group_id => $group_id,
+            role_id  => $role_id
+        }
+    );
+    $response->{status}     = 1;
+    $response->{error_code} = 400;
+    $response->{message}    = "Role added.";
+    $response->{_hidden_data}->{organization_group_role}->{id} =
+      $role_group->id;
+
+    return $response;
+
+}
 __PACKAGE__->meta->make_immutable;
 1;
