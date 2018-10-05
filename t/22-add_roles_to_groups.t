@@ -161,7 +161,7 @@ is(
     'Organization data not provided. Role name not provided.',
 );
 
-my $failed_no_organization_data_no_group_data = request(
+my $failed_no_organization_data_no_role_data = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -173,14 +173,14 @@ my $failed_no_organization_data_no_group_data = request(
     ),
 );
 
-is( $failed_no_organization_data_no_group_data->code(), 400, );
-#
-my $failed_no_organization_data_no_group_data_json =
-  decode_json( $failed_no_organization_data_no_group_data->content );
+is( $failed_no_organization_data_no_role_data->code(), 400, );
 
-is( $failed_no_organization_data_no_group_data_json->{status}, 0, );
+my $failed_no_organization_data_no_role_data_json =
+  decode_json( $failed_no_organization_data_no_role_data->content );
+
+is( $failed_no_organization_data_no_role_data_json->{status}, 0, );
 is(
-    $failed_no_organization_data_no_group_data_json->{message},
+    $failed_no_organization_data_no_role_data_json->{message},
     'Group name not provided.',
 );
 
@@ -221,16 +221,14 @@ my $failed_invalid_group_data = request(
     ),
 );
 
-is( $failed_invalid_organization_data->code(), 400, );
+is( $failed_invalid_group_data->code(), 400, );
 
-my $failed_invalid_organization_data_json =
-  decode_json( $failed_invalid_organization_data->content );
+my $failed_invalid_group_data_json =
+  decode_json( $failed_invalid_group_data->content );
 
-is( $failed_invalid_organization_data_json->{status}, 0, );
-is(
-    $failed_invalid_organization_data_json->{message},
-    'Invalid Organization token.',
-);
+is( $failed_invalid_group_data_json->{status}, 0, );
+is( $failed_invalid_group_data_json->{message},
+    'Invalid Organization token.', );
 
 my $failed_group_not_found = request(
     POST $endpoint,
@@ -248,7 +246,7 @@ my $failed_group_not_found = request(
 is( $failed_group_not_found->code(), 400, );
 
 my $failed_group_not_found_json =
-  decode_json( $failed_group_not_found_data->content );
+  decode_json( $failed_group_not_found->content );
 
 is( $failed_group_not_found_json->{status}, 0, );
 is(
@@ -271,8 +269,7 @@ my $failed_role_not_found = request(
 
 is( $failed_role_not_found->code(), 400, );
 
-my $failed_role_not_found_json =
-  decode_json( $failed_role_not_found_data->content );
+my $failed_role_not_found_json = decode_json( $failed_role_not_found->content );
 
 is( $failed_role_not_found_json->{status},  0, );
 is( $failed_role_not_found_json->{message}, 'Requested role does not exist.', );
@@ -368,7 +365,8 @@ my $failed_not_your_organization = request(
         {
             organization_token =>
               'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
-            group_name => 'Daedalus Project Sysadmins' role => 'fireman'
+            group_name => 'Daedalus Project Sysadmins',
+            role       => 'fireman'
         }
     ),
 );
@@ -409,7 +407,7 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-my $superadmin_create_group_success = request(
+my $superadmin_add_role_success = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
@@ -423,20 +421,20 @@ my $superadmin_create_group_success = request(
     ),
 );
 
-is( $superadmin_create_group_success->code(), 200, );
+is( $superadmin_add_role_success->code(), 200, );
 
-my $superadmin_create_group_success_json =
-  decode_json( $superadmin_create_group_success->content );
+my $superadmin_add_role_success_json =
+  decode_json( $superadmin_add_role_success->content );
 
-is( $superadmin_create_group_success_json->{status}, 1, );
+is( $superadmin_add_role_success_json->{status}, 1, );
 is(
-    $superadmin_create_group_success_json->{message},
+    $superadmin_add_role_success_json->{message},
     'Organization group has been created.',
 );
 
-isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
+isnt( $superadmin_add_role_success_json->{_hidden_data}, undef, );
 
-my $superadmin_create_group_other_organization_success = request(
+my $superadmin_add_role_other_organization_success = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
@@ -445,59 +443,47 @@ my $superadmin_create_group_other_organization_success = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop SuperSysadmins'
+            group_name => 'Mega Shop SuperSysadmins',
+            role       => 'health_watcher'
         }
     ),
 );
 
-is( $superadmin_create_group_other_organization_success->code(), 200, );
+is( $superadmin_add_role_other_organization_success->code(), 200, );
 
-my $superadmin_create_group_other_organization_success_json =
-  decode_json( $superadmin_create_group_other_organization_success->content );
+my $superadmin_add_role_other_organization_success_json =
+  decode_json( $superadmin_add_role_other_organization_success->content );
 
-is( $superadmin_create_group_other_organization_success_json->{status}, 1, );
+is( $superadmin_add_role_other_organization_success_json->{status}, 1, );
 is(
-    $superadmin_create_group_other_organization_success_json->{message},
+    $superadmin_add_role_other_organization_success_json->{message},
     'Organization group has been created.',
 );
 
-isnt( $superadmin_create_group_other_organization_success_json->{_hidden_data},
+isnt( $superadmin_add_role_other_organization_success_json->{_hidden_data},
     undef, );
 
-my $admin_user_mega_shop_three_groups = request(
+my $admin_user_mega_shop_two_roles = request(
     GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $admin_user_mega_shop_three_groups->code(), 200, );
+is( $admin_user_mega_shop_two_roles->code(), 200, );
 
-my $admin_user_mega_shop_three_groups_json =
-  decode_json( $admin_user_mega_shop_three_groups->content );
+my $admin_user_mega_shop_two_roles_json =
+  decode_json( $admin_user_mega_shop_two_roles->content );
 
-is( $admin_user_mega_shop_three_groups_json->{status}, 1, 'Status success.' );
-is( keys %{ $admin_user_mega_shop_three_groups_json->{data}->{groups} },
-    3, 'This response contains three groups' );
-
-isnt( $admin_user_mega_shop_three_groups_json->{data}->{groups},
-    undef, 'API response contains organization groups' );
-
-isnt(
-    $admin_user_mega_shop_three_groups_json->{data}->{groups}
-      ->{'Mega Shop SuperSysadmins'},
-    undef, 'Now, Mega Shop SuperSysadmins exists'
-);
+is( $admin_user_mega_shop_two_roles_json->{status}, 1, 'Status success.' );
 
 is(
     scalar @{
-        $admin_user_mega_shop_groups_json->{data}->{groups}
-          ->{'Mega Shop SuperSysadmins'}->{roles}
+        $admin_user_mega_shop_two_roles_json->{data}->{groups}
+          ->{'Mega Shop Sysadmins'}->{roles}
     },
-    0,
-    'For the time being Mega Shop SuperSysadmins has no roles'
+    2,
+    'Mega Shop Sysadmins has two roles'
 );
-
-# Check groups
 
 done_testing();
