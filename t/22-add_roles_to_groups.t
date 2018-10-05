@@ -147,7 +147,7 @@ my $failed_no_organization_data_no_group_data = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( { role => 'fireman' } ),
+    Content       => encode_json( { role_name => 'fireman' } ),
 );
 
 is( $failed_no_organization_data_no_group_data->code(), 400, );
@@ -168,7 +168,7 @@ my $failed_no_organization_data_no_role_data = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            role               => 'fireman'
+            role_name          => 'fireman'
         }
     ),
 );
@@ -192,7 +192,7 @@ my $failed_invalid_organization_data = request(
         {
             organization_token => 'ivalidorganizationtoken',
             group_name         => 'non existen group',
-            role               => 'clowns'                  # There is no clowns
+            role_name          => 'clowns'                  # There is no clowns
         }
     ),
 );
@@ -216,7 +216,7 @@ my $failed_invalid_group_data = request(
         {
             organization_token => 'ivalidorganizationtoken',
             group_name         => 'non existen group',
-            role               => 'clowns'                  # There is no clowns
+            role_name          => 'clowns'                  # There is no clowns
         }
     ),
 );
@@ -238,7 +238,7 @@ my $failed_group_not_found = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_name         => 'Mega Shop Clowns',
-            role               => 'clown'
+            role_name          => 'clown'
         }
     ),
 );
@@ -249,10 +249,8 @@ my $failed_group_not_found_json =
   decode_json( $failed_group_not_found->content );
 
 is( $failed_group_not_found_json->{status}, 0, );
-is(
-    $failed_group_not_found_json->{message},
-    'Requested group does not exist.',
-);
+is( $failed_group_not_found_json->{message},
+    'Required group does not exist.', );
 
 my $failed_role_not_found = request(
     POST $endpoint,
@@ -262,7 +260,7 @@ my $failed_role_not_found = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_name         => 'Mega Shop Sysadmins',
-            role               => 'clown'
+            role_name          => 'clown'
         }
     ),
 );
@@ -272,7 +270,7 @@ is( $failed_role_not_found->code(), 400, );
 my $failed_role_not_found_json = decode_json( $failed_role_not_found->content );
 
 is( $failed_role_not_found_json->{status},  0, );
-is( $failed_role_not_found_json->{message}, 'Requested role does not exist.', );
+is( $failed_role_not_found_json->{message}, 'Required role does not exist.', );
 
 my $add_role_to_group_success = request(
     POST $endpoint,
@@ -283,7 +281,7 @@ my $add_role_to_group_success = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_name         => 'Mega Shop Sysadmins',
-            role               => 'fireman'
+            role_name          => 'fireman'
         }
     ),
 );
@@ -309,7 +307,7 @@ my $failed_already_added = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_name         => 'Mega Shop Sysadmins',
-            role               => 'fireman'
+            role_name          => 'fireman'
         }
     ),
 );
@@ -366,7 +364,7 @@ my $failed_not_your_organization = request(
             organization_token =>
               'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
             group_name => 'Daedalus Project Sysadmins',
-            role       => 'fireman'
+            role_name  => 'fireman'
         }
     ),
 );
@@ -416,7 +414,7 @@ my $superadmin_add_role_success = request(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
             group_name         => 'Daedalus Core Sysadmins',
-            role               => 'fireman'
+            role_name          => 'fireman'
         }
     ),
 );
@@ -444,7 +442,7 @@ my $superadmin_add_role_other_organization_success = request(
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
             group_name => 'Mega Shop SuperSysadmins',
-            role       => 'health_watcher'
+            role_name  => 'health_watcher'
         }
     ),
 );

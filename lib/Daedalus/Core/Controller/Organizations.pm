@@ -565,6 +565,140 @@ sub create_organization_group_POST {
 
 }
 
+sub add_role_group : Path('/organization/addrolegroup') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub add_role_group_POST {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $organization_token;
+    my $organization;
+    my $organization_data;
+
+    my $is_organization_admin;
+
+    my $groups;
+    my $group_name;
+
+    my $role_name;
+    my $available_roles;
+
+    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+
+    if ( $user->{status} == 0 ) {
+        $response = $user;
+        $response->{error_code} = 403;
+    }
+    else {
+        $user_data = $user->{data};
+
+        $organization_token = $c->{request}->{data}->{organization_token};
+        $group_name         = $c->{request}->{data}->{group_name};
+        $role_name          = $c->{request}->{data}->{role_name};
+
+        $response->{message} = "";
+
+        # Organization token and group name must be defined
+        if ( !$organization_token ) {
+            $response->{message} = "Organization token not provided.";
+        }
+        if ( !$group_name ) {
+            $response->{message} =
+              $response->{message} . " Group name not provided.";
+        }
+
+        if ( !$role_name ) {
+            $response->{message} =
+              $response->{message} . " Role name not provided.";
+        }
+
+        if ( $response->{message} ne "" ) {
+            $response->{error_code} = 400;
+            $response->{status}     = 0;
+        }
+        else {
+
+            $organization =
+              Daedalus::Organizations::Manager::get_organization_from_token( $c,
+                $organization_token );
+
+            if ( $organization->{status} == 0 ) {
+                $response = $organization;
+                $response->{error_code} = 400;
+
+            }
+            else {
+                $organization_data = $organization->{organization};
+                $is_organization_admin =
+                  Daedalus::Users::Manager::is_organization_admin(
+                    $c,
+                    $user_data->{_hidden_data}->{user}->{id},
+                    $organization_data->{_hidden_data}->{organization}->{id}
+                  );
+                if (   $is_organization_admin->{status} == 0
+                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
+                    0 )
+
+                {
+                    $response->{status}     = 0;
+                    $response->{message}    = "Invalid organization token.";
+                    $response->{error_code} = 400;
+
+                }
+                else {
+                    $groups =
+                      Daedalus::Organizations::Manager::get_organization_groups(
+                        $c,
+                        $organization_data->{_hidden_data}->{organization}->{id}
+                      );
+
+                    if ( !exists $groups->{data}->{$group_name} ) {
+                        $response->{status}  = 0;
+                        $response->{message} = "Required group does not exist.";
+                        $response->{error_code} = 400;
+                    }
+                    else {
+                        # Check role, name
+                        $available_roles =
+                          Daedalus::Organizations::Manager::list_roles($c);
+                        if ( !exists $available_roles->{_hidden_data}
+                            ->{$role_name} )
+                        {
+                            $response->{status} = 0;
+                            $response->{message} =
+                              "Required role does not exist.";
+                            $response->{error_code} = 400;
+                        }
+                        else {
+                            $response =
+                              Daedalus::Organizations::Manager::add_role_to_organization_group(
+                                $c,
+                                $organization_data->{_hidden_data}
+                                  ->{organization}->{id},
+                                $group_name,
+                                $role_name
+                              );
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
+
+}
+
 =encoding utf8
 
 =head1 AUTHOR
