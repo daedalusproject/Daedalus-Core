@@ -18,7 +18,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -109,7 +109,7 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status}, 0, 'There is no user data.' );
 is(
     $failed_no_data_json->{message},
-    'Invalid user data.',
+    'No e-mail provided. No name provided. No surname provided.',
     'It is required user data to register a new user.'
 );
 
@@ -120,11 +120,7 @@ my $failed_empty_data = request(
     POST '/user/register',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
-    Content       => encode_json(
-        {
-            new_user_data => {},
-        }
-    )
+    Content       => encode_json( {} )
 );
 
 is( $failed_empty_data->code(), 400, );
@@ -134,7 +130,7 @@ my $failed_empty_data_json = decode_json( $failed_empty_data->content );
 is( $failed_empty_data_json->{status}, 0, 'Nothing supplied' );
 is(
     $failed_empty_data_json->{message},
-    'No email supplied.No name supplied.No surname supplied.',
+    'No e-mail provided. No name provided. No surname provided.',
     'new_user_data is empty.'
 );
 
@@ -147,9 +143,7 @@ my $failed_no_email_no_surname = request(
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
         {
-            new_user_data => {
-                name => 'John',
-            },
+            name => 'John',
         }
     )
 );
@@ -162,7 +156,7 @@ my $failed_no_email_no_surname_json =
 is( $failed_no_email_no_surname_json->{status}, 0, 'Only name is supplied' );
 is(
     $failed_no_email_no_surname_json->{message},
-    'No email supplied.No surname supplied.',
+    'No e-mail provided. No surname provided.',
     'new_user_data only contains a name.'
 );
 
@@ -175,9 +169,7 @@ my $failed_no_name_no_surname = request(
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
         {
-            new_user_data => {
-                email => 'never@mind',
-            },
+            'e-mail' => 'never@mind',
         }
     )
 );
@@ -190,7 +182,7 @@ my $failed_no_name_no_surname_json =
 is( $failed_no_name_no_surname_json->{status}, 0, 'Only email is supplied' );
 is(
     $failed_no_name_no_surname_json->{message},
-    'No name supplied.No surname supplied.',
+    'e-mail is invalid. No name provided. No surname provided.',
     'new_user_data only contains an email.'
 );
 
@@ -203,12 +195,9 @@ my $failed_invalid_email = request(
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'invalidemail_example.com',
-                name    => 'somename',
-                surname => 'Some surname',
-
-            },
+            'e-mail' => 'invalidemail_example.com',
+            name     => 'somename',
+            surname  => 'Some surname',
         }
     )
 );
@@ -220,7 +209,7 @@ my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 is( $failed_invalid_email_json->{status}, 0, 'E-mail is invalid.' );
 is(
     $failed_invalid_email_json->{message},
-    'Provided e-mail is invalid.',
+    'e-mail is invalid.',
     'A valid e-mail is required.'
 );
 
@@ -233,12 +222,9 @@ my $failed_duplicated_email = request(
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'notanadmin@daedalus-project.io',
-                name    => 'somename',
-                surname => 'Some surname',
-
-            },
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            name     => 'somename',
+            surname  => 'Some surname',
         }
     )
 );
@@ -264,11 +250,9 @@ my $success_superadmin = request(
     Content_Type  => 'application/json',
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'othernotanadmin@daedalus-project.io',
-                name    => 'Other',
-                surname => 'Not Admin',
-            },
+            'e-mail' => 'othernotanadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'Not Admin',
         }
     )
 );
@@ -294,11 +278,9 @@ my $success_superadmin_other_user = request(
     Content_Type  => 'application/json',
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'othernotanadmin2@daedalus-project.io',
-                name    => 'Other 2',
-                surname => 'Not Admin 2',
-            },
+            'e-mail' => 'othernotanadmin2@daedalus-project.io',
+            name     => 'Other 2',
+            surname  => 'Not Admin 2',
         }
     )
 );
@@ -350,12 +332,10 @@ my $success_no_superadmin_user = request(
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'othernoadmin@daedalus-project.io',
-                name    => 'Other',
-                surname => 'No Admin',
-            },
-        }
+            'e-mail' => 'othernoadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'No Admin',
+        },
     )
 );
 

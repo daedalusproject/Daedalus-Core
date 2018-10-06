@@ -94,11 +94,9 @@ my $success_register_megashops_user = request(
     Content_Type  => 'application/json',
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'shirorobot@megashops.com',
-                name    => 'Shiro',
-                surname => 'Robot',
-            },
+            'e-mail' => 'shirorobot@megashops.com',
+            name     => 'Shiro',
+            surname  => 'Robot',
         }
     )
 );

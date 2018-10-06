@@ -203,11 +203,9 @@ my $yet_other_admin_create_user = request(
     Content_Type  => 'application/json',
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'newothernotanadmin@daedalus-project.io',
-                name    => 'New Other',
-                surname => 'Not Admin',
-            },
+            'e-mail' => 'newothernotanadmin@daedalus-project.io',
+            name     => 'New Other',
+            surname  => 'Not Admin',
         }
     )
 );
