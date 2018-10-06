@@ -143,11 +143,14 @@ sub authorize_and_validate {
     # We expect auth and request parameters as arguments
 
     my $response;
-    my $status = 1;
     my $data;
 
+    $response->{message} = "";
+    $response->{status}  = 1;
+
     # Authorize
-    my $auth = delete $request_data->{auth};
+    my $auth          = delete $request_data->{auth};
+    my $required_data = delete $request_data->{required_data};
 
     # Auth type is user or admin
     my $user;
@@ -161,21 +164,52 @@ sub authorize_and_validate {
         }
 
         if ( $user->{status} == 0 ) {
-            $status   = 0;
+            $response->{status} = 0;
             $response = $user;
         }
         elsif ( $user->{status} == 1 ) {
             $data->{user_data} = $user->{data};
         }
     }
-    if ( $status == 0 ) {
-        $response->{status} = 0;
-    }
-    else {
-        $response->{status} = 1;
-        $response->{data}   = $data;
+    if ( $response->{status} == 1 ) {
+
+        # Auth passed check required_data
+        if ($required_data) {
+            for my $required_data_name ( sort ( keys %{$required_data} ) ) {
+                my $data_properties = $required_data->{$required_data_name};
+                my $value = $c->{request}->{data}->{$required_data_name};
+                if ( $data_properties->{required} == 1 ) {
+                    if ( !( defined $value ) ) {
+                        $response->{status}     = 0;
+                        $response->{error_code} = 400;
+                        $response->{message}    = $response->{message}
+                          . " No $required_data_name provided.";
+                    }
+                }
+                if ( $response->{status} == 1 ) {
+
+                    #Check Type
+                    if ( $data_properties->{type} eq "e-mail" ) {
+                        if (
+                            !Daedalus::Users::Manager::check_email_valid(
+                                $value)
+                          )
+                        {
+                            $response->{status}     = 0;
+                            $response->{error_code} = 400;
+                            $response->{message}    = $response->{message}
+                              . " $required_data_name is invalid.";
+                        }
+                    }
+                    if ( $response->{status} == 1 ) {
+                        $data->{required_data}->{$required_data_name} = $value;
+                    }
+                }
+            }
+        }
     }
 
+    $response->{data} = $data;
     return $response;
 }
 

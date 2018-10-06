@@ -165,6 +165,7 @@ sub get_user_from_session_token {
         }
     }
 
+    $response->{error_code} = 400;
     return $response;
 }
 
@@ -412,107 +413,77 @@ Register a new user.
 
 sub register_new_user {
 
-    my $c               = shift;
-    my $admin_user_data = shift;
+    my $c                   = shift;
+    my $admin_user_data     = shift;
+    my $requested_user_data = shift;
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
     my $response = { status => 1, message => "" };
 
-    my $requested_user_data = $c->{request}->{data}->{new_user_data};
+    my $user_model = $c->model('CoreRealms::User');
+    my $user =
+      $user_model->find( { email => $requested_user_data->{'e-mail'} } );
+    if ($user) {
+        $response->{status}  = 0;
+        $response->{message} = "There already exists a user using this e-mail.";
 
-    my @required_user_data = qw/email name surname/;
-
-    # Check required data
-    for my $data (@required_user_data) {
-        if ( !( exists $requested_user_data->{$data} ) ) {
-            $response->{status} = 0;
-            $response->{message} .= "No $data supplied.";
-        }
-        else {
-            chomp $requested_user_data->{$data};
-        }
     }
+    else {
+        #
+        # Create a user
+        my $api_key    = Daedalus::Utils::Crypt::generateRandomString(32);
+        my $auth_token = Daedalus::Utils::Crypt::generateRandomString(63);
+        my $salt       = Daedalus::Utils::Crypt::generateRandomString(256);
+        my $password   = Daedalus::Utils::Crypt::generateRandomString(256);
+        $password = Daedalus::Utils::Crypt::hashPassword( $password, $salt );
 
-    # Check if email is valid
-    if ( $response->{status} != 0 ) {
-        if ( !( check_email_valid( $requested_user_data->{email} ) ) ) {
-            $response->{status}  = 0;
-            $response->{message} = "Provided e-mail is invalid.";
-        }
-        else {
-            # check if user already exists
-
-            my $user_model = $c->model('CoreRealms::User');
-            my $user =
-              $user_model->find( { email => $requested_user_data->{email} } );
-            if ($user) {
-                $response->{status} = 0;
-                $response->{message} =
-                  "There already exists a user using this e-mail.";
-
+        my $registered_user = $user_model->create(
+            {
+                name       => $requested_user_data->{'name'},
+                surname    => $requested_user_data->{'surname'},
+                email      => $requested_user_data->{'e-mail'},
+                api_key    => $api_key,
+                password   => $password,
+                salt       => $salt,
+                expires    => "3000-01-01",                        #Change it
+                active     => 0,
+                auth_token => $auth_token,
             }
-            else {
-                #
-                # Create a user
-                my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
-                my $auth_token =
-                  Daedalus::Utils::Crypt::generateRandomString(63);
-                my $salt = Daedalus::Utils::Crypt::generateRandomString(256);
-                my $password =
-                  Daedalus::Utils::Crypt::generateRandomString(256);
-                $password =
-                  Daedalus::Utils::Crypt::hashPassword( $password, $salt );
+        );
 
-                my $registered_user = $user_model->create(
-                    {
-                        name       => $requested_user_data->{name},
-                        surname    => $requested_user_data->{surname},
-                        email      => $requested_user_data->{email},
-                        api_key    => $api_key,
-                        password   => $password,
-                        salt       => $salt,
-                        expires    => "3000-01-01",                   #Change it
-                        active     => 0,
-                        auth_token => $auth_token,
-                    }
-                );
+        # Who registers who
+        my $registered_users_model = $c->model('CoreRealms::RegisteredUser');
 
-                # Who registers who
-                my $registered_users_model =
-                  $c->model('CoreRealms::RegisteredUser');
-
-                my $user_registered = $registered_users_model->create(
-                    {
-                        registered_user  => $registered_user->id,
-                        registrator_user => $registrator_user_id,
-                    }
-                );
-
-                $response->{status} = 1;
-
-                $response->{message} = "User has been registered.";
-
-                $response->{_hidden_data} = {
-                    new_user => {
-                        email      => $registered_user->email,
-                        auth_token => $registered_user->auth_token,
-                        id         => $registered_user->id,
-                    },
-                };
-
-                # Send notification to new user
-                notify_new_user(
-                    $c,
-                    {
-                        email      => $registered_user->email,
-                        auth_token => $registered_user->auth_token,
-                        name       => $registered_user->name,
-                        surname    => $registered_user->surname
-                    }
-                );
+        my $user_registered = $registered_users_model->create(
+            {
+                registered_user  => $registered_user->id,
+                registrator_user => $registrator_user_id,
             }
-        }
+        );
+
+        $response->{status} = 1;
+
+        $response->{message} = "User has been registered.";
+
+        $response->{_hidden_data} = {
+            new_user => {
+                email      => $registered_user->email,
+                auth_token => $registered_user->auth_token,
+                id         => $registered_user->id,
+            },
+        };
+
+        # Send notification to new user
+        notify_new_user(
+            $c,
+            {
+                email      => $registered_user->email,
+                auth_token => $registered_user->auth_token,
+                name       => $registered_user->name,
+                surname    => $registered_user->surname
+            }
+        );
     }
 
     return $response;

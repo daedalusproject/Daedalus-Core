@@ -96,31 +96,44 @@ sub register_new_user_POST {
 
     my $response;
     my $user_data;
+    my $required_data;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    my $authorizeation_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+            required_data => {
+                'e-mail' => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+                name => {
+                    type     => "string",
+                    required => 1,
+                },
+                surname => {
+                    type     => "string",
+                    required => 1,
+                },
+            }
+        }
+    );
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
     }
     else {
-        $user_data = $user->{data};
-        if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
-            $response->{status}     = 0;
-            $response->{message}    = "Invalid user data.";
-            $response->{error_code} = 400;
+        $user_data = $authorizeation_and_validatation->{data}->{user_data};
+        $required_data =
+          $authorizeation_and_validatation->{data}->{required_data};
 
-        }
-        else {
-            $response =
-              Daedalus::Users::Manager::register_new_user( $c, $user_data );
-            $response->{error_code} = 400;
-            if ( !exists( $response->{_hidden_data} ) ) {
-                $response->{_hidden_data} = {};
-            }
-            $response->{_hidden_data}->{user} =
-              $user_data->{_hidden_data}->{user};
-        }
+        $response =
+          Daedalus::Users::Manager::register_new_user( $c, $user_data,
+            $required_data );
+        $response->{error_code} = 400;
+        $response->{_hidden_data}->{user} =
+          $user_data->{_hidden_data}->{user};
     }
 
     return $self->return_response( $c, $response );
