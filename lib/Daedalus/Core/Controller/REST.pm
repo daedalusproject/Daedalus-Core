@@ -127,6 +127,58 @@ sub return_response {
     }
 }
 
+=head2 authorize_and_validate
+
+Checks user or admin user, stops request processing if it is not valid.
+
+Checks requested data, if they does not exists or have incorrect format (hashmaps too), stops request processing if it
+is no valid.
+
+=cut
+
+sub authorize_and_validate {
+
+    my ( $self, $c, $request_data ) = @_;
+
+    # We expect auth and request parameters as arguments
+
+    my $response;
+    my $status = 1;
+    my $data;
+
+    # Authorize
+    my $auth = delete $request_data->{auth};
+
+    # Auth type is user or admin
+    my $user;
+
+    if ($auth) {
+        if ( $auth->{type} eq "user" ) {
+            $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+        }
+        elsif ( $auth->{type} eq "admin" ) {
+            $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+        }
+
+        if ( $user->{status} == 0 ) {
+            $status   = 0;
+            $response = $user;
+        }
+        elsif ( $user->{status} == 1 ) {
+            $data->{user_data} = $user->{data};
+        }
+    }
+    if ( $status == 0 ) {
+        $response->{status} = 0;
+    }
+    else {
+        $response->{status} = 1;
+        $response->{data}   = $data;
+    }
+
+    return $response;
+}
+
 =encoding utf8
 
 =head1 AUTHOR

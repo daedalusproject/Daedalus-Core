@@ -67,13 +67,13 @@ sub im_admin_GET {
 
     my $response;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-    my $user_data;
+    my $authorizeation_and_validatation =
+      $self->authorize_and_validate( $c, { auth => { type => "admin" } } );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
     }
-    else {
+    elsif ( $authorizeation_and_validatation->{status} == 1 ) {
         $response->{status}  = 1;
         $response->{message} = "You are an admin user.";
     }
