@@ -45,9 +45,33 @@ sub login : Path('/user/login') : Args(0) : ActionClass('REST') {
 sub login_POST {
     my ( $self, $c ) = @_;
 
-    my $response = Daedalus::Users::Manager::auth_user($c);
+    my $required_data;
+    my $response;
 
-    $response->{error_code} = 403;
+    my $authorizeation_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            required_data => {
+                'e-mail' => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+                password => {
+                    type     => "password",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
+    }
+    else {
+        $required_data =
+          $authorizeation_and_validatation->{data}->{required_data};
+        $response = Daedalus::Users::Manager::auth_user( $c, $required_data );
+    }
 
     $self->return_response( $c, $response );
 }

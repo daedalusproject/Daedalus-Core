@@ -208,19 +208,22 @@ with database info.
 
 sub auth_user {
 
-    my $c    = shift;
-    my $auth = $c->{request}->{data}->{auth};
+    my $c             = shift;
+    my $required_data = shift;
 
     my $response;
     my $user_data;
 
+    $response->{error_code} = 403;
+
     # Get user from model
-    my $user = get_user_from_email( $c, $auth->{email} );
+    my $user = get_user_from_email( $c, $required_data->{'e-mail'} );
     if ($user) {
         if (
             !(
                 check_user_passwrd(
-                    $auth->{password}, $user->salt, $user->password
+                    $required_data->{'password'}, $user->salt,
+                    $user->password
                 )
             )
             || ( $user->active == 0 )
