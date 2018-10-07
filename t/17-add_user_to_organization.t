@@ -14,17 +14,15 @@ my $endpoint = '/organization/adduser';
 my $failed_because_no_auth_token =
   request( POST $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth_token->code(), 403, );
+is( $failed_because_no_auth_token->code(), 400, );
 
 my $failed_because_no_auth_token_json =
   decode_json( $failed_because_no_auth_token->content );
 
-is_deeply(
-    $failed_because_no_auth_token_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
+is( $failed_because_no_auth_token_json->{status}, 0, );
+is(
+    $failed_because_no_auth_token_json->{message},
+    'No session token provided.',
 );
 
 my $non_admin_success = request(
@@ -32,10 +30,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -69,10 +65,8 @@ my $admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -94,11 +88,9 @@ my $success_register_megashops_user = request(
     Content_Type  => 'application/json',
     Content       => encode_json(
         {
-            new_user_data => {
-                email   => 'shirorobot@megashops.com',
-                name    => 'Shiro',
-                surname => 'Robot',
-            },
+            'e-mail' => 'shirorobot@megashops.com',
+            name     => 'Shiro',
+            surname  => 'Robot',
         }
     )
 );
@@ -119,7 +111,7 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status}, 0, );
 is(
     $failed_no_data_json->{message},
-    'No organization data neither user info provided.',
+    'No organization_token provided. No user_email provided.',
 );
 
 my $failed_no_user_data = request(
@@ -132,11 +124,11 @@ my $failed_no_user_data = request(
 );
 
 is( $failed_no_user_data->code(), 400, );
-#
+
 my $failed_no_user_data_json = decode_json( $failed_no_user_data->content );
 
 is( $failed_no_user_data_json->{status},  0, );
-is( $failed_no_user_data_json->{message}, 'No user e-mail provided.', );
+is( $failed_no_user_data_json->{message}, 'No user_email provided.', );
 
 my $failed_no_organization_data = request(
     POST $endpoint,
@@ -153,7 +145,7 @@ my $failed_no_organization_data_json =
 is( $failed_no_organization_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_json->{message},
-    'Invalid Organization token. User e-mail invalid.',
+    'No organization_token provided.',
 );
 
 my $failed_invalid_data = request(
@@ -175,7 +167,8 @@ my $failed_invalid_data_json = decode_json( $failed_invalid_data->content );
 is( $failed_invalid_data_json->{status}, 0, );
 is(
     $failed_invalid_data_json->{message},
-    'Invalid Organization token. User e-mail invalid.',
+    'user_email is invalid.',
+    "e-mail is checked first"
 );
 
 my $failed_invalid_organization_data_email_not_found = request(
@@ -218,7 +211,7 @@ is( $failed_invalid_email->code(), 400, );
 my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
 is( $failed_invalid_email_json->{status},  0, );
-is( $failed_invalid_email_json->{message}, 'User e-mail invalid.', );
+is( $failed_invalid_email_json->{message}, 'user_email is invalid.', );
 
 my $failed_email_not_found = request(
     POST $endpoint,
@@ -238,7 +231,7 @@ my $failed_email_not_found_json =
   decode_json( $failed_email_not_found->content );
 
 is( $failed_email_not_found_json->{status},  0, );
-is( $failed_email_not_found_json->{message}, 'User e-mail invalid.', );
+is( $failed_email_not_found_json->{message}, 'user_email is invalid.', );
 
 my $failed_inactive_user = request(
     POST $endpoint,
@@ -349,10 +342,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );

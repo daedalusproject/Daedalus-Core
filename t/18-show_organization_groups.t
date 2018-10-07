@@ -25,23 +25,16 @@ is( $failed_because_no_auth->code(), 403, );
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is_deeply(
-    $failed_because_no_auth_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
-);
+is( $failed_because_no_auth_json->{status},  0, );
+is( $failed_because_no_auth_json->{message}, "No session token provided.", );
 
 my $admin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -117,10 +110,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );

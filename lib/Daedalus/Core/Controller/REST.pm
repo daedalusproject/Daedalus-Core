@@ -127,6 +127,92 @@ sub return_response {
     }
 }
 
+=head2 authorize_and_validate
+
+Checks user or admin user, stops request processing if it is not valid.
+
+Checks requested data, if they does not exists or have incorrect format (hashmaps too), stops request processing if it
+is no valid.
+
+=cut
+
+sub authorize_and_validate {
+
+    my ( $self, $c, $request_data ) = @_;
+
+    # We expect auth and request parameters as arguments
+
+    my $response;
+    my $data;
+
+    $response->{message} = "";
+    $response->{status}  = 1;
+
+    # Authorize
+    my $auth          = delete $request_data->{auth};
+    my $required_data = delete $request_data->{required_data};
+
+    # Auth type is user or admin
+    my $user;
+
+    if ($auth) {
+        if ( $auth->{type} eq "user" ) {
+            $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+        }
+        elsif ( $auth->{type} eq "admin" ) {
+            $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+        }
+
+        if ( $user->{status} == 0 ) {
+            $response->{status} = 0;
+            $response = $user;
+        }
+        elsif ( $user->{status} == 1 ) {
+            $data->{user_data} = $user->{data};
+        }
+    }
+    if ( $response->{status} == 1 ) {
+
+        # Auth passed check required_data
+        if ($required_data) {
+            for my $required_data_name ( sort ( keys %{$required_data} ) ) {
+                my $data_properties = $required_data->{$required_data_name};
+                my $value = $c->{request}->{data}->{$required_data_name};
+                if ( $data_properties->{required} == 1 ) {
+                    if ( !( defined $value ) ) {
+                        $response->{status}     = 0;
+                        $response->{error_code} = 400;
+                        $response->{message}    = $response->{message}
+                          . " No $required_data_name provided.";
+                    }
+                }
+                if ( $response->{status} == 1 ) {
+
+                    #Check Type
+                    if ( $data_properties->{type} eq "e-mail" ) {
+                        if (
+                            !Daedalus::Users::Manager::check_email_valid(
+                                $value)
+                          )
+                        {
+                            $response->{status}     = 0;
+                            $response->{error_code} = 400;
+                            $response->{message}    = $response->{message}
+                              . " $required_data_name is invalid.";
+                        }
+                    }
+                    if ( $response->{status} == 1 ) {
+                        $data->{required_data}->{$required_data_name} = $value;
+                    }
+                }
+            }
+        }
+    }
+
+    $response->{data} = $data;
+    return $response;
+}
+
 =encoding utf8
 
 =head1 AUTHOR

@@ -45,9 +45,33 @@ sub login : Path('/user/login') : Args(0) : ActionClass('REST') {
 sub login_POST {
     my ( $self, $c ) = @_;
 
-    my $response = Daedalus::Users::Manager::auth_user($c);
+    my $required_data;
+    my $response;
 
-    $response->{error_code} = 403;
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            required_data => {
+                'e-mail' => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+                password => {
+                    type     => "password",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $required_data =
+          $authorization_and_validatation->{data}->{required_data};
+        $response = Daedalus::Users::Manager::auth_user( $c, $required_data );
+    }
 
     $self->return_response( $c, $response );
 }
@@ -67,13 +91,13 @@ sub im_admin_GET {
 
     my $response;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-    my $user_data;
+    my $authorization_and_validatation =
+      $self->authorize_and_validate( $c, { auth => { type => "admin" } } );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
     }
-    else {
+    elsif ( $authorization_and_validatation->{status} == 1 ) {
         $response->{status}  = 1;
         $response->{message} = "You are an admin user.";
     }
@@ -96,31 +120,44 @@ sub register_new_user_POST {
 
     my $response;
     my $user_data;
+    my $required_data;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+            required_data => {
+                'e-mail' => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+                name => {
+                    type     => "string",
+                    required => 1,
+                },
+                surname => {
+                    type     => "string",
+                    required => 1,
+                },
+            }
+        }
+    );
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
     }
     else {
-        $user_data = $user->{data};
-        if ( !exists( $c->{request}->{data}->{new_user_data} ) ) {
-            $response->{status}     = 0;
-            $response->{message}    = "Invalid user data.";
-            $response->{error_code} = 400;
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $required_data =
+          $authorization_and_validatation->{data}->{required_data};
 
-        }
-        else {
-            $response =
-              Daedalus::Users::Manager::register_new_user( $c, $user_data );
-            $response->{error_code} = 400;
-            if ( !exists( $response->{_hidden_data} ) ) {
-                $response->{_hidden_data} = {};
-            }
-            $response->{_hidden_data}->{user} =
-              $user_data->{_hidden_data}->{user};
-        }
+        $response =
+          Daedalus::Users::Manager::register_new_user( $c, $user_data,
+            $required_data );
+        $response->{error_code} = 400;
+        $response->{_hidden_data}->{user} =
+          $user_data->{_hidden_data}->{user};
     }
 
     return $self->return_response( $c, $response );
@@ -144,13 +181,20 @@ sub show_registered_users_GET {
     my $user_data;
 
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Users::Manager::show_registered_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
@@ -174,8 +218,29 @@ sub confirm_register_POST {
     my ( $self, $c ) = @_;
     my $response;
 
-    $response = Daedalus::Users::Manager::confirm_registration($c);
-    $response->{error_code} = 400;
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            required_data => {
+                'auth_token' => {
+                    type     => "string",
+                    required => 1,
+                },
+                password => {
+                    type     => "string",
+                    required => 0,
+                },
+            }
+        }
+    );
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $response = Daedalus::Users::Manager::confirm_registration( $c,
+            $authorization_and_validatation->{data}->{required_data} );
+    }
+
     $self->return_response( $c, $response );
 }
 
@@ -196,14 +261,21 @@ sub show_inactive_users_GET {
     my $response;
     my $user_data;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Users::Manager::show_inactive_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
@@ -232,14 +304,21 @@ sub show_active_users_GET {
     my $response;
     my $user_data;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Users::Manager::show_active_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
@@ -268,18 +347,26 @@ sub show_orphan_users_GET {
     my $response;
     my $user_data;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Users::Manager::show_orphan_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
+        $response->{error_code} = 400;
     }
 
     $self->return_response( $c, $response );

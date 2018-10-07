@@ -14,17 +14,15 @@ my $endpoint = '/organization/addrolegroup';
 my $failed_because_no_auth_token =
   request( POST $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth_token->code(), 403, );
+is( $failed_because_no_auth_token->code(), 400, );
 
 my $failed_because_no_auth_token_json =
   decode_json( $failed_because_no_auth_token->content );
 
-is_deeply(
-    $failed_because_no_auth_token_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
+is( $failed_because_no_auth_token_json->{status}, 0, );
+is(
+    $failed_because_no_auth_token_json->{message},
+    "No session token provided.",
 );
 
 my $non_admin_success = request(
@@ -32,10 +30,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -69,10 +65,8 @@ my $admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -102,7 +96,7 @@ my $failed_no_data_json = decode_json( $failed_no_data->content );
 is( $failed_no_data_json->{status}, 0, );
 is(
     $failed_no_data_json->{message},
-'Organization token not provided. Group name not provided. Role name not provided.',
+'No group_name provided. No organization_token provided. No role_name provided.',
 );
 
 my $failed_no_group_data_no_role = request(
@@ -122,7 +116,7 @@ my $failed_no_group_data_no_role_json =
 is( $failed_no_group_data_no_role_json->{status}, 0, );
 is(
     $failed_no_group_data_no_role_json->{message},
-    'Group name not provided. Role name not provided.',
+    'No group_name provided. No role_name provided.',
 );
 
 my $failed_no_organization_data_no_role = request(
@@ -140,7 +134,7 @@ my $failed_no_organization_data_no_role_json =
 is( $failed_no_organization_data_no_role_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_role_json->{message},
-    'Organization token not provided. Role name not provided.',
+    'No organization_token provided. No role_name provided.',
 );
 
 my $failed_no_organization_data_no_group_data = request(
@@ -158,7 +152,7 @@ my $failed_no_organization_data_no_group_data_json =
 is( $failed_no_organization_data_no_group_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_group_data_json->{message},
-    'Organization token not provided. Group name not provided.',
+    'No group_name provided. No organization_token provided.',
 );
 
 my $failed_no_organization_data_no_role_data = request(
@@ -181,7 +175,7 @@ my $failed_no_organization_data_no_role_data_json =
 is( $failed_no_organization_data_no_role_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_role_data_json->{message},
-    'Group name not provided.',
+    'No group_name provided.',
 );
 
 my $failed_invalid_organization_data = request(
@@ -388,10 +382,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );

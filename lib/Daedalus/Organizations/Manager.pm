@@ -39,105 +39,96 @@ Creates a new Organization
 
 sub create_organization {
 
-    my $c         = shift;
-    my $user_data = shift;
+    my $c             = shift;
+    my $user_data     = shift;
+    my $required_data = shift;
 
     my $response;
     my $user_id;
 
-    my $organization_data = $c->{request}->{data}->{organization_data};
+    my $request_organization_name = $required_data->{name};
+    chomp $request_organization_name;
 
-    my $request_organization_name = $organization_data->{name};
-    if ( !$request_organization_name ) {
-        $response->{status}     = 0;
-        $response->{message}    = "Invalid organization data.";
-        $response->{error_code} = 400;
+    $user_id = $user_data->{_hidden_data}->{user}->{id};
+
+    my @user_organizations_rs = $c->model('CoreRealms::UserOrganization')
+      ->search( { user_id => $user_id } )->all;
+
+    my @organization_names;
+
+    for my $user_organization (@user_organizations_rs) {
+        push @organization_names, $user_organization->organization()->name;
+    }
+
+    if ( grep( /^$request_organization_name$/, @organization_names ) ) {
+        $response = {
+            status     => 0,
+            error_code => 400,
+            message    => 'Duplicated organization name.',
+        };
+
     }
     else {
-        chomp $request_organization_name;
 
-        $user_id = $user_data->{_hidden_data}->{user}->{id};
+        # Get organization_master role id
 
-        my @user_organizations_rs = $c->model('CoreRealms::UserOrganization')
-          ->search( { user_id => $user_id } )->all;
+        my $organization_master_role_id = $c->model('CoreRealms::Role')
+          ->find( { 'role_name' => 'organization_master' } )->id;
 
-        my @organization_names;
+        # Create Organization
 
-        for my $user_organization (@user_organizations_rs) {
-            push @organization_names, $user_organization->organization()->name;
-        }
+        my $organization_token =
+          Daedalus::Utils::Crypt::generateRandomString(32);
+        my $organization = $c->model('CoreRealms::Organization')->create(
+            {
+                name  => $request_organization_name,
+                token => $organization_token
+            }
+        );
 
-        if ( grep( /^$request_organization_name$/, @organization_names ) ) {
-            $response = {
-                status     => 0,
-                error_code => 400,
-                message    => 'Duplicated organization name.',
-            };
+        # Add user to Organization
+        my $user_organization =
+          $c->model('CoreRealms::UserOrganization')->create(
+            {
+                organization_id => $organization->id,
+                user_id         => $user_id,
+            }
+          );
 
-        }
-        else {
+        # Create an organization admin group
 
-            # Get organization_master role id
+        my $organization_group =
+          $c->model('CoreRealms::OrganizationGroup')->create(
+            {
+                organization_id => $organization->id,
+                group_name => "$request_organization_name" . " Administrators",
+            }
+          );
 
-            my $organization_master_role_id = $c->model('CoreRealms::Role')
-              ->find( { 'role_name' => 'organization_master' } )->id;
+        # This group has orgaization_master role
+        my $organization_group_role =
+          $c->model('CoreRealms::OrganizationGroupRole')->create(
+            {
+                group_id => $organization_group->id,
+                role_id  => $organization_master_role_id,
+            }
+          );
 
-            # Create Organization
-
-            my $organization_token =
-              Daedalus::Utils::Crypt::generateRandomString(32);
-            my $organization = $c->model('CoreRealms::Organization')->create(
-                {
-                    name  => $request_organization_name,
-                    token => $organization_token
-                }
-            );
-
-            # Add user to Organization
-            my $user_organization =
-              $c->model('CoreRealms::UserOrganization')->create(
-                {
-                    organization_id => $organization->id,
-                    user_id         => $user_id,
-                }
-              );
-
-            # Create an organization admin group
-
-            my $organization_group =
-              $c->model('CoreRealms::OrganizationGroup')->create(
-                {
-                    organization_id => $organization->id,
-                    group_name      => "$request_organization_name"
-                      . " Administrators",
-                }
-              );
-
-            # This group has orgaization_master role
-            my $organization_group_role =
-              $c->model('CoreRealms::OrganizationGroupRole')->create(
-                {
-                    group_id => $organization_group->id,
-                    role_id  => $organization_master_role_id,
-                }
-              );
-
-            $response = {
-                status  => 1,
-                message => 'Organization created.',
-                data    => {
-                    organization => {
-                        organization_token => $organization->token,
-                    },
+        $response = {
+            status  => 1,
+            message => 'Organization created.',
+            data    => {
+                organization => {
+                    organization_token => $organization->token,
                 },
-                _hidden_data => {
-                    organization => {
-                        organization_id => $organization->id,
-                    },
+            },
+            _hidden_data => {
+                organization => {
+                    organization_id => $organization->id,
                 },
-            };
+            },
+        };
 
-        }
     }
     return $response;
 }
