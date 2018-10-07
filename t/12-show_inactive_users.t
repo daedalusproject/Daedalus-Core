@@ -24,13 +24,8 @@ is( $failed_because_no_auth->code(), 403, );
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is_deeply(
-    $failed_because_no_auth_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
-);
+is( $failed_because_no_auth_json->{status},  0, );
+is( $failed_because_no_auth_json->{message}, 'No session token provided.', );
 
 my $non_admin_success = request(
     POST '/user/login',
