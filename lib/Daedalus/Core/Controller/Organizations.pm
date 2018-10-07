@@ -50,7 +50,7 @@ sub create_organization_POST {
     my $user_data;
     my $required_data;
 
-    my $authorizeation_and_validatation = $self->authorize_and_validate(
+    my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
             auth => {
@@ -67,13 +67,13 @@ sub create_organization_POST {
 
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
-    if ( $authorizeation_and_validatation->{status} == 0 ) {
-        $response = $authorizeation_and_validatation;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
     }
     else {
-        $user_data = $authorizeation_and_validatation->{data}->{user_data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $required_data =
-          $authorizeation_and_validatation->{data}->{required_data};
+          $authorization_and_validatation->{data}->{required_data};
         $response =
           Daedalus::Organizations::Manager::create_organization( $c,
             $user_data, $required_data );
