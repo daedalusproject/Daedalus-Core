@@ -48,18 +48,35 @@ sub create_organization_POST {
 
     my $response;
     my $user_data;
+    my $required_data;
+
+    my $authorizeation_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+            required_data => {
+                'name' => {
+                    name     => "string",
+                    required => 1,
+                },
+            }
+        }
+    );
 
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorizeation_and_validatation->{data}->{user_data};
+        $required_data =
+          $authorizeation_and_validatation->{data}->{required_data};
         $response =
           Daedalus::Organizations::Manager::create_organization( $c,
-            $user_data );
+            $user_data, $required_data );
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
     }

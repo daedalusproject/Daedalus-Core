@@ -12,17 +12,15 @@ use HTTP::Request::Common;
 my $failed_because_no_auth_token =
   request( POST '/organization/create', Content_Type => 'application/json', );
 
-is( $failed_because_no_auth_token->code(), 403, );
+is( $failed_because_no_auth_token->code(), 400, );
 
 my $failed_because_no_auth_token_json =
   decode_json( $failed_because_no_auth_token->content );
 
-is_deeply(
-    $failed_because_no_auth_token_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
+is( $failed_because_no_auth_token_json->{status}, 0, );
+is(
+    $failed_because_no_auth_token_json->{message},
+    'No session token provided.',
 );
 
 my $non_admin_success = request(
@@ -82,25 +80,11 @@ my $admin_session_token = $admin_success_json->{data}->{session_token};
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
-my $failed_no_data = request(
-    POST '/organization/create',
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( {} )
-);
-
-is( $failed_no_data->code(), 400, );
-#
-my $failed_no_data_json = decode_json( $failed_no_data->content );
-
-is( $failed_no_data_json->{status},  0, );
-is( $failed_no_data_json->{message}, 'Invalid organization data.', );
-
 my $failed_no_name = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( { organization_data => {} } ),
+    Content       => encode_json( {} ),
 );
 
 is( $failed_no_name->code(), 400, );
@@ -108,13 +92,13 @@ is( $failed_no_name->code(), 400, );
 my $failed_no_name_json = decode_json( $failed_no_name->content );
 
 is( $failed_no_name_json->{status},  0, );
-is( $failed_no_name_json->{message}, 'Invalid organization data.', );
+is( $failed_no_name_json->{message}, 'No name provided.', );
 
 my $success = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content => encode_json( { organization_data => { name => "Supershops" } } ),
+    Content       => encode_json( { name => "Supershops" } ),
 );
 
 is( $success->code(), 200, );
@@ -130,7 +114,7 @@ my $duplicated_name_fails = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content => encode_json( { organization_data => { name => "Supershops" } } ),
+    Content       => encode_json( { name => "Supershops" } ),
 );
 
 is( $duplicated_name_fails->code(), 400, );
@@ -166,7 +150,7 @@ my $superadmin_success = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
-    Content => encode_json( { organization_data => { name => "Ultrashops" } } ),
+    Content       => encode_json( { name => "Ultrashops" } ),
 );
 
 is( $superadmin_success->code(), 200, );
@@ -182,8 +166,7 @@ my $superadmin_failed_duplicated_name = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
-    Content => encode_json( { organization_data => { name => "Ultrashops" } } )
-    ,    #Repeated name
+    Content       => encode_json( { name => "Ultrashops" } ),    #Repeated name
 );
 
 is( $superadmin_failed_duplicated_name->code(), 400, );
