@@ -48,8 +48,9 @@ __PACKAGE__->table("users");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 email
+=head2 e-mail
 
+  accessor: 'e_mail'
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
@@ -138,12 +139,13 @@ __PACKAGE__->add_columns(
         is_auto_increment => 1,
         is_nullable       => 0,
     },
-    "email",
+    "e-mail",
     {
+        accessor      => "e_mail",
         data_type     => "varchar",
         default_value => "",
         is_nullable   => 0,
-        size          => 255
+        size          => 255,
     },
     "name",
     {
@@ -234,13 +236,13 @@ __PACKAGE__->set_primary_key("id");
 
 =over 4
 
-=item * L</email>
+=item * L</e-mail>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint( "unique_email", ["email"] );
+__PACKAGE__->add_unique_constraint( "unique_email", ["e-mail"] );
 
 =head1 RELATIONS
 
@@ -304,8 +306,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-06 04:07:18
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:n04xd2kZTY/r4QH4SgqkHQ
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-10-07 09:38:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GsC4mrbR/c+xyUBsmJFXoA
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

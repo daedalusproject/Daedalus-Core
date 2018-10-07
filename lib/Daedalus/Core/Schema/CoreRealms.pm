@@ -11,7 +11,7 @@ extends 'DBIx::Class::Schema';
 
 __PACKAGE__->load_namespaces;
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-09-06 04:07:18
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ktRZEHica1SMRYQpH4Sa3A
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-10-07 09:38:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Dr48s9Ek2SutJfIdPrWr/g
 __PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 1;
