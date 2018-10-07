@@ -75,7 +75,7 @@ sub get_user_from_email {
     my $c     = shift;
     my $email = shift;
 
-    my $user = $c->model('CoreRealms::User')->find( { email => $email } );
+    my $user = $c->model('CoreRealms::User')->find( { 'email' => $email } );
 
     return $user;
 }
@@ -88,12 +88,12 @@ sub get_user_data {
 
     $response->{data} = {
         user => {
-            email   => $user->email,
-            name    => $user->name,
-            surname => $user->surname,
-            phone   => $user->phone,
-            api_key => $user->api_key,
-            active  => $user->active,
+            'e-mail' => $user->email,
+            name     => $user->name,
+            surname  => $user->surname,
+            phone    => $user->phone,
+            api_key  => $user->api_key,
+            active   => $user->active,
         },
     };
 
@@ -426,7 +426,7 @@ sub register_new_user {
 
     my $user_model = $c->model('CoreRealms::User');
     my $user =
-      $user_model->find( { email => $requested_user_data->{'e-mail'} } );
+      $user_model->find( { 'email' => $requested_user_data->{'e-mail'} } );
     if ($user) {
         $response->{status}  = 0;
         $response->{message} = "There already exists a user using this e-mail.";
@@ -471,7 +471,7 @@ sub register_new_user {
 
         $response->{_hidden_data} = {
             new_user => {
-                email      => $registered_user->email,
+                'e-mail'   => $registered_user->email,
                 auth_token => $registered_user->auth_token,
                 id         => $registered_user->id,
             },
@@ -481,7 +481,7 @@ sub register_new_user {
         notify_new_user(
             $c,
             {
-                email      => $registered_user->email,
+                'e-mail'   => $registered_user->email,
                 auth_token => $registered_user->auth_token,
                 name       => $registered_user->name,
                 surname    => $registered_user->surname
@@ -523,7 +523,7 @@ sub show_registered_users {
         $user = {
             data => {
                 registered_user => {
-                    email    => $registered_user->registered_user->email,
+                    'e-mail' => $registered_user->registered_user->email,
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
@@ -543,10 +543,10 @@ sub show_registered_users {
             },
         };
         $users->{data}->{registered_users}
-          ->{ $user->{data}->{registered_user}->{email} } =
+          ->{ $user->{data}->{registered_user}->{'e-mail'} } =
           $user->{data}->{registered_user};
         $users->{_hidden_data}->{registered_users}
-          ->{ $user->{data}->{registered_user}->{email} } =
+          ->{ $user->{data}->{registered_user}->{'e-mail'} } =
           $user->{_hidden_data}->{registered_user};
     }
 
@@ -738,10 +738,10 @@ sub get_organization_users {
         # There are always almost one user here
         #if ( !exists( $response->{data}->{users}->{ $user->email } ) ) {
         $response->{data}->{users}->{ $user->email } = {
-            email   => $user->email,
-            name    => $user->name,
-            surname => $user->surname,
-            phone   => $user->phone,
+            'e-mail' => $user->email,
+            name     => $user->name,
+            surname  => $user->surname,
+            phone    => $user->phone,
         };
 
         if ($is_super_admin) {

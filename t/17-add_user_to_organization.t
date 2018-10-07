@@ -32,10 +32,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -69,10 +67,8 @@ my $admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -130,7 +126,7 @@ my $failed_no_user_data = request(
 );
 
 is( $failed_no_user_data->code(), 400, );
-#
+
 my $failed_no_user_data_json = decode_json( $failed_no_user_data->content );
 
 is( $failed_no_user_data_json->{status},  0, );
@@ -347,10 +343,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );

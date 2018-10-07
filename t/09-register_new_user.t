@@ -35,10 +35,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -76,10 +74,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );
@@ -268,7 +264,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_json->{_hidden_data}->{new_user}->{email},
+    $success_superadmin_json->{_hidden_data}->{new_user}->{'e-mail'},
     'othernotanadmin@daedalus-project.io',
 );
 
@@ -298,7 +294,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_other_user_json->{_hidden_data}->{new_user}->{email},
+    $success_superadmin_other_user_json->{_hidden_data}->{new_user}->{'e-mail'},
     'othernotanadmin2@daedalus-project.io',
 );
 
@@ -307,10 +303,8 @@ my $admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -359,10 +353,8 @@ my $inactive_user_cant_login = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'inactiveuser@daedalus-project.io',
-                password => 'N0b0d7car5_;___',
-            },
+            'e-mail' => 'inactiveuser@daedalus-project.io',
+            password => 'N0b0d7car5_;___',
         }
     )
 );

@@ -243,10 +243,8 @@ my $login_works = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'inactiveuser@daedalus-project.io',
-                password => 'val1d_Pa55w0rd',
-            }
+            'e-mail' => 'inactiveuser@daedalus-project.io',
+            password => 'val1d_Pa55w0rd',
         }
     )
 );
