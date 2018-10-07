@@ -181,13 +181,20 @@ sub show_registered_users_GET {
     my $user_data;
 
     my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    my $authorizeation_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorizeation_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Users::Manager::show_registered_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
