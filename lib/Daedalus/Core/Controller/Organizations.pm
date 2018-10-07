@@ -205,8 +205,6 @@ sub add_user_to_organization_POST {
 
     my ( $self, $c ) = @_;
 
-    my $response;
-    my $user_data;
     my $organization_token;    # Token will be acquired only if user is an admin
     my $organization_token_check;
     my $target_organization_data;
@@ -216,84 +214,82 @@ sub add_user_to_organization_POST {
     my $target_user_data;
 
     my $is_organization_admin;
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+
+    my $response;
+    my $user_data;
+    my $required_data;
 
     $response->{message} = "";
     $response->{status}  = 1;
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+            required_data => {
+                user_email => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+                organization_token => {
+                    type     => "string",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
     }
     else {
 
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $required_data =
+          $authorization_and_validatation->{data}->{required_data};
 
-        $organization_token = $c->{request}->{data}->{organization_token};
+        $organization_token = $required_data->{organization_token};
         $target_user_email  = $c->{request}->{data}->{user_email};
 
-        # Organization token
-        if ( !$organization_token ) {
+        $organization_token_check =
+          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+            $organization_token );
+        $target_organization_data = $organization_token_check->{organization};
+        $is_organization_admin =
+          Daedalus::Users::Manager::is_organization_admin(
+            $c,
+            $user_data->{_hidden_data}->{user}->{id},
+            $target_organization_data->{_hidden_data}->{organization}->{id}
+          );
+        if ( !$is_organization_admin->{status} ) {
             $organization_token_check->{status} = 0;
-        }
-        else {
-            $organization_token_check =
-              Daedalus::Organizations::Manager::get_organization_from_token( $c,
-                $organization_token );
-            $target_organization_data =
-              $organization_token_check->{organization};
-            $is_organization_admin =
-              Daedalus::Users::Manager::is_organization_admin(
-                $c,
-                $user_data->{_hidden_data}->{user}->{id},
-                $target_organization_data->{_hidden_data}->{organization}->{id}
-              );
-            if ( !$is_organization_admin->{status} ) {
-                $organization_token_check->{status} = 0;
-            }
         }
 
         $response->{message} = "Invalid Organization token."
           unless ( $organization_token_check->{status} == 1 );
 
-        if ( !$target_user_email ) {
-            $target_user_email_check->{status}  = 0;
-            $target_user_email_check->{message} = "No user e-mail provided.";
+        # E-mail format is ok, check if it exists
+        $target_user =
+          Daedalus::Users::Manager::get_user_from_email( $c,
+            $target_user_email );
+        if ( !$target_user ) {
+            $target_user_email_check->{status} = 0;
+            $target_user_email_check->{message} =
+              "There is not registered user with that e-mail address.";
         }
         else {
-            # Check if e-mail is valid
-            if (
-                !Daedalus::Users::Manager::check_email_valid(
-                    $target_user_email)
-              )
-            {
-                $target_user_email_check->{status}  = 0;
-                $target_user_email_check->{message} = 'User e-mail invalid.';
+            # user_exists
+            $target_user_data =
+              Daedalus::Users::Manager::get_user_data( $c, $target_user );
+            if ( !$target_user_data->{data}->{user}->{active} ) {
+                $target_user_email_check->{status} = 0;
+                $target_user_email_check->{message} =
+                  "Required user is not active.";
             }
             else {
-                # E-mail format is ok, check if it exists
-                $target_user =
-                  Daedalus::Users::Manager::get_user_from_email( $c,
-                    $target_user_email );
-                if ( !$target_user ) {
-                    $target_user_email_check->{status} = 0;
-                    $target_user_email_check->{message} =
-                      "There is not registered user with that e-mail address.";
-                }
-                else {
-                    # user_exists
-                    $target_user_data =
-                      Daedalus::Users::Manager::get_user_data( $c,
-                        $target_user );
-                    if ( !$target_user_data->{data}->{user}->{active} ) {
-                        $target_user_email_check->{status} = 0;
-                        $target_user_email_check->{message} =
-                          "Required user is not active.";
-                    }
-                    else {
-                        $target_user_email_check->{status} = 1;
-                    }
-                }
+                $target_user_email_check->{status} = 1;
             }
         }
 
@@ -319,6 +315,7 @@ sub add_user_to_organization_POST {
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
+
 }
 
 sub show_organizations_groups : Path('/organization/showusergroups') : Args(0)
