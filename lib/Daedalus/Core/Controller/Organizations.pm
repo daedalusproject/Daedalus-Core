@@ -100,14 +100,21 @@ sub show_organizations_GET {
     my $response;
     my $user_data;
 
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Organizations::Manager::get_organizations_from_user( $c,
             $user_data );
