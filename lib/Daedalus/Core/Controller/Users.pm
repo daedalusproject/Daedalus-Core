@@ -347,18 +347,26 @@ sub show_orphan_users_GET {
     my $response;
     my $user_data;
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    my $authorizeation_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorizeation_and_validatation->{data}->{user_data};
         $response =
           Daedalus::Users::Manager::show_orphan_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
+        $response->{error_code} = 400;
     }
 
     $self->return_response( $c, $response );
