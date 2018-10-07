@@ -306,10 +306,6 @@ sub add_user_to_organization_POST {
         }
         else {
             $response->{status} = 0;
-            if ( !$organization_token and !$target_user_email ) {
-                $response->{message} =
-                  "No organization data neither user info provided.";
-            }
         }
         $response->{error_code} = 400;
     }
