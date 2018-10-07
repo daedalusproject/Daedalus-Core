@@ -565,59 +565,54 @@ Check auth token and activates inactive users
 =cut
 
 sub confirm_registration {
-    my $c = shift;
+    my $c             = shift;
+    my $required_data = shift;
 
     my $response = {
-        status  => 0,
-        message => 'Invalid Auth Token.'
+        status     => 0,
+        message    => 'Invalid Auth Token.',
+        error_code => 400
     };
+    my $auth_token = $required_data->{auth_token};
+    if ( length($auth_token) == 63 ) {    # auth token lenght
 
-    my $auth_data = $c->{request}->{data}->{auth};
+        #find user
+        my $user_model = $c->model('CoreRealms::User');
+        my $user =
+          $user_model->find( { active => 0, auth_token => $auth_token } );
+        if ($user) {
+            if ( !$required_data->{password} ) {
+                $response->{message} =
+                  'Valid Auth Token found, enter your new password.';
+            }
+            else {
+                my $password = $required_data->{password};
+                my $password_strenght =
+                  Daedalus::Utils::Crypt::checkPassword($password);
+                if ( !$password_strenght->{status} ) {
+                    $response->{message} = 'Password is invalid.';
+                }
+                else {
+                    # Password is valid
+                    my $new_auth_token =
+                      Daedalus::Utils::Crypt::generateRandomString(64);
+                    my $new_salt =
+                      Daedalus::Utils::Crypt::generateRandomString(256);
+                    $password =
+                      Daedalus::Utils::Crypt::hashPassword( $password,
+                        $new_salt );
 
-    if ($auth_data) {
-        if ( exists( $auth_data->{auth_token} ) ) {
-            my $auth_token = $auth_data->{auth_token};
-            if ( length($auth_token) == 63 ) {    # auth token lenght
+                    $response->{status}  = 1;
+                    $response->{message} = 'Account activated.';
 
-                #find user
-                my $user_model = $c->model('CoreRealms::User');
-                my $user       = $user_model->find(
-                    { active => 0, auth_token => $auth_token } );
-                if ($user) {
-                    if ( !( exists( $auth_data->{password} ) ) ) {
-                        $response->{message} =
-                          'Valid Auth Token found, enter your new password.';
-                    }
-                    else {
-                        my $password = $auth_data->{password};
-                        my $password_strenght =
-                          Daedalus::Utils::Crypt::checkPassword($password);
-                        if ( !$password_strenght->{status} ) {
-                            $response->{message} = 'Password is invalid.';
+                    $user->update(
+                        {
+                            password   => $password,
+                            salt       => $new_salt,
+                            auth_token => $new_auth_token,
+                            active     => 1
                         }
-                        else {
-                            # Password is valid
-                            my $new_auth_token =
-                              Daedalus::Utils::Crypt::generateRandomString(64);
-                            my $new_salt =
-                              Daedalus::Utils::Crypt::generateRandomString(256);
-                            $password =
-                              Daedalus::Utils::Crypt::hashPassword( $password,
-                                $new_salt );
-
-                            $response->{status}  = 1;
-                            $response->{message} = 'Account activated.';
-
-                            $user->update(
-                                {
-                                    password   => $password,
-                                    salt       => $new_salt,
-                                    auth_token => $new_auth_token,
-                                    active     => 1
-                                }
-                            );
-                        }
-                    }
+                    );
                 }
             }
         }

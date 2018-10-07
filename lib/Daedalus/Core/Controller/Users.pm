@@ -218,8 +218,29 @@ sub confirm_register_POST {
     my ( $self, $c ) = @_;
     my $response;
 
-    $response = Daedalus::Users::Manager::confirm_registration($c);
-    $response->{error_code} = 400;
+    my $authorizeation_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            required_data => {
+                'auth_token' => {
+                    type     => "string",
+                    required => 1,
+                },
+                password => {
+                    type     => "string",
+                    required => 0,
+                },
+            }
+        }
+    );
+    if ( $authorizeation_and_validatation->{status} == 0 ) {
+        $response = $authorizeation_and_validatation;
+    }
+    else {
+        $response = Daedalus::Users::Manager::confirm_registration( $c,
+            $authorizeation_and_validatation->{data}->{required_data} );
+    }
+
     $self->return_response( $c, $response );
 }
 

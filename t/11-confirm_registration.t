@@ -26,7 +26,7 @@ is( $failed_because_no_auth_token_json->{status}, 0,
     'Status failed, no auth.' );
 is(
     $failed_because_no_auth_token_json->{message},
-    'Invalid Auth Token.',
+    'No auth_token provided.',
     'There no auth data.'
 );
 
@@ -35,9 +35,7 @@ my $failed_short_auth_token = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token => 'too_short_token',
-            }
+            auth_token => 'too_short_token',
         }
     )
 );
@@ -58,11 +56,7 @@ is(
 my $failed_empty_auth_token = request(
     POST '/user/confirm',
     Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            auth => {}
-        }
-    )
+    Content      => encode_json( {} )
 );
 
 is( $failed_empty_auth_token->code(), 400, );
@@ -72,21 +66,15 @@ my $failed_empty_auth_token_json =
 
 is( $failed_empty_auth_token_json->{status},
     0, 'Status failed, auth_token too short' );
-is(
-    $failed_empty_auth_token_json->{message},
-    'Invalid Auth Token.',
-    'Token is invalid because its too short.'
-);
+is( $failed_empty_auth_token_json->{message}, 'No auth_token provided.', );
 
 my $failed_invalid_auth_token = request(
     POST '/user/confirm',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5_',
-            }
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5_',
         }
     )
 );
@@ -109,10 +97,8 @@ my $failed_valid_auth_token_no_password = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
-            }
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
         }
     )
 );
@@ -135,11 +121,9 @@ my $failed_valid_auth_token_short_password = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
-                password => 'pass',
-            }
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
+            password => 'pass',
         }
     )
 );
@@ -162,11 +146,9 @@ my $failed_valid_auth_token_password_no_diverse = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
-                password => 'passwordddddddddddddd',
-            }
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
+            password => 'passwordddddddddddddd',
         }
     )
 );
@@ -189,11 +171,9 @@ my $success_valid_auth_token_and_password = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
-                password => 'val1d_Pa55w0rd',
-            }
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
+            password => 'val1d_Pa55w0rd',
         }
     )
 );
@@ -216,11 +196,9 @@ my $failed_account_activated_changed_auth_token = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
-                password => 'val1d_Pa55w0rd',
-            }
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
+            password => 'val1d_Pa55w0rd',
         }
     )
 );

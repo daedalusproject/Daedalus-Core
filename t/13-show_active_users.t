@@ -176,10 +176,8 @@ my $success_valid_auth_token_and_password = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token => $inactive_user_data_auth_token,
-                password   => 'val1d_Pa55w0rd',
-            }
+            auth_token => $inactive_user_data_auth_token,
+            password   => 'val1d_Pa55w0rd',
         }
     )
 );

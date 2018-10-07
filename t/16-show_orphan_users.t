@@ -162,11 +162,9 @@ request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token =>
-'1qYyhZWMikdm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l',
-                password => '1_HAt3_mY_L1F3',
-            },
+            auth_token =>
+              '1qYyhZWMikdm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l',
+            password => '1_HAt3_mY_L1F3',
         }
     )
 );
