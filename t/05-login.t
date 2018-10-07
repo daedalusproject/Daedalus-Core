@@ -41,6 +41,45 @@ is_deeply(
     }
 );
 
+my $failed_login_user_post_no_email = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $failed_login_user_post_no_email->code(), 400, );
+
+my $failed_login_user_post_no_email_json =
+  decode_json( $failed_login_user_post_no_email->content );
+
+is( $failed_login_user_post_no_email_json->{status},  0, );
+is( $failed_login_user_post_no_email_json->{message}, 'No e-mail provided.', );
+
+my $failed_login_user_post_no_password = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+        }
+    )
+);
+
+is( $failed_login_user_post_no_password->code(), 400, );
+
+my $failed_login_user_post_no_password_json =
+  decode_json( $failed_login_user_post_no_password->content );
+
+is( $failed_login_user_post_no_password_json->{status}, 0, );
+is(
+    $failed_login_user_post_no_password_json->{message},
+    'No password provided.',
+);
+
 my $failed_login_password_post_content = request(
     POST '/user/login',
     Content_Type => 'application/json',
