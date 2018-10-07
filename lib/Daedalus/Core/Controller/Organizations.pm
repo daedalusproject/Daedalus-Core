@@ -365,14 +365,21 @@ sub show_organization_groups_GET {
 
     my $organization_token = $c->{request}->{arguments}[0];
 
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user'
+            },
+        }
+    );
 
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $organization =
           Daedalus::Organizations::Manager::get_organization_from_token( $c,
             $organization_token );
