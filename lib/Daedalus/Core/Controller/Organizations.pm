@@ -137,16 +137,22 @@ sub show_organization_users_GET {
     my $user_data;
     my $organization_token;    # Token will be acquired only if user is an admin
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-
-    if ( $user->{status} == 0 ) {
-        $response = $user;
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+        }
+    );
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
         $response->{error_code} = 403;
     }
     else {
-        $user_data          = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
         $organization_token = $c->{request}->{arguments}[0]
-          ;                    # I'm sure that there is only one argument
+          ;    # I'm sure that there is only one argument
         my $organization_request =
           Daedalus::Organizations::Manager::get_organization_from_token( $c,
             $organization_token );
