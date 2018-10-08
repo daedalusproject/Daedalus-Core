@@ -523,4 +523,34 @@ is(
     'Mega Shop Sysadmins has no roles'
 );
 
+# At this point there is only one group with organization_master
+# It can't be removed because Mega Shops won't have any admin users
+
+my $remove_admin_role_from_group_failed = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Administrators',
+            role_name          => 'fireman'
+        }
+    ),
+);
+
+is( $remove_admin_role_from_group_failed->code(), 400, );
+
+my $remove_admin_role_from_group_failed_json =
+  decode_json( $remove_admin_role_from_group_failed->content );
+
+is( $remove_admin_role_from_group_failed_json->{status}, 1, );
+is(
+    $remove_admin_role_from_group_failed_json->{message},
+    'Cannot remove this role, no more admin roles left.',
+);
+
+is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );
+
 done_testing();
