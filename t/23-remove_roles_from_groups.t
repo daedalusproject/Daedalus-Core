@@ -7,12 +7,12 @@ use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use MIME::Base64;
-use HTTP::Request::Common;
+use HTTP::Request::Common qw(GET PUT POST DELETE);
 
 my $endpoint = '/organization/removerolegroup';
 
 my $failed_because_no_auth_token =
-  request( POST $endpoint, Content_Type => 'application/json', );
+  request( DELETE $endpoint, Content_Type => 'application/json', );
 
 is( $failed_because_no_auth_token->code(), 400, );
 
@@ -274,8 +274,8 @@ my $remove_role_from_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            role_name          => 'health_watcher'
+            group_name         => 'Mega Shops Administrators',
+            role_name          => 'fireman'
         }
     ),
 );
@@ -288,7 +288,7 @@ my $remove_role_from_group_success_json =
 is( $remove_role_from_group_success_json->{status}, 1, );
 is(
     $remove_role_from_group_success_json->{message},
-    'Selected role has removed from organization group.',
+    'Selected role has been removed from organization group.',
 );
 
 is( $remove_role_from_group_success_json->{_hidden_data}, undef, );
@@ -300,8 +300,8 @@ my $failed_already_removed = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            role_name          => 'health_watcher'
+            group_name         => 'Mega Shops Administrators',
+            role_name          => 'fireman'
         }
     ),
 );
@@ -314,7 +314,7 @@ my $failed_already_removed_json =
 is( $failed_already_removed_json->{status}, 0, );
 is(
     $failed_already_removed_json->{message},
-    'Required role is not present in this group.',
+    'Required role is not assigned to this group.',
 );
 
 # Check group
