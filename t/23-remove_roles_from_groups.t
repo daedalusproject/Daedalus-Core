@@ -523,6 +523,62 @@ is(
     'Mega Shop Sysadmins has no roles'
 );
 
+my $add_role_to_group_success = request(
+    POST '/organization/addrolegroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins',
+            role_name          => 'organization_master'
+        }
+    ),
+);
+
+is( $add_role_to_group_success->code(), 200, );
+
+my $add_role_to_group_success_json =
+  decode_json( $add_role_to_group_success->content );
+
+is( $add_role_to_group_success_json->{status}, 1, );
+is(
+    $add_role_to_group_success_json->{message},
+    'Selected role has been added to organization group.',
+);
+
+is( $add_role_to_group_success_json->{_hidden_data}, undef, );
+
+my $superadmin_remove_role_organization_master_success = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_name => 'Mega Shop Sysadmins',
+            role_name  => 'organization_master'
+        }
+    ),
+);
+
+is( $superadmin_remove_role_organization_master_success->code(), 200, );
+
+my $superadmin_remove_role_organization_master_success_json =
+  decode_json( $superadmin_remove_role_organization_master_success->content );
+
+is( $superadmin_remove_role_organization_master_success_json->{status}, 1, );
+is(
+    $superadmin_remove_role_organization_master_success_json->{message},
+    'Selected role has been removed from organization group.',
+);
+
+isnt( $superadmin_remove_role_organization_master_success_json->{_hidden_data},
+    undef, );
+
 # At this point there is only one group with organization_master
 # It can't be removed because Mega Shops won't have any admin users
 
@@ -535,7 +591,7 @@ my $remove_admin_role_from_group_failed = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_name         => 'Mega Shops Administrators',
-            role_name          => 'fireman'
+            role_name          => 'organization_master'
         }
     ),
 );
@@ -552,5 +608,33 @@ is(
 );
 
 is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );
+
+my $superadmin_remove_admin_role_from_group_failed = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Administrators',
+            role_name          => 'organization_master'
+        }
+    ),
+);
+
+is( $superadmin_remove_admin_role_from_group_failed->code(), 400, );
+
+my $superadmin_remove_admin_role_from_group_failed_json =
+  decode_json( $superadmin_remove_admin_role_from_group_failed->content );
+
+is( $superadmin_remove_admin_role_from_group_failed_json->{status}, 1, );
+is(
+    $superadmin_remove_admin_role_from_group_failed_json->{message},
+    'Cannot remove this role, no more admin roles left.',
+);
+
+isnt( $superadmin_remove_admin_role_from_group_failed_json->{_hidden_data},
+    undef, );
 
 done_testing();
