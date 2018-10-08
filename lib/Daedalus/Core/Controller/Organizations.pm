@@ -858,7 +858,7 @@ sub remove_role_group_DELETE {
                                 @{ $groups->{data}->{$group_name}->{roles} } )
                           )
                         {
-                            $reponse =
+                            $response =
                               Daedalus::Organizations::Manager::remove_role_from_organization_group(
                                 $c,
                                 $groups->{_hidden_data}->{$group_name}->{id},

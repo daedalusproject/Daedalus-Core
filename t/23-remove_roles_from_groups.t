@@ -338,10 +338,10 @@ is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
 is(
     scalar @{
         $admin_user_mega_shop_groups_json->{data}->{groups}
-          ->{'Mega Shop Sysadmins'}->{roles}
+          ->{'Mega Shops Administrators'}->{roles}
     },
     1,
-'Mega Shop Sysadmins has only fireman as role, health_watcher has been removed'
+'Mega Shops Administrators has only organization_manager as role, fireman has been removed'
 );
 
 my $failed_not_your_organization = request(
@@ -446,6 +446,58 @@ is(
 );
 
 isnt( $superadmin_remove_role_other_organization_success_json->{_hidden_data},
+    undef, );
+
+my $admin_user_mega_shop_one_role = request(
+    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $admin_user_mega_shop_one_role->code(), 200, );
+
+my $admin_user_mega_shop_one_role_json =
+  decode_json( $admin_user_mega_shop_one_role->content );
+
+is( $admin_user_mega_shop_one_role_json->{status}, 1, 'Status success.' );
+
+is(
+    scalar @{
+        $admin_user_mega_shop_one_role_json->{data}->{groups}
+          ->{'Mega Shop Sysadmins'}->{roles}
+    },
+    1,
+    'Mega Shop Sysadmins has only health_watcher role'
+);
+
+my $superadmin_remove_role_health_watcher_success = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_name => 'Mega Shop Sysadmins',
+            role_name  => 'health_watcher'
+        }
+    ),
+);
+
+is( $superadmin_remove_role_health_watcher_success->code(), 200, );
+
+my $superadmin_remove_role_health_watcher_success_json =
+  decode_json( $superadmin_remove_role_health_watcher_success->content );
+
+is( $superadmin_remove_role_health_watcher_success_json->{status}, 1, );
+is(
+    $superadmin_remove_role_health_watcher_success_json->{message},
+    'Selected role has been removed from organization group.',
+);
+
+isnt( $superadmin_remove_role_health_watcher_success_json->{_hidden_data},
     undef, );
 
 my $admin_user_mega_shop_zero_roles = request(
