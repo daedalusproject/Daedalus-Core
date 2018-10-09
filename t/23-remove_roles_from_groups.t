@@ -601,10 +601,10 @@ is( $remove_admin_role_from_group_failed->code(), 400, );
 my $remove_admin_role_from_group_failed_json =
   decode_json( $remove_admin_role_from_group_failed->content );
 
-is( $remove_admin_role_from_group_failed_json->{status}, 1, );
+is( $remove_admin_role_from_group_failed_json->{status}, 0, );
 is(
     $remove_admin_role_from_group_failed_json->{message},
-    'Cannot remove this role, no more admin roles left.',
+    'Cannot remove this role, no more admin roles left in this organization.',
 );
 
 is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );

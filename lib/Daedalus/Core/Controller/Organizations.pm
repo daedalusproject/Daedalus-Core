@@ -10,6 +10,7 @@ use Data::Dumper;
 use base qw(Daedalus::Core::Controller::REST);
 
 use Daedalus::Users::Manager;
+use Daedalus::OrganizationGroups::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -767,6 +768,9 @@ sub remove_role_group_DELETE {
     my $role_name;
     my $available_roles;
 
+    my $removal_allowed = 1;
+    my $count_roles;
+
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
@@ -834,7 +838,6 @@ sub remove_role_group_DELETE {
                 $groups =
                   Daedalus::Organizations::Manager::get_organization_groups( $c,
                     $organization_data->{_hidden_data}->{organization}->{id} );
-
                 if ( !exists $groups->{data}->{$group_name} ) {
                     $response->{status}     = 0;
                     $response->{message}    = "Required group does not exist.";
@@ -858,14 +861,35 @@ sub remove_role_group_DELETE {
                                 @{ $groups->{data}->{$group_name}->{roles} } )
                           )
                         {
-                            $response =
-                              Daedalus::Organizations::Manager::remove_role_from_organization_group(
-                                $c,
-                                $groups->{_hidden_data}->{$group_name}->{id},
-                                $available_roles->{_hidden_data}->{$role_name}
-                                  ->{id}
-                              );
-                            $response->{error_code} = 400;
+
+                            if (   $role_name eq 'organization_master'
+                                && $user_data->{_hidden_data}->{user}
+                                ->{is_super_admin} == 0 )
+                            {
+                                $count_roles =
+                                  Daedalus::OrganizationGroups::Manager::count_roles(
+                                    $c, $groups->{data},
+                                    'organization_master' );
+                                if ( $count_roles lt 2 ) {
+                                    $removal_allowed        = 0;
+                                    $response->{status}     = 0;
+                                    $response->{error_code} = 400;
+                                    $response->{message} =
+'Cannot remove this role, no more admin roles left in this organization.';
+                                }
+                            }
+                            if ($removal_allowed) {
+                                $response =
+                                  Daedalus::Organizations::Manager::remove_role_from_organization_group(
+                                    $c,
+                                    $groups->{_hidden_data}->{$group_name}
+                                      ->{id},
+                                    $available_roles->{_hidden_data}
+                                      ->{$role_name}->{id}
+                                  );
+                                $response->{error_code} = 400;
+
+                            }
                         }
                         else {
                             $response->{status} = 0;
