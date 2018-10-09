@@ -609,7 +609,36 @@ is(
 
 is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );
 
-my $superadmin_remove_admin_role_from_group_failed = request(
+my $superadmin_remove_admin_role_from_group_success = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Administrators',
+            role_name          => 'organization_master'
+        }
+    ),
+);
+
+is( $superadmin_remove_admin_role_from_group_success->code(), 200, );
+
+my $superadmin_remove_admin_role_from_group_success_json =
+  decode_json( $superadmin_remove_admin_role_from_group_success->content );
+
+is( $superadmin_remove_admin_role_from_group_success_json->{status}, 1, );
+is(
+    $superadmin_remove_admin_role_from_group_success_json->{message},
+    'Selected role has been removed from organization group.',
+    "Super admin users are allowed to do this"
+);
+
+isnt( $superadmin_remove_admin_role_from_group_success_json->{_hidden_data},
+    undef, );
+
+my $remove_failed_no_admin = request(
     DELETE $endpoint,
     Content_Type => 'application/json',
     Authorization =>
@@ -623,18 +652,40 @@ my $superadmin_remove_admin_role_from_group_failed = request(
     ),
 );
 
-is( $superadmin_remove_admin_role_from_group_failed->code(), 400, );
+is( $remove_failed_no_admin->code(), 403, );
 
-my $superadmin_remove_admin_role_from_group_failed_json =
-  decode_json( $superadmin_remove_admin_role_from_group_failed->content );
+my $remove_failed_no_admin_json =
+  decode_json( $remove_failed_no_admin->content );
 
-is( $superadmin_remove_admin_role_from_group_failed_json->{status}, 1, );
-is(
-    $superadmin_remove_admin_role_from_group_failed_json->{message},
-    'Cannot remove this role, no more admin roles left.',
+is( $remove_failed_no_admin_json->{status},  0, );
+is( $remove_failed_no_admin_json->{message}, 'You are not an admin user.', );
+
+is( $remove_failed_no_admin_json->{_hidden_data}, undef, );
+
+my $make_admin_again = request(
+    POST '/organization/addrolegroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Administrators',
+            role_name          => 'organization_master'
+        }
+    ),
 );
 
-isnt( $superadmin_remove_admin_role_from_group_failed_json->{_hidden_data},
-    undef, );
+is( $make_admin_again->code(), 200, );
+
+my $make_admin_again_json = decode_json( $make_admin_again->content );
+
+is( $make_admin_again_json->{status}, 1, );
+is(
+    $make_admin_again_json->{message},
+    'Selected role has been added to organization group.',
+);
+
+isnt( $make_admin_again_json->{_hidden_data}, undef, );
 
 done_testing();
