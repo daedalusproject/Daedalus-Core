@@ -451,7 +451,34 @@ sub add_role_to_organization_group {
       $role_group->id;
 
     return $response;
+}
+
+=head2 remove_role_from_organization_group
+
+Removes role from organization group.
+
+=cut
+
+sub remove_role_from_organization_group {
+    my $c        = shift;
+    my $group_id = shift;
+    my $role_id  = shift;
+
+    my $response;
+    my $role_group = $c->model('CoreRealms::OrganizationGroupRole')->find(
+        {
+            group_id => $group_id,
+            role_id  => $role_id
+        }
+    )->delete();
+    $response->{status}     = 1;
+    $response->{error_code} = 400;
+    $response->{message} =
+      'Selected role has been removed from organization group.';
+
+    return $response;
 
 }
+
 __PACKAGE__->meta->make_immutable;
 1;
