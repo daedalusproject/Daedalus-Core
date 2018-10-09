@@ -190,7 +190,7 @@ is( $superadmin_token->code(), 200, );
 my $superadmin_token_json = decode_json( $superadmin_token->content );
 
 is( keys %{ $superadmin_token_json->{data}->{users} },
-    1, 'Daedalus Project has only one user so far' );
+    2, 'Daedalus Project has only two users so far' );
 
 isnt( $superadmin_token_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );

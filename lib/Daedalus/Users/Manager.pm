@@ -80,6 +80,21 @@ sub get_user_from_email {
     return $user;
 }
 
+=head2 get_user_from_id
+
+Retrieve user data from model using user id
+
+=cut
+
+sub get_user_from_id {
+    my $c       = shift;
+    my $user_id = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { 'id' => $user_id } );
+
+    return $user;
+}
+
 sub get_user_data {
     my $c    = shift;
     my $user = shift;

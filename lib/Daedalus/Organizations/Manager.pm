@@ -223,7 +223,7 @@ sub get_organization_from_token {
     return $response;
 }
 
-=head2 add_user_to_organization_group
+=head2 add_user_to_organization
 
 Adds user to organization token
 
@@ -289,6 +289,34 @@ sub get_organization_group_roles {
     return $response;
 }
 
+=head2 get_organization_group_users
+
+Get organization group users using organization_group id
+
+=cut
+
+sub get_organization_group_users {
+
+    my $c                     = shift;
+    my $organization_group_id = shift;
+
+    my $response = { data => [], _hidden_data => {} };
+
+    my @users = $c->model('CoreRealms::OrgaizationUsersGroup')
+      ->search( { group_id => $organization_group_id } )->all;
+
+    for my $user_from_group (@users) {
+        my $user = Daedalus::Users::Manager::get_user_from_id( $c,
+            $user_from_group->user_id );
+        my $user_info = Daedalus::Users::Manager::get_user_data( $c, $user );
+        push @{ $response->{data} }, $user_info->{data}->{user}->{'e-mail'};
+        $response->{_hidden_data}->{ $user_info->{data}->{user}->{'e-mail'} } =
+          $user_info;
+    }
+
+    return $response;
+}
+
 =head2 get_organization_groups
 
 Get organization groups using organization id
@@ -311,6 +339,11 @@ sub get_organization_groups {
           { roles => $roles->{data} };
         $response->{_hidden_data}->{ $organization_group->group_name } =
           { id => $organization_group->id, roles => $roles->{_hidden_data} };
+        my $users = get_organization_group_users( $c, $organization_group->id );
+        $response->{data}->{ $organization_group->group_name }->{users} =
+          $users->{data};
+        $response->{_hidden_data}->{ $organization_group->group_name }->{users}
+          = $users->{_hidden_data};
     }
 
     return $response;
@@ -478,6 +511,34 @@ sub remove_role_from_organization_group {
 
     return $response;
 
+}
+
+=head2 add_user_to_organization_group
+
+Adds user to organization group
+
+=cut
+
+sub add_user_to_organization_group {
+
+    my $c        = shift;
+    my $group_id = shift;
+    my $user_id  = shift;
+
+    my $response;
+
+    my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->create(
+        {
+            group_id => $group_id,
+            user_id  => $user_id
+        }
+    );
+    $response->{status}     = 1;
+    $response->{error_code} = 400;
+    $response->{message} =
+      'Required user has been added to organization group.';
+
+    return $response;
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -110,7 +110,7 @@ my $user_without_organization_json =
 
 is( $user_without_organization_json->{status}, 1, 'Status success.' );
 is( keys %{ $user_without_organization_json->{data}->{organizations} },
-    0, 'This user does not belong to any organization' );
+    1, 'This user belongs to daedalus project' );
 
 is( $user_without_organization_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );

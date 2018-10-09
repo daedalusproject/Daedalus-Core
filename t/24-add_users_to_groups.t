@@ -9,7 +9,7 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
 
-my $endpoint = '/organization/addusergroup';
+my $endpoint = '/organization/addusertogroup';
 
 my $failed_because_no_auth_token =
   request( POST $endpoint, Content_Type => 'application/json', );
@@ -263,13 +263,10 @@ is( $failed_role_not_found->code(), 400, );
 
 my $failed_role_not_found_json = decode_json( $failed_role_not_found->content );
 
-is( $failed_role_not_found_json->{status}, 0, );
-is(
-    $failed_role_not_found_json->{message},
-    'Required user e-amile does not exist or it is not active.',
-);
+is( $failed_role_not_found_json->{status},  0, );
+is( $failed_role_not_found_json->{message}, 'Invalid user.', );
 
-my $add_role_to_group_success = request(
+my $add_user_to_group_success = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
@@ -283,18 +280,18 @@ my $add_role_to_group_success = request(
     ),
 );
 
-is( $add_role_to_group_success->code(), 200, );
+is( $add_user_to_group_success->code(), 200, );
 
-my $add_role_to_group_success_json =
-  decode_json( $add_role_to_group_success->content );
+my $add_user_to_group_success_json =
+  decode_json( $add_user_to_group_success->content );
 
-is( $add_role_to_group_success_json->{status}, 1, );
+is( $add_user_to_group_success_json->{status}, 1, );
 is(
-    $add_role_to_group_success_json->{message},
+    $add_user_to_group_success_json->{message},
     'Required user has been added to organization group.',
 );
 
-is( $add_role_to_group_success_json->{_hidden_data}, undef, );
+is( $add_user_to_group_success_json->{_hidden_data}, undef, );
 
 my $failed_already_added = request(
     POST $endpoint,
@@ -430,7 +427,7 @@ is(
 
 isnt( $superadmin_add_role_success_json->{_hidden_data}, undef, );
 
-my $superadmin_add_role_other_organization_success = request(
+my $superadmin_add_role_other_organization_no_active = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
@@ -441,6 +438,32 @@ my $superadmin_add_role_other_organization_success = request(
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
             group_name => 'Mega Shop Sysadmins',
             user_email => 'shirorobot@megashops.com'
+        }
+    ),
+);
+
+is( $superadmin_add_role_other_organization_no_active->code(), 400, );
+
+my $superadmin_add_role_other_organization_no_active_json =
+  decode_json( $superadmin_add_role_other_organization_no_active->content );
+
+is( $superadmin_add_role_other_organization_no_active_json->{status}, 0, );
+is(
+    $superadmin_add_role_other_organization_no_active_json->{message},
+    'Invalid user.',
+);
+
+my $superadmin_add_role_other_organization_success = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_name => 'Mega Shop Sysadmins',
+            user_email => 'noadmin@megashops.com'
         }
     ),
 );
