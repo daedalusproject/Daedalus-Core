@@ -550,6 +550,60 @@ is(
 
 is( $add_role_to_group_success_json->{_hidden_data}, undef, );
 
+my $add_other_admin_role_to_group_success = request(
+    POST '/organization/addrolegroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop SuperSysadmins',
+            role_name          => 'organization_master'
+        }
+    ),
+);
+
+is( $add_other_admin_role_to_group_success->code(), 200, );
+
+my $add_other_admin_role_to_group_success_json =
+  decode_json( $add_other_admin_role_to_group_success->content );
+
+is( $add_other_admin_role_to_group_success_json->{status}, 1, );
+is(
+    $add_other_admin_role_to_group_success_json->{message},
+    'Selected role has been added to organization group.',
+);
+
+is( $add_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
+
+my $remove_other_admin_role_to_group_success = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop SuperSysadmins',
+            role_name          => 'organization_master'
+        }
+    ),
+);
+
+is( $remove_other_admin_role_to_group_success->code(), 200, );
+
+my $remove_other_admin_role_to_group_success_json =
+  decode_json( $add_other_admin_role_to_group_success->content );
+
+is( $remove_other_admin_role_to_group_success_json->{status}, 1, );
+is(
+    $remove_other_admin_role_to_group_success_json->{message},
+    'Selected role has been added to organization group.',
+);
+
+is( $remove_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
+
 my $superadmin_remove_role_organization_master_success = request(
     DELETE $endpoint,
     Content_Type => 'application/json',
