@@ -427,7 +427,7 @@ is(
 
 isnt( $superadmin_add_role_success_json->{_hidden_data}, undef, );
 
-my $superadmin_add_role_other_organization_no_active = request(
+my $superadmin_add_unactive_user = request(
     POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
@@ -442,14 +442,37 @@ my $superadmin_add_role_other_organization_no_active = request(
     ),
 );
 
-is( $superadmin_add_role_other_organization_no_active->code(), 400, );
+is( $superadmin_add_unactive_user->code(), 400, );
 
-my $superadmin_add_role_other_organization_no_active_json =
-  decode_json( $superadmin_add_role_other_organization_no_active->content );
+my $superadmin_add_unactive_user_json =
+  decode_json( $superadmin_add_unactive_user->content );
 
-is( $superadmin_add_role_other_organization_no_active_json->{status}, 0, );
+is( $superadmin_add_unactive_user_json->{status},  0, );
+is( $superadmin_add_unactive_user_json->{message}, 'Invalid user.', );
+
+my $superadmin_add_user_from_other_organization = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_name => 'Mega Shop Sysadmins',
+            user_email => 'othernotanadmin@daedalus-project.io'
+        }
+    ),
+);
+
+is( $superadmin_add_user_from_other_organization->code(), 400, );
+
+my $superadmin_add_user_from_other_organization_json =
+  decode_json( $superadmin_add_user_from_other_organization->content );
+
+is( $superadmin_add_user_from_other_organization_json->{status}, 0, );
 is(
-    $superadmin_add_role_other_organization_no_active_json->{message},
+    $superadmin_add_user_from_other_organization_json->{message},
     'Invalid user.',
 );
 
