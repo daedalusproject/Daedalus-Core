@@ -911,6 +911,175 @@ sub remove_role_group_DELETE {
 
 }
 
+sub add_user_to_group : Path('/organization/addusertogroup') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub add_user_to_group_POST {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $organization_token;
+    my $organization;
+    my $organization_data;
+
+    my $is_organization_admin;
+
+    my $groups;
+    my $group_name;
+
+    my $user_email;
+    my $valid_user = 1;
+    my $required_user;
+    my $required_user_data;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+            required_data => {
+                organization_token => {
+                    type     => "string",
+                    required => 1,
+                },
+                group_name => {
+                    type     => "string",
+                    required => 1,
+                },
+                user_email => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
+        $organization_token =
+          $authorization_and_validatation->{data}->{required_data}
+          ->{organization_token};
+        $group_name = $authorization_and_validatation->{data}->{required_data}
+          ->{group_name};
+        $user_email =
+          $authorization_and_validatation->{data}->{required_data}
+          ->{user_email};
+
+        $organization =
+          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+            $organization_token );
+
+        if ( $organization->{status} == 0 ) {
+            $response = $organization;
+            $response->{error_code} = 400;
+        }
+        else {
+            $organization_data = $organization->{organization};
+            $is_organization_admin =
+              Daedalus::Users::Manager::is_organization_admin(
+                $c,
+                $user_data->{_hidden_data}->{user}->{id},
+                $organization_data->{_hidden_data}->{organization}->{id}
+              );
+            if (   $is_organization_admin->{status} == 0
+                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+
+            {
+                $response->{status}     = 0;
+                $response->{message}    = "Invalid organization token.";
+                $response->{error_code} = 400;
+
+            }
+            else {
+                $groups =
+                  Daedalus::Organizations::Manager::get_organization_groups( $c,
+                    $organization_data->{_hidden_data}->{organization}->{id} );
+
+                if ( !exists $groups->{data}->{$group_name} ) {
+                    $response->{status}     = 0;
+                    $response->{message}    = "Required group does not exist.";
+                    $response->{error_code} = 400;
+                }
+                else {
+                    if (
+                        grep( /^$user_email$/,
+                            @{ $groups->{data}->{$group_name}->{users} } )
+                      )
+                    {
+                        $response->{status} = 0;
+                        $response->{message} =
+                          "Required user is already assigned to this group.";
+                        $response->{error_code} = 400;
+                    }
+                    else {
+                        # Check user
+                        $required_user =
+                          Daedalus::Users::Manager::get_user_from_email( $c,
+                            $user_email );
+                        if ( !($required_user) ) {
+                            $valid_user = 0;
+                        }
+                        else {
+                            $required_user_data =
+                              Daedalus::Users::Manager::get_user_data( $c,
+                                $required_user );
+                            if ( $required_user_data->{data}->{user}->{active}
+                                == 0 )
+                            {
+                                $valid_user = 0;
+                            }
+                            else {
+                                if (
+                                    Daedalus::Users::Manager::is_organization_member(
+                                        $c,
+                                        $required_user_data->{_hidden_data}
+                                          ->{user}->{id},
+                                        $organization_data->{_hidden_data}
+                                          ->{organization}->{id}
+                                    )->{status} == 0
+                                  )
+                                {
+                                    $valid_user = 0;
+                                }
+                            }
+                        }
+                        if ( $valid_user == 0 ) {
+                            $response->{status}     = 0;
+                            $response->{message}    = "Invalid user.";
+                            $response->{error_code} = 400;
+                        }
+                        else {
+                            $response =
+                              Daedalus::Organizations::Manager::add_user_to_organization_group(
+                                $c,
+                                $groups->{_hidden_data}->{$group_name}->{id},
+                                $required_user_data->{_hidden_data}->{user}
+                                  ->{id}
+                              );
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
+
+}
+
 =encoding utf8
 
 =head1 AUTHOR
