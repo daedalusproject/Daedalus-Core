@@ -875,7 +875,7 @@ sub remove_role_group_DELETE {
                                     $response->{status}     = 0;
                                     $response->{error_code} = 400;
                                     $response->{message} =
-'Cannot remove this role, no more admin roles left in this organization.';
+'Cannot remove this role, no more admin roles will left in this organization.';
                                 }
                             }
                             if ($removal_allowed) {

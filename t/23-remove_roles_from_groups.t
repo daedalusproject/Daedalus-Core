@@ -658,7 +658,7 @@ my $remove_admin_role_from_group_failed_json =
 is( $remove_admin_role_from_group_failed_json->{status}, 0, );
 is(
     $remove_admin_role_from_group_failed_json->{message},
-    'Cannot remove this role, no more admin roles left in this organization.',
+'Cannot remove this role, no more admin roles will left in this organization.',
 );
 
 is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );
