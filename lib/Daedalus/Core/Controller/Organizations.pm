@@ -1080,6 +1080,178 @@ sub add_user_to_group_POST {
 
 }
 
+sub remove_user_group : Path('/organization/removeusergroup') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub remove_user_group_DELETE {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $organization_token;
+    my $organization;
+    my $organization_data;
+
+    my $is_organization_admin;
+
+    my $groups;
+    my $group_name;
+
+    my $user_email;
+
+    my $removal_allowed = 1;
+    my $users_roles;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin'
+            },
+            required_data => {
+                organization_token => {
+                    type     => "string",
+                    required => 1,
+                },
+                group_name => {
+                    type     => "string",
+                    required => 1,
+                },
+                user_email => {
+                    type     => "e-mail",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
+        $organization_token =
+          $authorization_and_validatation->{data}->{required_data}
+          ->{organization_token};
+        $group_name = $authorization_and_validatation->{data}->{required_data}
+          ->{group_name};
+        $user_email =
+          $authorization_and_validatation->{data}->{required_data}
+          ->{user_email};
+
+        $organization =
+          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+            $organization_token );
+
+        if ( $organization->{status} == 0 ) {
+            $response = $organization;
+            $response->{error_code} = 400;
+        }
+        else {
+            $organization_data = $organization->{organization};
+            $is_organization_admin =
+              Daedalus::Users::Manager::is_organization_admin(
+                $c,
+                $user_data->{_hidden_data}->{user}->{id},
+                $organization_data->{_hidden_data}->{organization}->{id}
+              );
+            if (   $is_organization_admin->{status} == 0
+                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+
+            {
+                $response->{status}     = 0;
+                $response->{message}    = "Invalid organization token.";
+                $response->{error_code} = 400;
+
+            }
+            else {
+                $groups =
+                  Daedalus::Organizations::Manager::get_organization_groups( $c,
+                    $organization_data->{_hidden_data}->{organization}->{id} );
+                if ( !exists $groups->{data}->{$group_name} ) {
+                    $response->{status}     = 0;
+                    $response->{message}    = "Required group does not exist.";
+                    $response->{error_code} = 400;
+                }
+                else {
+
+                    $required_user =
+                      Daedalus::Users::Manager::get_user_from_email( $c,
+                        $user_email );
+                    if ( !($required_user) ) {
+                        $response->{status} = 0;
+                        $response->{message} =
+                          "Required user is already assigned to this group.";
+                        $response->{error_code} = 400;
+                    }
+
+                    else {
+
+                        if (
+
+                            grep( /^$user_email$/,
+                                @{ $groups->{data}->{$group_name}->{users} } )
+                          )
+                        {
+
+                            if (
+                                grep ( /^organization_master$/,
+                                    @{
+                                        $groups->{data}->{$group_name}->{roles}
+                                    } )
+                                && $user_data->{_hidden_data}->{user}
+                                ->{is_super_admin} == 0
+                              )
+                            {
+                                $count_organization_admins =
+                                  Daedalus::OrganizationGroups::Manager::count_organization_admins(
+                                    $c, $groups->{data},
+                                    'organization_master' );
+                                if ( $count_organization_admins lt 2 ) {
+                                    $removal_allowed        = 0;
+                                    $response->{status}     = 0;
+                                    $response->{error_code} = 400;
+                                    $response->{message} =
+'Cannot remove this role, no more admin roles will left in this organization.';
+                                }
+                            }
+                            if ($removal_allowed) {
+                                $response =
+                                  Daedalus::Organizations::Manager::remove_user_from_organization_group(
+                                    $c,
+                                    $groups->{_hidden_data}->{$group_name}
+                                      ->{id},
+                                    $available_roles->{_hidden_data}
+                                      ->{$role_name}->{id}
+                                  );
+                                $response->{error_code} = 400;
+
+                            }
+                        }
+                        else {
+                            $response->{status} = 0;
+                            $response->{message} =
+                              'Required user does not belong to this group.';
+                            $response->{error_code} = 400;
+
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
+
+}
+
 =encoding utf8
 
 =head1 AUTHOR
