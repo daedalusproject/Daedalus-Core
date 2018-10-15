@@ -1080,7 +1080,7 @@ sub add_user_to_group_POST {
 
 }
 
-sub remove_user_group : Path('/organization/removeusergroup') : Args(0) :
+sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
@@ -1102,9 +1102,10 @@ sub remove_user_group_DELETE {
     my $group_name;
 
     my $user_email;
+    my $required_user;
 
     my $removal_allowed = 1;
-    my $users_roles;
+    my $count_organization_admins;
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -1184,9 +1185,8 @@ sub remove_user_group_DELETE {
                       Daedalus::Users::Manager::get_user_from_email( $c,
                         $user_email );
                     if ( !($required_user) ) {
-                        $response->{status} = 0;
-                        $response->{message} =
-                          "Required user is already assigned to this group.";
+                        $response->{status}     = 0;
+                        $response->{message}    = "Invalid user.";
                         $response->{error_code} = 400;
                     }
 
@@ -1198,38 +1198,39 @@ sub remove_user_group_DELETE {
                                 @{ $groups->{data}->{$group_name}->{users} } )
                           )
                         {
-
                             if (
                                 grep ( /^organization_master$/,
                                     @{
                                         $groups->{data}->{$group_name}->{roles}
                                     } )
-                                && $user_data->{_hidden_data}->{user}
-                                ->{is_super_admin} == 0
                               )
                             {
                                 $count_organization_admins =
                                   Daedalus::OrganizationGroups::Manager::count_organization_admins(
                                     $c, $groups->{data},
                                     'organization_master' );
-                                if ( $count_organization_admins lt 2 ) {
-                                    $removal_allowed        = 0;
-                                    $response->{status}     = 0;
-                                    $response->{error_code} = 400;
-                                    $response->{message} =
-'Cannot remove this role, no more admin roles will left in this organization.';
+                                if (   $count_organization_admins lt 2
+                                    && $user_data->{_hidden_data}->{user}
+                                    ->{is_super_admin} == 0 )
+                                {
+                                    $removal_allowed = 0;
                                 }
                             }
                             if ($removal_allowed) {
                                 $response =
-                                  Daedalus::Organizations::Manager::remove_user_from_organization_group(
+                                  Daedalus::OrganizationGroups::Manager::remove_user_from_organization_group(
                                     $c,
                                     $groups->{_hidden_data}->{$group_name}
                                       ->{id},
-                                    $available_roles->{_hidden_data}
-                                      ->{$role_name}->{id}
+                                    $required_user->id
                                   );
                                 $response->{error_code} = 400;
+                            }
+                            else {
+                                $response->{status}     = 0;
+                                $response->{error_code} = 400;
+                                $response->{message} =
+'Cannot remove this user, no more admin users will left in this organization.';
 
                             }
                         }
