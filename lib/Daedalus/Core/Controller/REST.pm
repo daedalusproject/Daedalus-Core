@@ -142,6 +142,8 @@ sub authorize_and_validate {
 
     # We expect auth and request parameters as arguments
 
+    my $check_organization_roles = 0;
+
     my $response;
     my $data;
 
@@ -156,8 +158,11 @@ sub authorize_and_validate {
     my $user;
 
     if ($auth) {
-        if ( $auth->{type} eq "user" ) {
+        if ( $auth->{type} eq "user" or $auth->{type} eq "organization" ) {
             $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+            if ( $auth->{type} eq "organization_role" ) {
+                $check_organization_roles = 1;
+            }
         }
         elsif ( $auth->{type} eq "admin" ) {
             $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
@@ -177,13 +182,19 @@ sub authorize_and_validate {
         if ($required_data) {
             for my $required_data_name ( sort ( keys %{$required_data} ) ) {
                 my $data_properties = $required_data->{$required_data_name};
-                my $value = $c->{request}->{data}->{$required_data_name};
-                if ( $data_properties->{required} == 1 ) {
-                    if ( !( defined $value ) ) {
-                        $response->{status}     = 0;
-                        $response->{error_code} = 400;
-                        $response->{message}    = $response->{message}
-                          . " No $required_data_name provided.";
+                my $value;
+                if ( $data_properties->{given} == 1 ) {
+                    $value = $data_properties->{value};
+                }
+                else {
+                    my $value = $c->{request}->{data}->{$required_data_name};
+                    if ( $data_properties->{required} == 1 ) {
+                        if ( !( defined $value ) ) {
+                            $response->{status}     = 0;
+                            $response->{error_code} = 400;
+                            $response->{message}    = $response->{message}
+                              . " No $required_data_name provided.";
+                        }
                     }
                 }
                 if ( $response->{status} == 1 ) {
@@ -201,8 +212,65 @@ sub authorize_and_validate {
                               . " $required_data_name is invalid.";
                         }
                     }
+                    elsif ( $data_properties->{type} eq "organization" ) {
+                        $organization_token_check =
+                          Daedalus::Organizations::Manager::get_organization_from_token(
+                            $c, $value );
+                        if ( $organization_token_check->{status} = 0 ) {
+                            $response = $organization_token_check;
+                        }
+                        else {
+                            $data->{required_data}->{organization} =
+                              $organization_token_check->{organization};
+                        }
+                    }
+
                     if ( $response->{status} == 1 ) {
                         $data->{required_data}->{$required_data_name} = $value;
+
+                        # Check check_organization_roles
+                        if ( $check_organization_roles == 1 ) {
+
+                            #Check if user is organization memeber
+                            my $organization_member =
+                              Daedalus::Users::Manager::is_organization_member(
+                                $c,
+                                $data->{user_data}->{_hidden_data}->{user}
+                                  ->{id},
+                                $data->{required_data}->{organization}
+                                  ->{_hidden_data}->{organization}->{id}
+                              );
+                            if ( $organization_member->{status} == 0 ) {
+                                $response->{status}     = 0;
+                                $response->{error_code} = 400;
+                                $response->{message} =
+                                  "Invalid organization token.";
+
+                            }
+
+                            if ( $response->{status} == 1
+                                and exists( $auth->{organization_role} ) )
+                            {
+                                my $user_match_role =
+                                  Daedalus::Users::Organization::user_match_role(
+                                    $c,
+                                    $data->{user_data}->{_hidden_data}->{user}
+                                      ->{id},
+                                    $data->{required_data}->{organization}
+                                      ->{_hidden_data}->{organization}->{id},
+                                    $auth->{role_name}
+                                  );
+                                if ( $user_match_role->{status} == 0 ) {
+                                    my $prety_role_name =
+                                      $auth->{role_name} =~ s/_/ /g;
+                                    $response->{status}     = 0;
+                                    $response->{error_code} = 403;
+                                    $response->{message} =
+"You are not a $prety_role_name of this organization.";
+                                }
+
+                            }
+                        }
                     }
                 }
             }
