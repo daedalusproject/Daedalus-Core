@@ -138,6 +138,8 @@ sub show_organization_users_GET {
     my $user_data;
     my $organization_token;    # Token will be acquired only if user is an admin
 
+    my $organizacion_member;
+
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
@@ -164,32 +166,49 @@ sub show_organization_users_GET {
         else {
             my $organization = $organization_request->{organization};
 
-            #Check is user is admin of $oganization
-            my $is_organization_admin =
-              Daedalus::Users::Manager::is_organization_admin(
+            $organization_member =
+              Daedalus::Users::Manager::is_organization_member(
                 $c,
                 $user_data->{_hidden_data}->{user}->{id},
-                $organization->{_hidden_data}->{organization}->{id}
+                $organization_data->{_hidden_data}->{organization}->{id}
               );
-
-            if (   $is_organization_admin->{status} == 0
-                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
-            {
-                $response->{status} = 0;
-
-                # Do not reveal if the token exists if the user is not an admin
-                $response->{message}    = 'Invalid Organization token';
+            if ( $organization_member->{status} == 0 ) {
+                $response->{status}     = 0;
+                $response->{message}    = "Invalid organization token.";
                 $response->{error_code} = 400;
             }
-            else {
-                #Get users from organization
-                $response = Daedalus::Users::Manager::get_organization_users(
-                    $c,
-                    $organization->{_hidden_data}->{organization}->{id},
-                    $user_data->{_hidden_data}->{user}->{is_super_admin}
-                );
-            }
 
+            else {
+                #Check is user is admin of $oganization
+                my $is_organization_admin =
+                  Daedalus::Users::Manager::is_organization_admin(
+                    $c,
+                    $user_data->{_hidden_data}->{user}->{id},
+                    $organization->{_hidden_data}->{organization}->{id}
+                  );
+
+                if (   $is_organization_admin->{status} == 0
+                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
+                    0 )
+                {
+                    $response->{status} = 0;
+
+                 # Do not reveal if the token exists if the user is not an admin
+                    $response->{message} =
+                      'You are not an admin user of this organization.';
+                    $response->{error_code} = 403;
+                }
+                else {
+                    #Get users from organization
+                    $response =
+                      Daedalus::Users::Manager::get_organization_users(
+                        $c,
+                        $organization->{_hidden_data}->{organization}->{id},
+                        $user_data->{_hidden_data}->{user}->{is_super_admin}
+                      );
+                }
+
+            }
         }
     }
 

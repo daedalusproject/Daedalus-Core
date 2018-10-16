@@ -706,13 +706,16 @@ my $remove_failed_no_admin = request(
     ),
 );
 
-is( $remove_failed_no_admin->code(), 403, );
+is( $remove_failed_no_admin->code(), 400, );
 
 my $remove_failed_no_admin_json =
   decode_json( $remove_failed_no_admin->content );
 
-is( $remove_failed_no_admin_json->{status},  0, );
-is( $remove_failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $remove_failed_no_admin_json->{status}, 0, );
+is(
+    $remove_failed_no_admin_json->{message},
+    'You are not an admin user of this organization.',
+);
 
 is( $remove_failed_no_admin_json->{_hidden_data}, undef, );
 

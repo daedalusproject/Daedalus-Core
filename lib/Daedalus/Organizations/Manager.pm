@@ -114,6 +114,14 @@ sub create_organization {
             }
           );
 
+        my $organization_user_group =
+          $c->model('CoreRealms::OrgaizationUsersGroup')->create(
+            {
+                group_id => $organization_group->id,
+                user_id  => $user_id,
+            }
+          );
+
         $response = {
             status  => 1,
             message => 'Organization created.',

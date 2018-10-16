@@ -622,8 +622,10 @@ my $failed_no_admin_users_left_json =
   decode_json( $failed_no_admin_users_left->content );
 
 is( $failed_no_admin_users_left_json->{status}, 0, );
-is( $failed_no_admin_users_left_json->{message},
-    'You are not an admin user.', );
+is(
+    $failed_no_admin_users_left_json->{message},
+    'You are not an admin user of this organization.',
+);
 
 my $add_new_admin_again = request(
     POST '/organization/addusertogroup',
