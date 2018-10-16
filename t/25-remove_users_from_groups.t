@@ -99,7 +99,7 @@ is(
 'No group_name provided. No organization_token provided. No user_email provided.',
 );
 
-my $failed_no_group_data_no_role = request(
+my $failed_no_group_data_no_user = request(
     DELETE $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -108,32 +108,32 @@ my $failed_no_group_data_no_role = request(
     ),
 );
 
-is( $failed_no_group_data_no_role->code(), 400, );
+is( $failed_no_group_data_no_user->code(), 400, );
 #
-my $failed_no_group_data_no_role_json =
-  decode_json( $failed_no_group_data_no_role->content );
+my $failed_no_group_data_no_user_json =
+  decode_json( $failed_no_group_data_no_user->content );
 
-is( $failed_no_group_data_no_role_json->{status}, 0, );
+is( $failed_no_group_data_no_user_json->{status}, 0, );
 is(
-    $failed_no_group_data_no_role_json->{message},
+    $failed_no_group_data_no_user_json->{message},
     'No group_name provided. No user_email provided.',
 );
 
-my $failed_no_organization_data_no_role = request(
+my $failed_no_organization_data_no_user = request(
     DELETE $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json( { group_name => 'Some Group Name' } ),
 );
 
-is( $failed_no_organization_data_no_role->code(), 400, );
+is( $failed_no_organization_data_no_user->code(), 400, );
 #
-my $failed_no_organization_data_no_role_json =
-  decode_json( $failed_no_organization_data_no_role->content );
+my $failed_no_organization_data_no_user_json =
+  decode_json( $failed_no_organization_data_no_user->content );
 
-is( $failed_no_organization_data_no_role_json->{status}, 0, );
+is( $failed_no_organization_data_no_user_json->{status}, 0, );
 is(
-    $failed_no_organization_data_no_role_json->{message},
+    $failed_no_organization_data_no_user_json->{message},
     'No organization_token provided. No user_email provided.',
 );
 

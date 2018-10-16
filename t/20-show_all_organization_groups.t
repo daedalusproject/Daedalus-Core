@@ -113,7 +113,7 @@ is(
           ->{'Mega Shops Administrators'}->{roles}
     },
     2,
-'For the time being Supershops Administrators has two roles, firemen and organization master'
+'For the time being Megashops Administrators has two roles, firemen and organization master'
 );
 
 is( $admin_user_mega_shop_groups_json->{_hidden_data},
@@ -270,7 +270,7 @@ is(
           ->{'Mega Shops Administrators'}->{roles}
     },
     2,
-'For the time being Supershops Administrators has two roles, firemen and organization master'
+'For the time being Mega Shops Administrators has two roles, firemen and organization master'
 );
 
 isnt( $super_admin_user_mega_shop_groups_json->{_hidden_data},
