@@ -112,7 +112,6 @@ sub show_organizations_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
@@ -144,13 +143,21 @@ sub show_organization_users_GET {
         $c,
         {
             auth => {
-                type => 'admin'
+                type               => 'organization',
+                organization_roles => ['organization_master'],
             },
+            required_data => {
+                organization_token => {
+                    type  => "organization",
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
+                },
+            }
         }
     );
+    die Dumper($authorization_and_validatation);
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};

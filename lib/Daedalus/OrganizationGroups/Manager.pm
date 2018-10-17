@@ -84,7 +84,7 @@ sub count_organization_admins {
 
 =head2 remove_user_from_organization_group
 
-Removes user from organization groupd
+Removes user from organization group
 
 =cut
 
@@ -107,6 +107,48 @@ sub remove_user_from_organization_group {
     $response->{error_code} = 400;
     $response->{message} =
       'Required user has been removed from organization group.';
+
+    return $response;
+}
+
+=head2 user_match_role
+
+Check if user has the following roles inside given organization
+
+=cut
+
+sub user_match_role {
+
+    my $c                           = shift;
+    my $user_id                     = shift;
+    my $organization_id             = shift;
+    my $required_organization_roles = shift;
+
+    my $response;
+    my $organization_roles;
+
+    $response->{status} = 1;
+    $response->{organization_groups} =
+      Daedalus::Organizations::Manager::get_organization_groups( $c,
+        $organization_id );
+    for my $group_name ( keys %{ $response->{organization_groups}->{data} } ) {
+
+        for my $role_name (
+            @{
+                $response->{organization_groups}->{data}->{$group_name}->{roles}
+            }
+          )
+        {
+            $organization_roles->{$role_name} = 1;
+        }
+
+    }
+
+    for my $role_name ( @{$required_organization_roles} ) {
+        if ( !exists( $organization_roles->{$role_name} ) ) {
+            $response->{status} = 0;
+        }
+    }
 
     return $response;
 }
