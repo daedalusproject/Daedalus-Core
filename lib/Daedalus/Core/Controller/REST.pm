@@ -219,7 +219,7 @@ sub authorize_and_validate {
                             $response = $organization_token_check;
                         }
                         else {
-                            $data->{required_data}->{organization} =
+                            $data->{organization} =
                               $organization_token_check->{organization};
                         }
                     }
@@ -228,7 +228,10 @@ sub authorize_and_validate {
                         $data->{required_data}->{$required_data_name} = $value;
                     }
                 }
-                if ( $response->{status} == 1 ) {
+                if (    $response->{status} == 1
+                    and $user->{data}->{_hidden_data}->{user}->{is_super_admin}
+                    == 0 )
+                {
 
                     # Check check_organization_roles
                     if ( $check_organization_roles == 1 ) {

@@ -135,9 +135,7 @@ sub show_organization_users_GET {
 
     my $response;
     my $user_data;
-    my $organization_token;    # Token will be acquired only if user is an admin
-
-    my $organization_member;
+    my $organization;
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -155,52 +153,52 @@ sub show_organization_users_GET {
             }
         }
     );
-    die Dumper($authorization_and_validatation);
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
     else {
-        $user_data = $authorization_and_validatation->{data}->{user_data};
-        $organization_token = $c->{request}->{arguments}[0]
-          ;    # I'm sure that there is only one argument
-        my $organization_request =
-          Daedalus::Organizations::Manager::get_organization_from_token( $c,
-            $organization_token );
-        if ( $organization_request->{status} == 0 ) {
-            $response = $organization_request;
-            $response->{error_code} = 400;
-        }
-        else {
-            my $organization = $organization_request->{organization};
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
 
-            #Check is user is admin of $oganization
-            my $is_organization_admin =
-              Daedalus::Users::Manager::is_organization_admin(
-                $c,
-                $user_data->{_hidden_data}->{user}->{id},
-                $organization->{_hidden_data}->{organization}->{id}
-              );
+#        my $organization_request =
+#          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+#            $organization_token );
+#        if ( $organization_request->{status} == 0 ) {
+#            $response = $organization_request;
+#            $response->{error_code} = 400;
+#        }
+#        else {
+#            my $organization = $organization_request->{organization};
+#
+#            #Check is user is admin of $oganization
+#            my $is_organization_admin =
+#              Daedalus::Users::Manager::is_organization_admin(
+#                $c,
+#                $user_data->{_hidden_data}->{user}->{id},
+#                $organization->{_hidden_data}->{organization}->{id}
+#              );
+#
+#            if (   $is_organization_admin->{status} == 0
+#                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+#            {
+#                $response->{status} = 0;
+#
+#                # Do not reveal if the token exists if the user is not an admin
+#                $response->{message} =
+#                  'You are not an admin user of this organization.';
+#                $response->{error_code} = 403;
+#            }
+#            else {
+#Get users from organization
+        die "TODO BIEN";
+        $response = Daedalus::Users::Manager::get_organization_users(
+            $c,
+            $organization->{_hidden_data}->{organization}->{id},
+            $user_data->{_hidden_data}->{user}->{is_super_admin}
+        );
 
-            if (   $is_organization_admin->{status} == 0
-                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
-            {
-                $response->{status} = 0;
+        #}
 
-                # Do not reveal if the token exists if the user is not an admin
-                $response->{message} =
-                  'You are not an admin user of this organization.';
-                $response->{error_code} = 403;
-            }
-            else {
-                #Get users from organization
-                $response = Daedalus::Users::Manager::get_organization_users(
-                    $c,
-                    $organization->{_hidden_data}->{organization}->{id},
-                    $user_data->{_hidden_data}->{user}->{is_super_admin}
-                );
-            }
-
-        }
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
