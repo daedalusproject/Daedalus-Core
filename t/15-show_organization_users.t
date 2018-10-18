@@ -54,12 +54,12 @@ my $failed_no_admin = request(
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_admin_json->{message}, 'Invalid Organization token.', );
 
 my $admin_megashops_success = request(
     POST '/user/login',
@@ -220,7 +220,7 @@ my $superadmin_expired_token = request(
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
-is( $superadmin_expired_token->code(), 403, );
+is( $superadmin_expired_token->code(), 400, );
 
 my $superadmin_expired_token_json =
   decode_json( $superadmin_expired_token->content );

@@ -241,15 +241,14 @@ sub authorize_and_validate {
                           Daedalus::Users::Manager::is_organization_member(
                             $c,
                             $data->{user_data}->{_hidden_data}->{user}->{id},
-                            $data->{required_data}->{organization}
-                              ->{_hidden_data}->{organization}->{id}
+                            $data->{organization}->{_hidden_data}
+                              ->{organization}->{id}
                           );
                         if ( $organization_member->{status} == 0 ) {
                             $response->{status}     = 0;
                             $response->{error_code} = 400;
                             $response->{message} =
                               "Invalid organization token.";
-
                         }
 
                         if ( $response->{status} == 1
@@ -260,8 +259,8 @@ sub authorize_and_validate {
                                 $c,
                                 $data->{user_data}->{_hidden_data}->{user}
                                   ->{id},
-                                $data->{required_data}->{organization}
-                                  ->{_hidden_data}->{organization}->{id},
+                                $data->{organization}->{_hidden_data}
+                                  ->{organization}->{id},
                                 $auth->{organization_roles}
                               );
                             if ( $user_match_role->{status} == 0 ) {

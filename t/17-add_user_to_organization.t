@@ -51,6 +51,12 @@ my $failed_no_admin = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            user_email         => 'invalidemail.com'
+        }
+    )
 );
 
 is( $failed_no_admin->code(), 403, );

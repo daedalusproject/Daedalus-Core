@@ -1,7 +1,7 @@
 <config>
     <name>Daedalus::Core</name>
     <authTokenConfig>
-    <relative_exp>3000000000000</relative_exp>
+    <relative_exp>30</relative_exp>
     <rsa_private_key>t/lib/secrets/daedalus_core_rsa_key</rsa_private_key>
     <rsa_public_key>t/lib/secrets/daedalus_core_rsa_key.pub</rsa_public_key>
     </authTokenConfig>

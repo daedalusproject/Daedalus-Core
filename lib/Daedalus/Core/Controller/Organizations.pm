@@ -153,6 +153,7 @@ sub show_organization_users_GET {
             }
         }
     );
+
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
@@ -160,44 +161,11 @@ sub show_organization_users_GET {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
 
-#        my $organization_request =
-#          Daedalus::Organizations::Manager::get_organization_from_token( $c,
-#            $organization_token );
-#        if ( $organization_request->{status} == 0 ) {
-#            $response = $organization_request;
-#            $response->{error_code} = 400;
-#        }
-#        else {
-#            my $organization = $organization_request->{organization};
-#
-#            #Check is user is admin of $oganization
-#            my $is_organization_admin =
-#              Daedalus::Users::Manager::is_organization_admin(
-#                $c,
-#                $user_data->{_hidden_data}->{user}->{id},
-#                $organization->{_hidden_data}->{organization}->{id}
-#              );
-#
-#            if (   $is_organization_admin->{status} == 0
-#                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
-#            {
-#                $response->{status} = 0;
-#
-#                # Do not reveal if the token exists if the user is not an admin
-#                $response->{message} =
-#                  'You are not an admin user of this organization.';
-#                $response->{error_code} = 403;
-#            }
-#            else {
-#Get users from organization
-        die "TODO BIEN";
         $response = Daedalus::Users::Manager::get_organization_users(
             $c,
             $organization->{_hidden_data}->{organization}->{id},
             $user_data->{_hidden_data}->{user}->{is_super_admin}
         );
-
-        #}
 
     }
 
@@ -235,7 +203,8 @@ sub add_user_to_organization_POST {
         $c,
         {
             auth => {
-                user => 'admin'
+                type               => 'organization',
+                organization_roles => ['organization_master'],
             },
             required_data => {
                 user_email => {
@@ -243,7 +212,7 @@ sub add_user_to_organization_POST {
                     required => 1,
                 },
                 organization_token => {
-                    type     => "string",
+                    type     => "organization",
                     required => 1,
                 },
             }
