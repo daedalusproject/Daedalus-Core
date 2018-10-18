@@ -274,10 +274,6 @@ sub show_organization_groups_GET {
     my $response;
     my $user_data;
     my $organization;
-    my $organization_data;
-    my $organization_member;
-
-    my $user_groups;
 
     my $organization_token = $c->{request}->{arguments}[0];
 
@@ -285,48 +281,34 @@ sub show_organization_groups_GET {
         $c,
         {
             auth => {
-                type => 'user'
+                type => 'organization'
             },
+            required_data => {
+                organization_token => {
+                    type  => "organization",
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
+                },
+            }
         }
     );
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
-        $user_data = $authorization_and_validatation->{data}->{user_data};
-        $organization =
-          Daedalus::Organizations::Manager::get_organization_from_token( $c,
-            $organization_token );
-        if ( $organization->{status} == 0 ) {
-            $response = $organization;
-            $response->{error_code} = 400;
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
 
-        }
-        else {
-            $organization_data = $organization->{organization};
-            $organization_member =
-              Daedalus::Users::Manager::is_organization_member(
-                $c,
-                $user_data->{_hidden_data}->{user}->{id},
-                $organization_data->{_hidden_data}->{organization}->{id}
-              );
-            if ( $organization_member->{status} == 0 ) {
-                $response->{status}     = 0;
-                $response->{message}    = "Invalid organization token.";
-                $response->{error_code} = 400;
-            }
-            else {
-                $response =
-                  Daedalus::Organizations::Manager::get_user_organization_groups(
-                    $c, $user_data, $organization_data );
+        $response =
+          Daedalus::Organizations::Manager::get_user_organization_groups( $c,
+            $user_data, $organization );
 
-                $response->{error_code} = 400;
-                $response->{status}     = 1;
+        $response->{error_code} = 400;
+        $response->{status}     = 1;
 
-            }
-        }
+        #         }
+        # }
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
