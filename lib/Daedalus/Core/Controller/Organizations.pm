@@ -240,16 +240,21 @@ sub show_organizations_groups_GET {
     my $response;
     my $user_data;
 
-    my $user_groups;
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user',
+            },
+        }
+    );
 
-    my $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-
-    if ( $user->{status} == 0 ) {
-        $response = $user;
-        $response->{error_code} = 403;
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
     }
     else {
-        $user_data = $user->{data};
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
         $response =
           Daedalus::Organizations::Manager::get_user_organizations_groups( $c,
             $user_data );
