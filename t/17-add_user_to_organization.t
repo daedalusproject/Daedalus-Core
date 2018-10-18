@@ -47,7 +47,7 @@ my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
 my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-my $failed_no_admin = request(
+my $failed_no_organization_memeber = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
@@ -59,12 +59,16 @@ my $failed_no_admin = request(
     )
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_organization_memeber->code(), 400, );
 
-my $failed_no_admin_json = decode_json( $failed_no_admin->content );
+my $failed_no_organization_memeber_json =
+  decode_json( $failed_no_organization_memeber->content );
 
-is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_organization_memeber_json->{status}, 0, );
+is(
+    $failed_no_organization_memeber_json->{message},
+    'Invalid organization token.',
+);
 
 my $admin_success = request(
     POST '/user/login',
@@ -160,7 +164,7 @@ my $failed_invalid_data = request(
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
-            organization_token => 'ivalidorganizationtoken',
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             user_email         => 'invalidemail'
         }
     ),
@@ -177,27 +181,27 @@ is(
     "e-mail is checked first"
 );
 
-my $failed_invalid_organization_data_email_not_found = request(
+my $failed_email_not_found = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
-            organization_token => 'ivalidorganizationtoken',
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             user_email         => 'notexistent@user.com'
         }
     ),
 );
 
-is( $failed_invalid_organization_data_email_not_found->code(), 400, );
+is( $failed_email_not_found->code(), 400, );
 #
-my $failed_invalid_organization_data_email_not_found_json =
-  decode_json( $failed_invalid_organization_data_email_not_found->content );
+my $failed_email_not_found_json =
+  decode_json( $failed_email_not_found->content );
 
-is( $failed_invalid_organization_data_email_not_found_json->{status}, 0, );
+is( $failed_email_not_found_json->{status}, 0, );
 is(
-    $failed_invalid_organization_data_email_not_found_json->{message},
-'Invalid Organization token. There is not registered user with that e-mail address.',
+    $failed_email_not_found_json->{message},
+    'There is not registered user with that e-mail address.',
 );
 
 my $failed_invalid_email = request(
@@ -218,26 +222,6 @@ my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
 is( $failed_invalid_email_json->{status},  0, );
 is( $failed_invalid_email_json->{message}, 'user_email is invalid.', );
-
-my $failed_email_not_found = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",    #Megashops token
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'invalidemail.com'
-        }
-    ),
-);
-
-is( $failed_email_not_found->code(), 400, );
-#
-my $failed_email_not_found_json =
-  decode_json( $failed_email_not_found->content );
-
-is( $failed_email_not_found_json->{status},  0, );
-is( $failed_email_not_found_json->{message}, 'user_email is invalid.', );
 
 my $failed_inactive_user = request(
     POST $endpoint,
@@ -278,7 +262,7 @@ my $failed_not_my_organization_json =
 is( $failed_not_my_organization_json->{status}, 0, );
 is(
     $failed_not_my_organization_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $add_user_success = request(
