@@ -17,7 +17,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -53,12 +53,16 @@ my $failed_no_admin = request(
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_admin_json->{status}, 0, );
+is(
+    $failed_no_admin_json->{message},
+    'Invalid Organization token.',
+    'You are not an admin user.',
+);
 
 my $admin_success = request(
     POST '/user/login',

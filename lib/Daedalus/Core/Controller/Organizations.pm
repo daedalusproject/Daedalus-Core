@@ -334,10 +334,20 @@ sub show_all_organization_groups_GET {
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
+
         {
             auth => {
-                type => 'admin'
+                type               => 'organization',
+                organization_roles => ['organization_master'],
             },
+            required_data => {
+                organization_token => {
+                    type  => "organization",
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
+
+                },
+            }
         }
     );
 
@@ -345,9 +355,9 @@ sub show_all_organization_groups_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
+        #die Dumper($authorization_and_validatation);
         $user_data = $authorization_and_validatation->{data}->{user_data};
         $organization =
           Daedalus::Organizations::Manager::get_organization_from_token( $c,
