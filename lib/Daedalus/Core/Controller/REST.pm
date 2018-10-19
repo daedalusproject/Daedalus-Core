@@ -177,6 +177,11 @@ sub authorize_and_validate {
             $data->{user_data} = $user->{data};
         }
     }
+
+    if ( exists $required_data->{organization_token} ) {
+        sdaaaaaaaaaaaaaaaa;
+    }
+
     if ( $response->{status} == 1 ) {
 
         # Auth passed check required_data
@@ -227,7 +232,7 @@ sub authorize_and_validate {
                                     $response->{status}     = 0;
                                     $response->{error_code} = 400;
                                     $response->{message} = $response->{message}
-                                      . "There is not registered user with that e-mail address.";
+                                      . "There is no registered user with that e-mail address.";
                                 }
                                 else {
                                     if ( $data_properties->{type} eq
@@ -264,58 +269,56 @@ sub authorize_and_validate {
                         $data->{required_data}->{$required_data_name} = $value;
                     }
                 }
-                if (    $response->{status} == 1
-                    and $user->{data}->{_hidden_data}->{user}->{is_super_admin}
-                    == 0 )
-                {
+            }    # for required data
+            if (    $response->{status} == 1
+                and $user->{data}->{_hidden_data}->{user}->{is_super_admin} ==
+                0 )
+            {
 
-                    # Check check_organization_roles
-                    if ( $check_organization_roles == 1 ) {
+                # Check check_organization_roles
+                if ( $check_organization_roles == 1 ) {
 
-                        #Check if user is organization memeber
-                        my $organization_member =
-                          Daedalus::Users::Manager::is_organization_member(
+                    #Check if user is organization memeber
+                    my $organization_member =
+                      Daedalus::Users::Manager::is_organization_member(
+                        $c,
+                        $data->{user_data}->{_hidden_data}->{user}->{id},
+                        $data->{organization}->{_hidden_data}->{organization}
+                          ->{id}
+                      );
+                    if ( $organization_member->{status} == 0 ) {
+                        $response->{status}     = 0;
+                        $response->{error_code} = 400;
+                        $response->{message}    = "Invalid organization token.";
+                    }
+
+                    if ( $response->{status} == 1
+                        and exists( $auth->{organization_roles} ) )
+                    {
+                        my $user_match_role =
+                          Daedalus::OrganizationGroups::Manager::user_match_role(
                             $c,
                             $data->{user_data}->{_hidden_data}->{user}->{id},
                             $data->{organization}->{_hidden_data}
-                              ->{organization}->{id}
+                              ->{organization}->{id},
+                            $auth->{organization_roles}
                           );
-                        if ( $organization_member->{status} == 0 ) {
+                        if ( $user_match_role->{status} == 0 ) {
+                            my $prety_role_name = $auth->{role_name} =~ s/_/ /g;
                             $response->{status}     = 0;
-                            $response->{error_code} = 400;
+                            $response->{error_code} = 403;
                             $response->{message} =
-                              "Invalid organization token.";
-                        }
-
-                        if ( $response->{status} == 1
-                            and exists( $auth->{organization_roles} ) )
-                        {
-                            my $user_match_role =
-                              Daedalus::OrganizationGroups::Manager::user_match_role(
-                                $c,
-                                $data->{user_data}->{_hidden_data}->{user}
-                                  ->{id},
-                                $data->{organization}->{_hidden_data}
-                                  ->{organization}->{id},
-                                $auth->{organization_roles}
-                              );
-                            if ( $user_match_role->{status} == 0 ) {
-                                my $prety_role_name =
-                                  $auth->{role_name} =~ s/_/ /g;
-                                $response->{status}     = 0;
-                                $response->{error_code} = 403;
-                                $response->{message} =
 "You are not a $prety_role_name of this organization.";
-                            }
-                            else {
-                                $data->{organization_groups} =
-                                  $user_match_role->{'organization_groups'};
-                            }
-
                         }
+                        else {
+                            $data->{organization_groups} =
+                              $user_match_role->{'organization_groups'};
+                        }
+
                     }
                 }
             }
+
         }
     }
 

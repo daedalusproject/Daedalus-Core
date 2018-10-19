@@ -326,9 +326,6 @@ sub show_all_organization_groups_GET {
     my $user_data;
 
     my $organization;
-    my $organization_data;
-
-    my $is_organization_admin;
 
     my $groups;
 
@@ -357,45 +354,17 @@ sub show_all_organization_groups_GET {
         $response = $authorization_and_validatation;
     }
     else {
-        #die Dumper($authorization_and_validatation);
-        $user_data = $authorization_and_validatation->{data}->{user_data};
-        $organization =
-          Daedalus::Organizations::Manager::get_organization_from_token( $c,
-            $organization_token );
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
 
-        if ( $organization->{status} == 0 ) {
-            $response = $organization;
-            $response->{error_code} = 400;
+        $groups =
+          Daedalus::Organizations::Manager::get_organization_groups( $c,
+            $organization->{_hidden_data}->{organization}->{id} );
+        $response->{data}->{groups}         = $groups->{data};
+        $response->{_hidden_data}->{groups} = $groups->{_hidden_data};
+        $response->{status}                 = 1;
+        $response->{error_code}             = 400;
 
-        }
-        else {
-            $organization_data = $organization->{organization};
-            $is_organization_admin =
-              Daedalus::Users::Manager::is_organization_admin(
-                $c,
-                $user_data->{_hidden_data}->{user}->{id},
-                $organization_data->{_hidden_data}->{organization}->{id}
-              );
-            if (   $is_organization_admin->{status} == 0
-                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
-
-            {
-                $response->{status}     = 0;
-                $response->{message}    = "Invalid organization token.";
-                $response->{error_code} = 400;
-
-            }
-            else {
-                $groups =
-                  Daedalus::Organizations::Manager::get_organization_groups( $c,
-                    $organization_data->{_hidden_data}->{organization}->{id} );
-                $response->{data}->{groups}         = $groups->{data};
-                $response->{_hidden_data}->{groups} = $groups->{_hidden_data};
-                $response->{status}                 = 1;
-                $response->{error_code}             = 400;
-
-            }
-        }
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
@@ -429,11 +398,12 @@ sub create_organization_group_POST {
         $c,
         {
             auth => {
-                type => 'admin'
+                type               => 'organization',
+                organization_roles => ['organization_master'],
             },
             required_data => {
                 organization_token => {
-                    type     => "string",
+                    type     => "organization",
                     required => 1,
                 },
                 group_name => {
@@ -448,63 +418,58 @@ sub create_organization_group_POST {
         $response = $authorization_and_validatation;
     }
     else {
-        $user_data = $authorization_and_validatation->{data}->{user_data};
-        $required_data =
-          $authorization_and_validatation->{data}->{required_data};
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
+        $group_name   = $required_data->{group_name};
 
-        $organization_token = $required_data->{organization_token};
-        $group_name         = $required_data->{group_name};
+ #        $response->{message} = "";
+ #
+ #        $organization =
+ #          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+ #            $organization_token );
+ #
+ #        if ( $organization->{status} == 0 ) {
+ #            $response = $organization;
+ #            $response->{error_code} = 400;
+ #
+ #        }
+ #        else {
+ #            $organization_data = $organization->{organization};
+ #            $is_organization_admin =
+ #              Daedalus::Users::Manager::is_organization_admin(
+ #                $c,
+ #                $user_data->{_hidden_data}->{user}->{id},
+ #                $organization_data->{_hidden_data}->{organization}->{id}
+ #              );
+ #            if (   $is_organization_admin->{status} == 0
+ #                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+ #
+ #            {
+ #                $response->{status}     = 0;
+ #                $response->{message}    = "Invalid organization token.";
+ #                $response->{error_code} = 400;
+ #
+ #            }
+ #            else {
+        $groups =
+          Daedalus::Organizations::Manager::get_organization_groups( $c,
+            $organization_data->{_hidden_data}->{organization}->{id} );
 
-        $response->{message} = "";
-
-        $organization =
-          Daedalus::Organizations::Manager::get_organization_from_token( $c,
-            $organization_token );
-
-        if ( $organization->{status} == 0 ) {
-            $response = $organization;
-            $response->{error_code} = 400;
-
+        $response->{error_code} = 400;
+        if ( exists $groups->{data}->{$group_name} ) {
+            $response->{status}  = 0;
+            $response->{message} = "Duplicated group name.";
         }
         else {
-            $organization_data = $organization->{organization};
-            $is_organization_admin =
-              Daedalus::Users::Manager::is_organization_admin(
-                $c,
-                $user_data->{_hidden_data}->{user}->{id},
-                $organization_data->{_hidden_data}->{organization}->{id}
-              );
-            if (   $is_organization_admin->{status} == 0
-                && $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
-
-            {
-                $response->{status}     = 0;
-                $response->{message}    = "Invalid organization token.";
-                $response->{error_code} = 400;
-
-            }
-            else {
-                $groups =
-                  Daedalus::Organizations::Manager::get_organization_groups( $c,
-                    $organization_data->{_hidden_data}->{organization}->{id} );
-
-                if ( exists $groups->{data}->{$group_name} ) {
-                    $response->{status}     = 0;
-                    $response->{message}    = "Duplicated group name.";
-                    $response->{error_code} = 400;
-                }
-                else {
-                    $response =
-                      Daedalus::Organizations::Manager::create_organization_group(
-                        $c,
-                        $organization_data->{_hidden_data}->{organization}
-                          ->{id},
-                        $group_name
-                      );
-                }
-            }
-
+            $response =
+              Daedalus::Organizations::Manager::create_organization_group( $c,
+                $organization_data->{_hidden_data}->{organization}->{id},
+                $group_name );
         }
+
+        #            }
+        #
+        #        }
 
     }
 
