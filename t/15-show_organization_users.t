@@ -59,7 +59,7 @@ is( $failed_no_admin->code(), 400, );
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'Invalid Organization token.', );
+is( $failed_no_admin_json->{message}, 'Invalid organization token.', );
 
 my $admin_megashops_success = request(
     POST '/user/login',
@@ -99,7 +99,7 @@ my $megashops_admin_invalid_short_token_json =
 is( $megashops_admin_invalid_short_token_json->{status}, 0, );
 is(
     $megashops_admin_invalid_short_token_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $megashops_admin_invalid_token = request(
@@ -116,7 +116,7 @@ my $megashops_admin_invalid_token_json =
 is( $megashops_admin_invalid_token_json->{status}, 0, );
 is(
     $megashops_admin_invalid_token_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $megashops_admin_daedalus_token = request(
@@ -134,7 +134,7 @@ my $megashops_admin_daedalus_token_json =
 is( $megashops_admin_daedalus_token_json->{status}, 0, );
 is(
     $megashops_admin_daedalus_token_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $megashops_admin_valid_token = request(

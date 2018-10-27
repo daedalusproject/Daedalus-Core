@@ -47,7 +47,7 @@ my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
 my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-my $failed_no_organization_member = request(
+my $failed_no_admin = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
@@ -56,19 +56,15 @@ my $failed_no_organization_member = request(
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             user_email         => 'invalide@mail.com'
         }
-    )
+    ),
 );
 
-is( $failed_no_organization_member->code(), 400, );
+is( $failed_no_admin->code(), 400, );
 
-my $failed_no_organization_member_json =
-  decode_json( $failed_no_organization_member->content );
+my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_organization_member_json->{status}, 0, );
-is(
-    $failed_no_organization_member_json->{message},
-    'Invalid organization token.',
-);
+is( $failed_no_admin_json->{status},  0, );
+is( $failed_no_admin_json->{message}, 'Invalid organization token.', );
 
 my $admin_success = request(
     POST '/user/login',
@@ -118,11 +114,8 @@ is( $failed_no_data->code(), 400, );
 #
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status}, 0, );
-is(
-    $failed_no_data_json->{message},
-    'No organization_token provided. No user_email provided.',
-);
+is( $failed_no_data_json->{status},  0, );
+is( $failed_no_data_json->{message}, 'No organization_token provided.', );
 
 my $failed_no_user_data = request(
     POST $endpoint,
