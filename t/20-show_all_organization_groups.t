@@ -60,7 +60,7 @@ my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 is( $failed_no_admin_json->{status}, 0, );
 is(
     $failed_no_admin_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
     'You are not an admin user.',
 );
 
@@ -136,7 +136,7 @@ my $invalid_token_failed_json = decode_json( $invalid_token_failed->content );
 is( $invalid_token_failed_json->{status}, 0, 'Invalid token.' );
 is(
     $invalid_token_failed_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
     'Of course.'
 );
 
@@ -190,11 +190,11 @@ my $superadmin_show_organizations = request(
 
 is( $superadmin_show_organizations->code(), 200, );
 
-my $superadmin_show_organizations =
+my $superadmin_show_organizations_content =
   decode_json( $superadmin_show_organizations->content );
 
 my $ultra_shops_token =
-  $superadmin_show_organizations->{data}->{organizations}->{Ultrashops}
+  $superadmin_show_organizations_content->{data}->{organizations}->{Ultrashops}
   ->{token};
 
 my $superadmin_user_ultra_shop_groups = request(

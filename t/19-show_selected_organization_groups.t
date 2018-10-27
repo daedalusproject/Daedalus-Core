@@ -106,7 +106,7 @@ my $invalid_token_failed_json = decode_json( $invalid_token_failed->content );
 is( $invalid_token_failed_json->{status}, 0, 'Invalid token.' );
 is(
     $invalid_token_failed_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
     'Of course.'
 );
 

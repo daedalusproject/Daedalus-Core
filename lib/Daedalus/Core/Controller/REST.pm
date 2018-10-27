@@ -336,19 +336,6 @@ sub authorize_and_validate {
                         }
                     }
 
-#                    elsif ( $data_properties->{type} eq "organization" ) {
-#                        my $organization_token_check =
-#                          Daedalus::Organizations::Manager::get_organization_from_token(
-#                            $c, $value );
-#                        if ( $organization_token_check->{status} == 0 ) {
-#                            $response = $organization_token_check;
-#                        }
-#                        else {
-#                            $data->{organization} =
-#                              $organization_token_check->{organization};
-#                        }
-#                    }
-
                     if ( $response->{status} == 1 ) {
                         $data->{required_data}->{$required_data_name} = $value;
                     }
@@ -359,56 +346,6 @@ sub authorize_and_validate {
             if ( $organization_token_check->{status} == 0 ) {
                 $response = $organization_token_check;
             }
-
-            if (    $response->{status} == 1
-                and $user->{data}->{_hidden_data}->{user}->{is_super_admin} ==
-                0 )
-            {
-
-                # Check check_organization_roles
-                if ( $check_organization_roles == 1 ) {
-
-                    #Check if user is organization memeber
-                    my $organization_member =
-                      Daedalus::Users::Manager::is_organization_member(
-                        $c,
-                        $data->{user_data}->{_hidden_data}->{user}->{id},
-                        $data->{organization}->{_hidden_data}->{organization}
-                          ->{id}
-                      );
-                    if ( $organization_member->{status} == 0 ) {
-                        $response->{status}     = 0;
-                        $response->{error_code} = 400;
-                        $response->{message}    = "Invalid organization token.";
-                    }
-
-                    if ( $response->{status} == 1
-                        and exists( $auth->{organization_roles} ) )
-                    {
-                        my $user_match_role =
-                          Daedalus::OrganizationGroups::Manager::user_match_role(
-                            $c,
-                            $data->{user_data}->{_hidden_data}->{user}->{id},
-                            $data->{organization}->{_hidden_data}
-                              ->{organization}->{id},
-                            $auth->{organization_roles}
-                          );
-                        if ( $user_match_role->{status} == 0 ) {
-                            my $prety_role_name = $auth->{role_name} =~ s/_/ /g;
-                            $response->{status}     = 0;
-                            $response->{error_code} = 403;
-                            $response->{message} =
-"You are not a $prety_role_name of this organization.";
-                        }
-                        else {
-                            $data->{organization_groups} =
-                              $user_match_role->{'organization_groups'};
-                        }
-
-                    }
-                }
-            }
-
         }
     }
 
