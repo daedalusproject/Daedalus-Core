@@ -306,9 +306,6 @@ sub show_organization_groups_GET {
 
         $response->{error_code} = 400;
         $response->{status}     = 1;
-
-        #         }
-        # }
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
@@ -383,13 +380,8 @@ sub create_organization_group_POST {
 
     my $response;
     my $user_data;
-    my $required_data;
 
-    my $organization_token;
     my $organization;
-    my $organization_data;
-
-    my $is_organization_admin;
 
     my $groups;
     my $group_name;
@@ -420,7 +412,8 @@ sub create_organization_group_POST {
     else {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
-        $group_name   = $required_data->{group_name};
+        $group_name   = $authorization_and_validatation->{data}->{required_data}
+          ->{group_name};
 
  #        $response->{message} = "";
  #
@@ -453,7 +446,7 @@ sub create_organization_group_POST {
  #            else {
         $groups =
           Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization_data->{_hidden_data}->{organization}->{id} );
+            $organization->{_hidden_data}->{organization}->{id} );
 
         $response->{error_code} = 400;
         if ( exists $groups->{data}->{$group_name} ) {
@@ -463,7 +456,7 @@ sub create_organization_group_POST {
         else {
             $response =
               Daedalus::Organizations::Manager::create_organization_group( $c,
-                $organization_data->{_hidden_data}->{organization}->{id},
+                $organization->{_hidden_data}->{organization}->{id},
                 $group_name );
         }
 

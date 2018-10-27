@@ -436,7 +436,8 @@ sub create_organization_group {
         }
     );
 
-    $response->{status} = 1;
+    $response->{status}     = 1;
+    $response->{error_code} = 400;
     $response->{data}->{organization_groups} =
       { "group_name" => $organization_group->group_name };
     $response->{_hidden_data}->{organization_groups} =
