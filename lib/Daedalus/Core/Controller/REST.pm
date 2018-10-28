@@ -245,7 +245,7 @@ sub authorize_and_validate {
                 my $user_match_role =
                   Daedalus::OrganizationGroups::Manager::user_match_role(
                     $c,
-                    $data->{user_data}->{_hidden_data}->{user}->{id},
+                    $data->{user_data}->{data}->{user}->{'e-mail'},
                     $data->{organization}->{_hidden_data}->{organization}->{id},
                     $auth->{organization_roles}
                   );
@@ -264,7 +264,6 @@ sub authorize_and_validate {
                     $data->{organization_groups} =
                       $user_match_role->{'organization_groups'};
                 }
-
             }
         }
     }
@@ -294,7 +293,8 @@ sub authorize_and_validate {
                     #Check Type
                     if (   $data_properties->{type} eq "e-mail"
                         or $data_properties->{type} eq "registered_user_e-mail"
-                        or $data_properties->{type} eq "active_user_e-mail" )
+                        or $data_properties->{type} eq "active_user_e-mail"
+                        or $data_properties->{type} eq "organization_user" )
                     {
                         if (
                             !Daedalus::Users::Manager::check_email_valid(
@@ -310,7 +310,9 @@ sub authorize_and_validate {
                             if ( $data_properties->{type} eq
                                 "registered_user_e-mail"
                                 or $data_properties->{type} eq
-                                "active_user_e-mail" )
+                                "active_user_e-mail"
+                                or $data_properties->{type} eq
+                                "organization_user" )
                             {
                                 my $registered_user =
                                   Daedalus::Users::Manager::get_user_from_email(
@@ -322,9 +324,15 @@ sub authorize_and_validate {
                                       . "There is no registered user with that e-mail address.";
                                 }
                                 else {
-                                    if ( $data_properties->{type} eq
-                                        "active_user_e-mail"
-                                        and $registered_user->active == 0 )
+                                    if (
+                                        (
+                                            $data_properties->{type} eq
+                                            "active_user_e-mail"
+                                            or $data_properties->{type} eq
+                                            "organization_user"
+                                        )
+                                        and $registered_user->active == 0
+                                      )
                                     {
                                         $response->{status}     = 0;
                                         $response->{error_code} = 400;
@@ -335,6 +343,32 @@ sub authorize_and_validate {
                                     $data->{'registered_user_e-mail'} =
                                       Daedalus::Users::Manager::get_user_data(
                                         $c, $registered_user );
+                                    if (
+                                        (
+                                            $data_properties->{type} eq
+                                            "organization_user"
+                                        )
+                                        and ( $response->{status} == 1 )
+                                      )
+                                    {
+                                        my $is_organization_member =
+                                          Daedalus::Users::Manager::is_organization_member(
+                                            $c,
+                                            $data->{'registered_user_e-mail'}
+                                              ->{_hidden_data}->{user}->{id},
+                                            $data->{organization}
+                                              ->{_hidden_data}->{organization}
+                                              ->{id}
+                                          );
+                                        if ( $is_organization_member->{status}
+                                            == 0 )
+                                        {
+                                            $response->{status}     = 0;
+                                            $response->{error_code} = 400;
+                                            $response->{message} =
+                                              "Invalid user.";
+                                        }
+                                    }
                                 }
                             }
                         }

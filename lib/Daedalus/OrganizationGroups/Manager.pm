@@ -120,7 +120,7 @@ Check if user has the following roles inside given organization
 sub user_match_role {
 
     my $c                           = shift;
-    my $user_id                     = shift;
+    my $user_email                  = shift;
     my $organization_id             = shift;
     my $required_organization_roles = shift;
 
@@ -131,19 +131,27 @@ sub user_match_role {
     $response->{organization_groups} =
       Daedalus::Organizations::Manager::get_organization_groups( $c,
         $organization_id );
-    for my $group_name ( keys %{ $response->{organization_groups}->{data} } ) {
 
-        for my $role_name (
-            @{
-                $response->{organization_groups}->{data}->{$group_name}->{roles}
-            }
+    for my $group_name ( keys %{ $response->{organization_groups}->{data} } ) {
+        if (
+            grep( /^$user_email$/,
+                @{
+                    $response->{organization_groups}->{data}->{$group_name}
+                      ->{users}
+                } )
           )
         {
-            $organization_roles->{$role_name} = 1;
+            for my $role_name (
+                @{
+                    $response->{organization_groups}->{data}->{$group_name}
+                      ->{roles}
+                }
+              )
+            {
+                $organization_roles->{$role_name} = 1;
+            }
         }
-
     }
-
     for my $role_name ( @{$required_organization_roles} ) {
         if ( !exists( $organization_roles->{$role_name} ) ) {
             $response->{status} = 0;
