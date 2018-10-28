@@ -20,7 +20,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -106,7 +106,7 @@ my $invalid_token_failed_json = decode_json( $invalid_token_failed->content );
 is( $invalid_token_failed_json->{status}, 0, 'Invalid token.' );
 is(
     $invalid_token_failed_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
     'Of course.'
 );
 

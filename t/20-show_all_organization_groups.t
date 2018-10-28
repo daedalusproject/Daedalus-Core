@@ -17,7 +17,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -53,12 +53,16 @@ my $failed_no_admin = request(
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_admin_json->{status}, 0, );
+is(
+    $failed_no_admin_json->{message},
+    'Invalid organization token.',
+    'You are not an admin user.',
+);
 
 my $admin_success = request(
     POST '/user/login',
@@ -113,7 +117,7 @@ is(
           ->{'Mega Shops Administrators'}->{roles}
     },
     2,
-'For the time being Supershops Administrators has two roles, firemen and organization master'
+'For the time being Megashops Administrators has two roles, firemen and organization master'
 );
 
 is( $admin_user_mega_shop_groups_json->{_hidden_data},
@@ -132,7 +136,7 @@ my $invalid_token_failed_json = decode_json( $invalid_token_failed->content );
 is( $invalid_token_failed_json->{status}, 0, 'Invalid token.' );
 is(
     $invalid_token_failed_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
     'Of course.'
 );
 
@@ -186,11 +190,11 @@ my $superadmin_show_organizations = request(
 
 is( $superadmin_show_organizations->code(), 200, );
 
-my $superadmin_show_organizations =
+my $superadmin_show_organizations_content =
   decode_json( $superadmin_show_organizations->content );
 
 my $ultra_shops_token =
-  $superadmin_show_organizations->{data}->{organizations}->{Ultrashops}
+  $superadmin_show_organizations_content->{data}->{organizations}->{Ultrashops}
   ->{token};
 
 my $superadmin_user_ultra_shop_groups = request(
@@ -270,7 +274,7 @@ is(
           ->{'Mega Shops Administrators'}->{roles}
     },
     2,
-'For the time being Supershops Administrators has two roles, firemen and organization master'
+'For the time being Mega Shops Administrators has two roles, firemen and organization master'
 );
 
 isnt( $super_admin_user_mega_shop_groups_json->{_hidden_data},

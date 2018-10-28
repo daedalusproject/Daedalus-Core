@@ -735,7 +735,7 @@ sub get_organization_users {
     };
 
     if ($is_super_admin) {
-        $response->{_hidden_data} => { users => {} };
+        $response->{_hidden_data} = { users => {} };
     }
 
     my @organization_users = $c->model('CoreRealms::UserOrganization')
