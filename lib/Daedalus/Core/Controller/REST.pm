@@ -250,7 +250,11 @@ sub authorize_and_validate {
                     $auth->{organization_roles}
                   );
                 if ( $user_match_role->{status} == 0 ) {
-                    my $prety_role_name = $auth->{role_name} =~ s/_/ /g;
+
+                    #my $prety_role_name = $auth->{role_name} =~ s/_/ /g;
+                    my $prety_role_name =
+                      join( ' ', @{ $auth->{organization_roles} } );
+                    $prety_role_name =~ s/_/ /g;
                     $response->{status}     = 0;
                     $response->{error_code} = 403;
                     $response->{message} =
