@@ -616,7 +616,7 @@ my $failed_no_admin_users_left = request(
     ),
 );
 
-is( $failed_no_admin_users_left->code(), 403, );
+is( $failed_no_admin_users_left->code(), 400, );
 
 my $failed_no_admin_users_left_json =
   decode_json( $failed_no_admin_users_left->content );
@@ -624,7 +624,7 @@ my $failed_no_admin_users_left_json =
 is( $failed_no_admin_users_left_json->{status}, 0, );
 is(
     $failed_no_admin_users_left_json->{message},
-    'You are not an admin user of this organization.',
+    'Invalid organization token.',
 );
 
 my $add_new_admin_again = request(
