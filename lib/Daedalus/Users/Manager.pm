@@ -308,53 +308,6 @@ sub is_admin_of_any_organization {
 
 }
 
-=head2 is_organization_admin
-
-Return if required user is admin of required Organization
-
-=cut
-
-sub is_organization_admin {
-    my $c               = shift;
-    my $user_id         = shift;
-    my $organization_id = shift;
-
-    my $response;
-
-    $response->{status}  = 0;
-    $response->{message} = "User is not an admin of this organization";
-
-    my $organization_master_role_id = $c->model('CoreRealms::Role')
-      ->find( { role_name => "organization_master" } )->id;
-
-    my @organization_groups = $c->model('CoreRealms::OrganizationGroup')
-      ->search( { organization_id => $organization_id } )->all();
-
-    my @user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
-      ->search( { 'user_id' => $user_id } )->all();
-
-# For the time being only admin users arrive here, it always be at least one value
-# inside @user_groups
-
-    #if (@user_groups) {
-
-    for my $user_group (@user_groups) {
-        for my $organization_group (@organization_groups) {
-            if ( $organization_group->id == $user_group->group_id ) {
-                $response->{status}  = 1;
-                $response->{message} = "User is admin of this organization";
-
-                return $response;
-            }
-        }
-    }
-
-    #}
-
-    return $response;
-
-}
-
 =head2 is_organization_member
 
 Return if required user is member of required Organization
