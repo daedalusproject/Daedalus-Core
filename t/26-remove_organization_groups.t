@@ -196,7 +196,7 @@ my $failed_invalid_organization_data_json =
 is( $failed_invalid_organization_data_json->{status}, 0, );
 is(
     $failed_invalid_organization_data_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $failed_group_not_found = request(
@@ -265,8 +265,6 @@ my $failed_already_removed_json =
 is( $failed_already_removed_json->{status}, 0, );
 is( $failed_already_removed_json->{message},
     'Required group does not exist.', );
-
-# Check group
 
 my $admin_user_mega_shop_groups = request(
     GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
@@ -361,7 +359,7 @@ my $superadmin_remove_group_success_json =
 is( $superadmin_remove_group_success_json->{status}, 1, );
 is(
     $superadmin_remove_group_success_json->{message},
-    'Required user has been removed from organization group.',
+    'Required group has been removed from organization.',
 );
 
 isnt( $superadmin_remove_group_success_json->{_hidden_data}, undef, );
@@ -380,65 +378,39 @@ my $superadmin_remove_group_other_organization_success = request(
     ),
 );
 
-is( $superadmin_remove_user_other_organization_success->code(), 200, );
+is( $superadmin_remove_group_other_organization_success->code(), 200, );
 
-my $superadmin_remove_user_other_organization_success_json =
-  decode_json( $superadmin_remove_user_other_organization_success->content );
+my $superadmin_remove_group_other_organization_success_json =
+  decode_json( $superadmin_remove_group_other_organization_success->content );
 
-is( $superadmin_remove_user_other_organization_success_json->{status}, 1, );
+is( $superadmin_remove_group_other_organization_success_json->{status}, 1, );
 is(
-    $superadmin_remove_user_other_organization_success_json->{message},
-    'Required user has been removed from organization group.',
+    $superadmin_remove_group_other_organization_success_json->{message},
+    'Required group has been removed from organization.',
 );
 
-isnt( $superadmin_remove_user_other_organization_success_json->{_hidden_data},
+isnt( $superadmin_remove_group_other_organization_success_json->{_hidden_data},
     undef, );
 
-my $admin_user_mega_shop_one_user = request(
+my $check_supersysadmins_does_not_exists = request(
     GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $admin_user_mega_shop_one_user->code(), 200, );
+is( $check_supersysadmins_does_not_exists->code(), 200, );
 
-my $admin_user_mega_shop_one_user_json =
-  decode_json( $admin_user_mega_shop_one_user->content );
+my $check_supersysadmins_does_not_exists_json =
+  decode_json( $check_supersysadmins_does_not_exists->content );
 
-is( $admin_user_mega_shop_one_user_json->{status}, 1, 'Status success.' );
+is( $check_supersysadmins_does_not_exists_json->{status}, 1,
+    'Status success.' );
 
 is(
-    scalar @{
-        $admin_user_mega_shop_one_user_json->{data}->{groups}
-          ->{'Mega Shop Sysadmins'}->{users}
-    },
-    0,
-    'Mega Shop Sysadmins has no users'
-);
-
-my $failed_remove_removed_user = request(
-    DELETE $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",    #Megashops token
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            user_email         => 'noadmin@megashops.com'
-        }
-    ),
-);
-
-is( $failed_remove_removed_user->code(), 400, );
-
-my $failed_remove_removed_user_json =
-  decode_json( $failed_remove_removed_user->content );
-
-is( $failed_remove_removed_user_json->{status}, 0, );
-is(
-    $failed_remove_removed_user_json->{message},
-    'Required user does not belong to this group.',
+    $check_supersysadmins_does_not_exists_json->{data}->{groups}
+      ->{'Mega Shop SuperSysadmins'},
+    undef, 'Mega Shop SuperSysadmins does not exists'
 );
 
 my $failed_unique_admin = request(
@@ -449,7 +421,6 @@ my $failed_unique_admin = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_name         => 'Mega Shops Administrators',
-            user_email         => 'otheradminagain@megashops.com'
         }
     ),
 );
@@ -461,10 +432,45 @@ my $failed_unique_admin_json = decode_json( $failed_unique_admin->content );
 is( $failed_unique_admin_json->{status}, 0, );
 is(
     $failed_unique_admin_json->{message},
-'Cannot remove this user, no more admin users will left in this organization.',
+'Cannot remove this group, no more admin users will left in this organization.',
 );
 
-my $add_new_admin = request(
+my $superadmin_remove_unique_admin_group_other_organization_success = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_name => 'Mega Shop Administrators',
+        }
+    ),
+);
+
+is( $superadmin_remove_unique_admin_group_other_organization_success->code(),
+    200, );
+
+my $superadmin_remove_unique_admin_group_other_organization_success_json =
+  decode_json(
+    $superadmin_remove_unique_admin_group_other_organization_success->content );
+
+is(
+    $superadmin_remove_unique_admin_group_other_organization_success_json
+      ->{status},
+    1,
+);
+is(
+    $superadmin_remove_unique_admin_group_other_organization_success_json
+      ->{message},
+    'Required group has been removed from organization.',
+);
+
+isnt( $superadmin_remove_group_other_organization_success_json->{_hidden_data},
+    undef, );
+
+my $failed_no_admin_users_left = request(
     POST '/organization/addusertogroup',
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
@@ -477,13 +483,113 @@ my $add_new_admin = request(
     ),
 );
 
-is( $add_new_admin->code(), 200, );
+is( $failed_no_admin_users_left->code(), 403, );
 
-my $add_new_admin_json = decode_json( $add_new_admin->content );
+my $failed_no_admin_users_left_json =
+  decode_json( $failed_no_admin_users_left->content );
 
-is( $add_new_admin_json->{status}, 1, );
+is( $failed_no_admin_users_left_json->{status}, 0, );
 is(
-    $add_new_admin_json->{message},
+    $failed_no_admin_users_left_json->{message},
+    'You are not a organization master of this organization.',
+);
+
+my $add_new_admin_group = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",   #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Admins',
+        }
+    ),
+);
+
+is( $add_new_admin_group->code(), 200, );
+
+my $add_new_admin_group_json = decode_json( $add_new_admin_group->content );
+
+is( $add_new_admin_group_json->{status}, 1, );
+is(
+    $add_new_admin_group_json->{message},
+    'Organization group has been created.',
+);
+
+my $add_role_to_group_success = request(
+    POST '/organization/addrolegroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Admins',
+            role_name          => 'organization_master'
+        }
+    ),
+);
+
+is( $add_role_to_group_success->code(), 200, );
+
+my $add_role_to_group_success_json =
+  decode_json( $add_role_to_group_success->content );
+
+is( $add_role_to_group_success_json->{status}, 1, );
+is(
+    $add_role_to_group_success_json->{message},
+    'Selected role has been added to organization group.',
+);
+
+is( $add_role_to_group_success_json->{_hidden_data}, undef, );
+
+my $add_user_to_group_success = request(
+    POST '/organization/addusertogroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Admins',
+            user_email         => 'otheradminagain@megashops.com'
+        }
+    ),
+);
+
+is( $add_user_to_group_success->code(), 200, );
+
+my $add_user_to_group_success_json =
+  decode_json( $add_user_to_group_success->content );
+
+is( $add_user_to_group_success_json->{status}, 1, );
+is(
+    $add_user_to_group_success_json->{message},
+    'Required user has been added to organization group.',
+);
+
+my $add_other_user_to_group_success = request(
+    POST '/organization/addusertogroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shops Admins',
+            user_email         => 'marvin@megashops.com'
+        }
+    ),
+);
+
+is( $add_other_user_to_group_success->code(), 200, );
+
+my $add_other_user_to_group_success_json =
+  decode_json( $add_other_user_to_group_success->content );
+
+is( $add_other_user_to_group_success_json->{status}, 1, );
+is(
+    $add_othe_user_to_group_success_json->{message},
     'Required user has been added to organization group.',
 );
 
