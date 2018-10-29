@@ -47,18 +47,37 @@ my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
 my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-my $failed_no_admin = request(
+my $failed_no_token = request(
     DELETE $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_token->code(), 400, );
+
+my $failed_no_token_json = decode_json( $failed_no_token->content );
+
+is( $failed_no_token_json->{status},  0, );
+is( $failed_no_token_json->{message}, 'No organization_token provided.', );
+
+my $failed_no_admin = request(
+    DELETE $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins',
+        }
+    ),
+);
+
+is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_admin_json->{message}, 'Invalid organization token.', );
 
 my $admin_success = request(
     POST '/user/login',
@@ -85,7 +104,7 @@ my $admin_authorization_basic =
 # populate SuperShops groups
 
 my $show_organizations = request(
-    GET $endpoint,
+    GET '/organization/show',
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -132,11 +151,8 @@ is( $failed_no_data->code(), 400, );
 #
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status}, 0, );
-is(
-    $failed_no_data_json->{message},
-    'No group_name provided. No organization_token provided.',
-);
+is( $failed_no_data_json->{status},  0, );
+is( $failed_no_data_json->{message}, 'No organization_token provided.', );
 
 my $failed_no_group_data = request(
     DELETE $endpoint,

@@ -877,6 +877,103 @@ sub remove_user_group_DELETE {
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
+}
+
+sub remove_organization_group : Path('/organization/removeorganizationgroup') :
+  Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub remove_organization_group_DELETE {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $organization;
+
+    my $groups;
+    my $group_name;
+
+    my $removal_allowed = 1;
+    my $count_organization_admins;
+
+    my $target_user;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master'],
+            },
+            required_data => {
+                organization_token => {
+                    type     => 'organization',
+                    required => 1,
+                },
+                group_name => {
+                    type     => "string",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
+        $group_name   = $authorization_and_validatation->{data}->{required_data}
+          ->{group_name};
+
+        $groups =
+          Daedalus::Organizations::Manager::get_organization_groups( $c,
+            $organization->{_hidden_data}->{organization}->{id} );
+        if ( !exists $groups->{data}->{$group_name} ) {
+            $response->{status}     = 0;
+            $response->{message}    = "Required group does not exist.";
+            $response->{error_code} = 400;
+        }
+        else {
+            if (
+                grep ( /^organization_master$/,
+                    @{ $groups->{data}->{$group_name}->{roles} } )
+              )
+            {
+                $count_organization_admins =
+                  Daedalus::OrganizationGroups::Manager::count_organization_admins(
+                    $c, $groups->{data}, 'organization_master' );
+                if (   $count_organization_admins lt 2
+                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
+                    0 )
+                {
+                    $removal_allowed = 0;
+                }
+            }
+            if ($removal_allowed) {
+
+                $response =
+                  Daedalus::OrganizationGroups::Manager::remove_organization_group(
+                    $c, $groups->{_hidden_data}->{$group_name}->{id},
+                  );
+                $response->{error_code} = 400;
+            }
+            else {
+                $response->{status}     = 0;
+                $response->{error_code} = 400;
+                $response->{message} =
+'Cannot remove this group, no more admin users will left in this organization.';
+            }
+        }
+
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    $self->return_response( $c, $response );
 
 }
 
