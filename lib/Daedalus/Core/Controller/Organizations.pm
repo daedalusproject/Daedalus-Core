@@ -275,8 +275,6 @@ sub show_organization_groups_GET {
     my $user_data;
     my $organization;
 
-    my $organization_token = $c->{request}->{arguments}[0];
-
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
@@ -345,7 +343,6 @@ sub show_all_organization_groups_GET {
         }
     );
 
-    my $organization_token = $c->{request}->{arguments}[0];
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
