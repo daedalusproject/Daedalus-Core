@@ -20,7 +20,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -64,7 +64,7 @@ my $admin_two_organization_json =
 
 is( $admin_two_organization_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_two_organization_json->{data}->{organizations} },
-    2, 'Admin belongis to 2 organizations' );
+    2, 'Admin belongs to 2 organizations' );
 
 isnt(
     $admin_two_organization_json->{data}->{organizations}->{'Daedalus Project'}

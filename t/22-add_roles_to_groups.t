@@ -47,18 +47,42 @@ my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
 my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-my $failed_no_admin = request(
+my $failed_no_token = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_token->code(), 400, );
+
+my $failed_no_token_json = decode_json( $failed_no_token->content );
+
+is( $failed_no_token_json->{status},  0, );
+is( $failed_no_token_json->{message}, 'No organization_token provided.', );
+
+my $failed_no_admin = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins',
+            role_name          => 'fireman'
+        }
+    ),
+);
+
+is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_admin_json->{status}, 0, );
+is(
+    $failed_no_admin_json->{message},
+    'Invalid organization token.',
+    'Because you are dnot an admin user.'
+);
 
 my $admin_success = request(
     POST '/user/login',
@@ -93,11 +117,8 @@ is( $failed_no_data->code(), 400, );
 #
 my $failed_no_data_json = decode_json( $failed_no_data->content );
 
-is( $failed_no_data_json->{status}, 0, );
-is(
-    $failed_no_data_json->{message},
-'No group_name provided. No organization_token provided. No role_name provided.',
-);
+is( $failed_no_data_json->{status},  0, );
+is( $failed_no_data_json->{message}, 'No organization_token provided.', );
 
 my $failed_no_group_data_no_role = request(
     POST $endpoint,
@@ -134,7 +155,7 @@ my $failed_no_organization_data_no_role_json =
 is( $failed_no_organization_data_no_role_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_role_json->{message},
-    'No organization_token provided. No role_name provided.',
+    'No organization_token provided.',
 );
 
 my $failed_no_organization_data_no_group_data = request(
@@ -152,7 +173,7 @@ my $failed_no_organization_data_no_group_data_json =
 is( $failed_no_organization_data_no_group_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_group_data_json->{message},
-    'No group_name provided. No organization_token provided.',
+    'No organization_token provided.',
 );
 
 my $failed_no_organization_data_no_role_data = request(
@@ -199,7 +220,7 @@ my $failed_invalid_organization_data_json =
 is( $failed_invalid_organization_data_json->{status}, 0, );
 is(
     $failed_invalid_organization_data_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $failed_invalid_group_data = request(
@@ -222,7 +243,7 @@ my $failed_invalid_group_data_json =
 
 is( $failed_invalid_group_data_json->{status}, 0, );
 is( $failed_invalid_group_data_json->{message},
-    'Invalid Organization token.', );
+    'Invalid organization token.', );
 
 my $failed_group_not_found = request(
     POST $endpoint,

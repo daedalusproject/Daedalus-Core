@@ -208,8 +208,9 @@ sub get_organization_from_token {
     my $organization_token = shift;
 
     my $response;
-    $response->{status}  = 0;
-    $response->{message} = 'Invalid Organization token.';
+    $response->{status}     = 0;
+    $response->{error_code} = 400;
+    $response->{message}    = 'Invalid Organization token.';
 
     my $organization = $c->model('CoreRealms::Organization')
       ->find( { token => $organization_token } );
@@ -435,7 +436,8 @@ sub create_organization_group {
         }
     );
 
-    $response->{status} = 1;
+    $response->{status}     = 1;
+    $response->{error_code} = 400;
     $response->{data}->{organization_groups} =
       { "group_name" => $organization_group->group_name };
     $response->{_hidden_data}->{organization_groups} =
