@@ -120,26 +120,6 @@ is( keys %{ $show_organizations_json->{data}->{organizations} },
 my $supershops_token =
   $show_organizations_json->{data}->{organizations}->{'Supershops'}->{token};
 
-my $add_marvin_to_organization = request(
-    POST "/organization/adduser",
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => '$supershops_token'
-        }
-    ),
-);
-
-is( $add_marvin_to_organization->code(), 200, );
-#
-my $add_marvin_to_organization_json =
-  decode_json( $add_marvin_to_organization->content );
-
-is( $add_marvin_to_organization_json->{status},  1, );
-is( $add_marvin_to_organization_json->{message}, 'User has been registered.', );
-
 my $failed_no_data = request(
     DELETE $endpoint,
     Content_Type  => 'application/json',
@@ -256,7 +236,7 @@ my $remove_group_success_json = decode_json( $remove_group_success->content );
 is( $remove_group_success_json->{status}, 1, );
 is(
     $remove_group_success_json->{message},
-    'Required group has been removed from organization.',
+    'Selected group has been removed from organization.',
 );
 
 is( $remove_group_success_json->{_hidden_data}, undef, );
@@ -375,7 +355,7 @@ my $superadmin_remove_group_success_json =
 is( $superadmin_remove_group_success_json->{status}, 1, );
 is(
     $superadmin_remove_group_success_json->{message},
-    'Required group has been removed from organization.',
+    'Selected group has been removed from organization.',
 );
 
 isnt( $superadmin_remove_group_success_json->{_hidden_data}, undef, );
@@ -402,7 +382,7 @@ my $superadmin_remove_group_other_organization_success_json =
 is( $superadmin_remove_group_other_organization_success_json->{status}, 1, );
 is(
     $superadmin_remove_group_other_organization_success_json->{message},
-    'Required group has been removed from organization.',
+    'Selected group has been removed from organization.',
 );
 
 isnt( $superadmin_remove_group_other_organization_success_json->{_hidden_data},
@@ -460,7 +440,7 @@ my $superadmin_remove_unique_admin_group_other_organization_success = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Administrators',
+            group_name => 'Mega Shops Administrators',
         }
     ),
 );
@@ -480,7 +460,7 @@ is(
 is(
     $superadmin_remove_unique_admin_group_other_organization_success_json
       ->{message},
-    'Required group has been removed from organization.',
+    'Selected group has been removed from organization.',
 );
 
 isnt( $superadmin_remove_group_other_organization_success_json->{_hidden_data},
@@ -691,7 +671,7 @@ my $marvin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            'e-mail' => 'marvin@daedalus-project.io',
+            'e-mail' => 'marvin@megashops.com',
             password => '1_HAT3_MY_L1F3',
         }
     )
@@ -716,7 +696,7 @@ my $marvin_removes_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Admins',
+            group_name         => 'Mega Shops Admins',
         }
     ),
 );
@@ -729,7 +709,7 @@ my $marvin_removes_group_success_json =
 is( $marvin_removes_group_success_json->{status}, 1, );
 is(
     $marvin_removes_group_success_json->{message},
-    'Required group has been removed from organization.',
+    'Selected group has been removed from organization.',
 );
 
 is( $marvin_removes_group_success_json->{_hidden_data}, undef, );
@@ -747,11 +727,14 @@ my $marvin_is_not_admin = request(
     ),
 );
 
-is( $marvin_is_not_admin->code(), 400, );
+is( $marvin_is_not_admin->code(), 403, );
 
 my $marvin_is_not_admin_json = decode_json( $marvin_is_not_admin->content );
 
-is( $marvin_is_not_admin_json->{status},  0, );
-is( $marvin_is_not_admin_json->{message}, 'Invalid organization token', );
+is( $marvin_is_not_admin_json->{status}, 0, );
+is(
+    $marvin_is_not_admin_json->{message},
+    'You are not a organization master of this organization.',
+);
 
 done_testing();
