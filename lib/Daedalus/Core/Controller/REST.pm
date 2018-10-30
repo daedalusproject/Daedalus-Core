@@ -170,19 +170,19 @@ sub authorize_and_validate {
         }
         else {
             $value = $c->{request}->{data}->{organization_token};
-            if ( $data_properties->{required} == 1 ) {
-                if ( !( defined $value ) ) {
-                    $response->{status}     = 0;
-                    $response->{error_code} = 400;
-                    $response->{message} =
-                      $response->{message} . " No organization_token provided.";
-                }
-                else {
-                    $data->{required_data}->{organization_token} = $value;
-                }
 
+#if ( $data_properties->{required} == 1 ) { for the time being this field is always required
+            if ( !( defined $value ) ) {
+                $response->{status}     = 0;
+                $response->{error_code} = 400;
+                $response->{message} =
+                  $response->{message} . " No organization_token provided.";
+            }
+            else {
+                $data->{required_data}->{organization_token} = $value;
             }
 
+            # }
         }
         if ( $response->{status} == 1 ) {
 
@@ -270,121 +270,110 @@ sub authorize_and_validate {
 
     if ( $response->{status} == 1 ) {
 
-        # Auth passed check required_data
-        if ($required_data) {
-            for my $required_data_name ( sort ( keys %{$required_data} ) ) {
-                my $data_properties = $required_data->{$required_data_name};
-                if ( $data_properties->{given} == 1 ) {
-                    $value = $data_properties->{value};
-                }
-                else {
-                    $value = $c->{request}->{data}->{$required_data_name};
-                    if ( $data_properties->{required} == 1 ) {
-                        if ( !( defined $value ) ) {
-                            $response->{status}     = 0;
-                            $response->{error_code} = 400;
-                            $response->{message}    = $response->{message}
-                              . " No $required_data_name provided.";
-                        }
-                    }
-                }
-                if ( $response->{status} == 1 ) {
+        # Auth passed, check required_data
+        for my $required_data_name ( sort ( keys %{$required_data} ) ) {
+            my $data_properties = $required_data->{$required_data_name};
 
-                    #Check Type
-                    if (   $data_properties->{type} eq "e-mail"
-                        or $data_properties->{type} eq "registered_user_e-mail"
-                        or $data_properties->{type} eq "active_user_e-mail"
-                        or $data_properties->{type} eq "organization_user" )
+            #if ( $data_properties->{given} == 1 ) {
+            # For the time being there is not given data
+            #$value = $data_properties->{value};
+            #}
+            #else {
+            $value = $c->{request}->{data}->{$required_data_name};
+            if ( $data_properties->{required} == 1 ) {
+                if ( !( defined $value ) ) {
+                    $response->{status}     = 0;
+                    $response->{error_code} = 400;
+                    $response->{message}    = $response->{message}
+                      . " No $required_data_name provided.";
+                }
+            }
+
+            #}
+            if ( $response->{status} == 1 ) {
+
+                #Check Type
+                if (   $data_properties->{type} eq "e-mail"
+                    or $data_properties->{type} eq "registered_user_e-mail"
+                    or $data_properties->{type} eq "active_user_e-mail"
+                    or $data_properties->{type} eq "organization_user" )
+                {
+                    if ( !Daedalus::Users::Manager::check_email_valid($value) )
                     {
-                        if (
-                            !Daedalus::Users::Manager::check_email_valid(
-                                $value)
-                          )
+                        $response->{status}     = 0;
+                        $response->{error_code} = 400;
+                        $response->{message}    = $response->{message}
+                          . " $required_data_name is invalid.";
+                    }
+                    else {
+                        if ( $data_properties->{type} eq
+                               "registered_user_e-mail"
+                            or $data_properties->{type} eq "active_user_e-mail"
+                            or $data_properties->{type} eq "organization_user" )
                         {
-                            $response->{status}     = 0;
-                            $response->{error_code} = 400;
-                            $response->{message}    = $response->{message}
-                              . " $required_data_name is invalid.";
-                        }
-                        else {
-                            if ( $data_properties->{type} eq
-                                "registered_user_e-mail"
-                                or $data_properties->{type} eq
-                                "active_user_e-mail"
-                                or $data_properties->{type} eq
-                                "organization_user" )
-                            {
-                                my $registered_user =
-                                  Daedalus::Users::Manager::get_user_from_email(
-                                    $c, $value );
-                                if ( !$registered_user ) {
+                            my $registered_user =
+                              Daedalus::Users::Manager::get_user_from_email( $c,
+                                $value );
+                            if ( !$registered_user ) {
+                                $response->{status}     = 0;
+                                $response->{error_code} = 400;
+                                $response->{message}    = $response->{message}
+                                  . "There is no registered user with that e-mail address.";
+                            }
+                            else {
+                                if (
+                                    (
+                                        $data_properties->{type} eq
+                                        "active_user_e-mail"
+                                        or $data_properties->{type} eq
+                                        "organization_user"
+                                    )
+                                    and $registered_user->active == 0
+                                  )
+                                {
                                     $response->{status}     = 0;
                                     $response->{error_code} = 400;
-                                    $response->{message} = $response->{message}
-                                      . "There is no registered user with that e-mail address.";
+                                    $response->{message} =
+                                      $response->{message}
+                                      . "Required user is not active.";
                                 }
-                                else {
+                                $data->{'registered_user_e-mail'} =
+                                  Daedalus::Users::Manager::get_user_data( $c,
+                                    $registered_user );
+                                if (
+                                    (
+                                        $data_properties->{type} eq
+                                        "organization_user"
+                                    )
+                                    and ( $response->{status} == 1 )
+                                  )
+                                {
+                                    my $is_organization_member =
+                                      Daedalus::Users::Manager::is_organization_member(
+                                        $c,
+                                        $data->{'registered_user_e-mail'}
+                                          ->{_hidden_data}->{user}->{id},
+                                        $data->{organization}->{_hidden_data}
+                                          ->{organization}->{id}
+                                      );
                                     if (
-                                        (
-                                            $data_properties->{type} eq
-                                            "active_user_e-mail"
-                                            or $data_properties->{type} eq
-                                            "organization_user"
-                                        )
-                                        and $registered_user->active == 0
-                                      )
+                                        $is_organization_member->{status} == 0 )
                                     {
                                         $response->{status}     = 0;
                                         $response->{error_code} = 400;
-                                        $response->{message} =
-                                          $response->{message}
-                                          . "Required user is not active.";
-                                    }
-                                    $data->{'registered_user_e-mail'} =
-                                      Daedalus::Users::Manager::get_user_data(
-                                        $c, $registered_user );
-                                    if (
-                                        (
-                                            $data_properties->{type} eq
-                                            "organization_user"
-                                        )
-                                        and ( $response->{status} == 1 )
-                                      )
-                                    {
-                                        my $is_organization_member =
-                                          Daedalus::Users::Manager::is_organization_member(
-                                            $c,
-                                            $data->{'registered_user_e-mail'}
-                                              ->{_hidden_data}->{user}->{id},
-                                            $data->{organization}
-                                              ->{_hidden_data}->{organization}
-                                              ->{id}
-                                          );
-                                        if ( $is_organization_member->{status}
-                                            == 0 )
-                                        {
-                                            $response->{status}     = 0;
-                                            $response->{error_code} = 400;
-                                            $response->{message} =
-                                              "Invalid user.";
-                                        }
+                                        $response->{message} = "Invalid user.";
                                     }
                                 }
                             }
                         }
                     }
-
-                    if ( $response->{status} == 1 ) {
-                        $data->{required_data}->{$required_data_name} = $value;
-                    }
                 }
-            }    # for required data
 
-            #Check organization token
-            if ( $organization_token_check->{status} == 0 ) {
-                $response = $organization_token_check;
+                if ( $response->{status} == 1 ) {
+                    $data->{required_data}->{$required_data_name} = $value;
+                }
             }
-        }
+        }    # for required data
     }
 
     $response->{data} = $data;

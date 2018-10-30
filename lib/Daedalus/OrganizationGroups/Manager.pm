@@ -12,6 +12,7 @@ use strict;
 use warnings;
 use Moose;
 
+use Daedalus::Organizations::Manager;
 use Data::Dumper;
 
 use namespace::clean -except => 'meta';
@@ -157,6 +158,49 @@ sub user_match_role {
             $response->{status} = 0;
         }
     }
+
+    return $response;
+}
+
+=head2 remove_organization_group
+
+Removes organization group.
+
+=cut
+
+sub remove_organization_group {
+    my $c        = shift;
+    my $group_id = shift;
+
+    my $response;
+
+    # Remove group roles
+
+    my $roles_to_remove = $c->model('CoreRealms::OrganizationGroupRole')->find(
+        {
+            group_id => $group_id,
+        }
+    );
+
+    $roles_to_remove->delete() if ($roles_to_remove);
+
+    my $users_to_remove = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
+        {
+            group_id => $group_id,
+        }
+    );
+
+    $users_to_remove->delete() if ($users_to_remove);
+
+    $c->model('CoreRealms::OrganizationGroup')->find(
+        {
+            id => $group_id,
+        }
+    )->delete();
+
+    $response->{error_code} = 400;
+    $response->{status}     = 1;
+    $response->{message} = 'Selected group has been removed from organization.';
 
     return $response;
 }

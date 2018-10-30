@@ -380,7 +380,7 @@ $salt =
 '13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuWkErT11QSJUkcndeGSmCVDNSL2347EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password = sha512_base64("$salt$password");
 
-my $vermin_megashops = $schema->resultset('User')->create(
+my $marvin_megashops = $schema->resultset('User')->create(
     {
         name       => $name,
         surname    => $surname,
@@ -389,14 +389,14 @@ my $vermin_megashops = $schema->resultset('User')->create(
         password   => $password,
         salt       => $salt,
         expires    => "3000-01-01",
-        active     => 0,
+        active     => 1,
         auth_token => $auth_token,
     }
 );
 
 $schema->resultset('RegisteredUser')->create(
     {
-        registered_user  => $vermin_megashops->id,
+        registered_user  => $marvin_megashops->id,
         registrator_user => $yet_other_user->id,
     }
 );
