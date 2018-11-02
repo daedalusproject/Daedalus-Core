@@ -551,5 +551,11 @@ sub add_user_to_organization_group {
     return $response;
 }
 
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=cut
+
 __PACKAGE__->meta->make_immutable;
 1;

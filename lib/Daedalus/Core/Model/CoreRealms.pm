@@ -25,11 +25,6 @@ Catalyst::Helper::Model::DBIC::Schema - 0.65
 
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
 
-=head1 LICENSE
-
-This library is free software, you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
 =cut
 
 1;
