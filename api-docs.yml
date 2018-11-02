@@ -1,0 +1,988 @@
+openapi: 3.0.1
+info:
+  title: DaedalusCore
+  description: Information system which also manages all other services, clients, organization and projects.
+
+  version: '0.1'
+servers:
+  - url: 'https://api-dev.daedalus-project.io'
+paths:
+
+  /ping:
+    get:
+      description: Checks API
+      responses:
+        '200':
+          description: If API is working it returns "pong"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              examples:
+                '0':
+                  value: '{"status":"pong"}'
+
+  /user/login:
+    post:
+      description: Users are allowed to log in into Daedalus Core
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth
+              properties:
+                auth:
+                  type: object
+                  required:
+                    - password
+                    - email
+                  properties:
+                    password:
+                      type: string
+                    email:
+                      type: string
+            examples:
+              '0':
+                value: >-
+                  {"auth":{"email":"admin@daedalus-project.io", "password":
+                  "validPa55word_conTaining_Mul7ple_c:h:a:r;s"}}
+              '1':
+                value: >-
+                  {"auth":{"email":"some@email.com", "password":
+                  "yourpassword"}}
+              '2':
+                value: '{"auth":{}}'
+      responses:
+        '200':
+          description: If login success, return user data and session token, superadmin users receive _hidden_data.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                  - status
+                  - message
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - session_token
+                      - user
+                    properties:
+                      session_token:
+                        type: string
+                      user:
+                        type: object
+                        required:
+                          - is_admin
+                          - phone
+                          - api_key
+                          - surname
+                          - name
+                          - active
+                          - email
+                        properties:
+                          is_admin:
+                            type: integer
+                          phone:
+                            type: string
+                          api_key:
+                            type: string
+                          surname:
+                            type: string
+                          name:
+                            type: string
+                          active:
+                            type: integer
+                          email:
+                            type: string
+                  _hidden_data:
+                    type: object
+                    required:
+                      - user
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 1
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"data":{"session_token":"eyJhbGciOiJSUzI1NiJ9.eyJpZCI6MSwiZXhwIjoxNTM3NzY1MzYwfQ.Rlok8kfLDp3134Frf2RZXqLtB_hRnsRmyLrR8Ni9IfpgdunZSJggiRlwCiCvOAlG0XJUPXLuwF5FP1DcuY3sILUyk0sm_74E_tvGJXrjEaOsbloKCmurmRAvPnrX9PtOqFODO1By-emm0nsnKebz2Mc09b5pmu1wtwI0Qp5SzgeW_-tVyrbANmh2r7FjkuO19ErUU5TnGrjBRURnfIDYEhS6Dd6kwmeqIelEqzkYywHMyaIHvwZaNxn9xO8GFh5Q_ahXp95ZtWkkX904alJlXPPKbp2i42V3ct6CiJC6PfF0UXTCrN7XK3JB8dgc_9gwT1OVK0DuF2UpWCF9eyhRV0BVAMFchLB52lGxzAL5sg3D7uGAED3B9QlSUDddoZbThrJQjxOxQqvWVzE9yJd-Ene92FNIR6OnKp4wXnZU_qFjV-RdhMycPjmdzgZZ71S4Ax1S9BMMxlvSBLiodPo-MxtFlWt2qb49gnXblGf649XML0Jd12-4hY3FzJ54vbOTWRarqQd9wLmlmAZxULk8zF7XMaJy29bCXI53pt5cpm8FsjMY9GubV8GCopj0EvXUJtoaZFgqJsqhAeqHcSd-RHpzLMKL0na04LoOIWQJWfiXe4nfCJDPhZCKV4lCdsScEDTM29L41f4SXTAMZkgPMIyo5G5_PL2U5Jq10iS9_As","user":{"name":"Admin","is_admin":1,"email":"admin@daedalus-project.io","active":1,"phone":"","surname":"User","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p"}},"message":"Auth
+                    Successful.","_hidden_data":{"user":{"is_super_admin":1,"id":1}}}
+                '1':
+                  value: >-
+                    {"data":{"session_token":"eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE1Mzc3NjY3MDMsImlkIjoyfQ.1ZAu03ug1RjKpAebsaxaRRWiM9fmjQ0y98so3eXuc6h1QuV7fP-AGGmbTJFe-FKEQ5XIQALLI0yejlF2-EMIWfWMupHLVOzjrCqMtzC-fZ3x-2PwOQCUAi-2n9QVC1C8XezeacHBmxbXqdFcU86TKZujpCHHxrLSSIQKMxqk-HeiNBQ9ZmCiKaq3EK9X598VpTFUfItMVGQuoxdFHEAseqa6xT9ZC8vjf8R6AB5rqzoHGfAG2CRkdJ-Jl53mGkeNjnVM_G2K5YDSjAQCSwVHbYL8k_JEhUke7eFsjnaNJ1cZPJDQlGigHc9ue8AVn1LJ_nWx-XiI6xoEq_5SP5y6euspESMko5Zq0uQO5n71P-M8G7GJnEhMF1tlufJCx39CKdtOHAqJwoJyMroYRQ_1dfhz6gCUs85-j_oaejlSgAEORy1FB0Tq7OlMH8BMqlPW2n39eeRyVTs7VEhSEbktp6oYa9gLTaTz91AJtb0Lq6QlN_dZ7g8_PBsUgwRfW-H6aOZ6qBEau1xy-RwL2eN478iexyHn-hckCEWuBJ5S1JLFZm5qnt6yWy9WJGDwJpSyy4xBhWqXeGoerFEaerD_897fCh-xEl9FyB4gVsSey1vapj78r3gPQBe-qa0_kCRQXhH6JV7hZh2e3G-hTTLj55ko0FXCIL9x_rr5ix5mDCc","user":{"surname":"The
+                    Ripper","api_key":"Jwm.NuibXnNM.z89c6CHsknxlEXf3UGU","active":1,"phone":"","is_admin":0,"email":"john@daedalus-project.io","name":"John"}},"status":1,"message":"Auth
+                    Successful."}
+        '403':
+          description: Examples of falied login
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "Wrong e-mail or password."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"status":0, "message":"Wrong e-mail or password."}'
+  /organization/create:
+    post:
+      description: Admin users are allowed to create organizations
+      security:
+        - AdminSecurity: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organization_data:
+                  type: object
+                  required:
+                    - name
+                  properties:
+                    name: 
+                      type: string
+            examples:
+              '0':
+                value: '{"organization_data":{"name":"Mega Shops"}}'
+              '1':
+                value: '{"organization_data":{"name":"Daedalus Project"}}'
+              '2':
+                value: '{"organization_data":{}}'
+      responses:
+        '200':
+          description: Sucess responses, superadmin also receives _hidden_data
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - oganization
+                    properties:
+                      organization:
+                        type: object
+                        required:
+                          - organization_token
+                        properties:
+                          organization_token:
+                            type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organization:
+                        type: object
+                        properties:
+                          organization_id:
+                            type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 1
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"organization":{"organization_token":"s.Q8Ymu8q/yqAgZtdAnxyN4Exrwldp0S"}},"status":1,"_hidden_data":{"organization":{"organization_id":"2"},"user":{"is_super_admin":1,"id":1}},"message":"Organization
+                    created."}
+        '400':
+          description: Failed examples
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Duplicated organization
+                    name.","_hidden_data":{"user":{"id":1,"is_super_admin":1}},"status":0}
+                '1':
+                  value: >-
+                    {"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"Invalid
+                    organization data.","status":0}
+        '403':
+          description: Non admin users are not allowed to create organizations
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+                       
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+
+                  
+  /user/imadmin:
+    get:
+      description: Returns if user is admin
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Examples of success responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"You are an admin user.","status":1}'
+        '400':
+          description: Examples of failed requests because users did not provide their session token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "Session token invalid."
+                      - "No session token provided."
+                      - "Session token expired."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"status":0,"message":"Session token invalid."}'
+                '1':
+                  value: '{"message":"No session token provided.","status":0}'
+                '2':
+                  value: '{"message":"Session token expired.","status":0}'
+        '403':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"message":"You are not an admin user.","status":0}'
+
+  /user/register:
+    post:
+      description: Admin users can register new users
+      security:
+        - AdminSecurity: []      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_user_data:
+                  type: object
+                  properties:
+                    surname:
+                      type: string
+                    name:
+                      type: string
+                    email:
+                      type: string
+            examples:
+              '0':
+                value: >-
+                  {"new_user_data":{"name":"Marvin", "surname":"The Robot",
+                  "email":"marvin@robot.com"}}
+              '1':
+                value: >-
+                  {"new_user_data":{"name":"Marvin", "surname":"The Robot",
+                  "email":"john@daedalus-project.io"}}
+              '2':
+                value: >-
+                  {"new_user_data":{"name":"Marvin", "surname":"The Robot",
+                  "email":"marvin@daedalus-project.io"}}
+      responses:
+        '200':
+          description: User has been created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      new_user:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          auth_token:
+                            type: string
+                          email:
+                            type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                    enum:
+                      - "User has been registered."
+                  status:
+                    type: integer
+                    enum:
+                      - 1
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"message":"User has been
+                    registered.","_hidden_data":{"new_user":{"email":"marvin@daedalus-project.io","id":"3","auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j"},"user":{"is_super_admin":1,"id":1}}}
+                '1':
+                  value: >-
+                    {"status":1,"message":"User has been registered.",}                    
+        '400':
+          description: Wrong data responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: >-
+                    {"message":"There already exists a user using this
+                    e-mail.","_hidden_data":{"user":{"id":1,"is_super_admin":1}},"status":0}
+        '403':
+          description: Non admin user response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+
+  /user/confirm:
+    post:
+      description: Registerd users must activate their account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth
+              properties:
+                auth:
+                  type: object
+                  required:
+                    - auth_token
+                    - password
+                  properties:
+                    password:
+                      type: string
+                    auth_token:
+                      type: string
+            examples:
+              '0':
+                value: '{"auth":{}}'
+              '1':
+                value: '{"auth":{"auth_token":"invaid_token"}}'
+              '2':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc"}}
+              '3':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"poorone"}}
+              '4':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}}
+              '5':
+                value: >-
+                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}}
+      responses:
+        '200':
+          description: Correct response, auth and correct password are provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":1,"message":"Account activated."}'
+        '400':
+          description: Failed examples
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"Invalid Auth Token.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid Auth Token."}'
+                '2':
+                  value: '{"message":"Invalid Auth Token.","status":0}'
+                '3':
+                  value: >-
+                    {"status":0,"message":"Valid Auth Token found, enter your
+                    new password."}
+                '4':
+                  value: '{"status":0,"message":"Password is invalid."}'
+                '5':
+                  value: '{"message":"Invalid Auth Token.","status":0}'
+
+  /user/showactive:
+    get:
+      description: Admin users are allowed to see its active registered users
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - active_users
+                    properties:
+                      active_users:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string      
+        '403':
+          description: I said only andmins
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"message":"You are not an admin user.","status":0}'
+                  
+  /user/showinactive:
+    get:
+      description: Admin users are allowed its registered user who has not activated their accounts
+      security:
+        - AdminSecurity: []      
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - inactive_users
+                    properties:
+                      inactive_users:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - active
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      inactive_users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            is_super_admin:
+                              type: integer
+                            auth_token:
+                              type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"_hidden_data":{"inactive_users":{"marvin@daedalus-project.io":{"id":3,"auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j","is_super_admin":0}},"user":{"is_super_admin":1,"id":1}},"status":1,"data":{"inactive_users":{"marvin@daedalus-project.io":{"surname":"The
+                    Robot","active":0,"is_admin":0,"email":"marvin@daedalus-project.io","name":"Marvin"}}}}
+        '403':
+          description: I said only admins
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "You are not an admin user."
+                  status:
+                    type: integer
+                    enum:
+                      - 0
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+                  
+  /user/showregistered:
+    get:
+      description: Admin useres are allowed to see their registered users.
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      registered_users:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - active
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string
+
+                  _hidden_data:
+                    type: object
+                    properties:
+                      registered_users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            is_super_admin:
+                              type: integer
+                            auth_token:
+                              type: string
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"registered_users":{"john@daedalus-project.io":{"surname":"The
+                    Ripper","active":0,"is_admin":0,"email":"john@daedalus-project.io","name":"John"}}},"status":1,"_hidden_data":{"registered_users":{"john@daedalus-project.io":{"is_super_admin":0,"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc","id":2}},"user":{"is_super_admin":1,"id":1}},"message":""}
+                '1':
+                  value: >-
+                    {"status":1,"data":{"registered_users":{"john@daedalus-project.io":{"name":"John","email":"john@daedalus-project.io","is_admin":0,"active":1,"surname":"The
+                    Ripper"}}},"message":"","_hidden_data":{"user":{"is_super_admin":1,"id":1},"registered_users":{"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}}}}
+                '2':
+                  value: >-
+                    {"status":1,"data":{"registered_users":{"john@daedalus-project.io":{"active":1,"surname":"The
+                    Ripper","name":"John","is_admin":0,"email":"john@daedalus-project.io"},"marvin@daedalus-project.io":{"email":"marvin@daedalus-project.io","is_admin":0,"name":"Marvin","surname":"The
+                    Robot","active":0}}},"message":"","_hidden_data":{"user":{"is_super_admin":1,"id":1},"registered_users":{"marvin@daedalus-project.io":{"id":3,"auth_token":"FNIUcTWuD2QExGrDcg.FbvqwPRg0iOuAd1W/S33S9jizCynW3gzHt6ZkYxLOs2j","is_super_admin":0},"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}}}}
+        '403':
+          description: I said only admins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+           
+  /user/showorphan:
+    get:
+      description: Admin users are allowed to see registers users without any organization
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - orphan_users
+                    properties:
+                      orphan_users:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - is_admin
+                            - surname
+                            - name
+                            - active
+                            - email
+                          properties:
+                            is_admin:
+                              type: integer
+                            surname:
+                              type: string
+                            name:
+                              type: string
+                            active:
+                              type: integer
+                            email:
+                              type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                      orphan_users:
+                        type: object
+                        properties:
+                          john@daedalus-project.io:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              is_super_admin:
+                                type: integer
+                              auth_token:
+                                type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"orphan_users":{"john@daedalus-project.io":{"active":1,"surname":"The
+                    Ripper","name":"John","is_admin":0,"email":"john@daedalus-project.io"}}},"status":1,"_hidden_data":{"orphan_users":{"john@daedalus-project.io":{"id":2,"auth_token":"93OgYT6MLHpCdh6iLNNr17BRJflTRO4bcC//mVn6ncogyLInHMkKBn4CAauIe0Lg","is_super_admin":0}},"user":{"is_super_admin":1,"id":1}}}
+        '403':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"You are not an admin user."}'
+                  
+  /organization/show:
+    get:
+      description: Users are allowed to show their organizations names and tokens
+      security:
+        - AdminSecurity: []
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      organizations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            token:
+                              type: string
+                              
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organizations:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                          properties:
+                            id:
+                              type: integer
+
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"organizations":["Daedalus Project","Mega
+                    Shops"]},"status":1,"_hidden_data":{"organizations":{"Mega
+                    Shops":{"token":"s.Q8Ymu8q/yqAgZtdAnxyN4Exrwldp0S","id":2},"Daedalus
+                    Project":{"id":1,"token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn"}},"user":{"is_super_admin":1,"id":1}}}
+                '1':
+                  value: '{"data":{"organizations":[]},"status":1}'
+                  
+  /organization/showusers/organization_token:
+    get:
+      description: Admin users are allowed to see its organization user
+      security:
+        - AdminSecurity: []
+      responses:
+        '400':
+          description: Wrong organization token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"Invalid Organization token."}'
+        '403':
+          description: I said only admins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"You are not an admin user.","status":0}'           
+                  
+components:
+  securitySchemes:
+    AdminSecurity:
+      type: http
+      scheme: basic
+      description: Username is session_token

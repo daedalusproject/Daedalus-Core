@@ -17,10 +17,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -37,10 +35,9 @@ my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
 my $not_admin_user_get = request( GET '/user/imadmin',
-    Authorization => "Basic $not_admin_authorization_basic", )
-  ;
+    Authorization => "Basic $not_admin_authorization_basic", );
 
-is( $not_admin_user_get->code(), 400, );
+is( $not_admin_user_get->code(), 403, );
 
 my $not_admin_user_get_json = decode_json( $not_admin_user_get->content );
 
@@ -52,10 +49,8 @@ my $admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -72,8 +67,7 @@ my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
 my $admin_user_get = request( GET '/user/imadmin',
-    Authorization => "Basic $admin_authorization_basic", )
-  ;    #->authorization_basic('session_token', $not_admin_session_token);
+    Authorization => "Basic $admin_authorization_basic", );
 
 is( $admin_user_get->code(), 200, );
 
@@ -92,10 +86,8 @@ my $super_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );

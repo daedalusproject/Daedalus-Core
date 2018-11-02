@@ -2,8 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 
-use Data::Dumper;
-
 use Catalyst::Test 'Daedalus::Core';
 use Daedalus::Core::Controller::REST;
 
@@ -22,28 +20,21 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is_deeply(
-    $failed_because_no_auth_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
-);
+is( $failed_because_no_auth_json->{status},  0, );
+is( $failed_because_no_auth_json->{message}, 'No session token provided.', );
 
 my $superadmin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );
@@ -72,8 +63,14 @@ my $admin_two_organization_json =
   decode_json( $admin_two_organization->content );
 
 is( $admin_two_organization_json->{status}, 1, 'Status success, admin.' );
-is( scalar @{ $admin_two_organization_json->{data}->{organizations} },
-    2, 'Admin belongis to 2 organizations' );
+is( keys %{ $admin_two_organization_json->{data}->{organizations} },
+    2, 'Admin belongs to 2 organizations' );
+
+isnt(
+    $admin_two_organization_json->{data}->{organizations}->{'Daedalus Project'}
+      ->{token},
+    undef, 'API response contains organization token'
+);
 
 isnt( $admin_two_organization_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
@@ -83,10 +80,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -114,8 +109,8 @@ my $user_without_organization_json =
   decode_json( $user_without_organization->content );
 
 is( $user_without_organization_json->{status}, 1, 'Status success.' );
-is( scalar @{ $user_without_organization_json->{data}->{organizations} },
-    0, 'This user does not belong to any organization' );
+is( keys %{ $user_without_organization_json->{data}->{organizations} },
+    1, 'This user belongs to daedalus project' );
 
 is( $user_without_organization_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
@@ -125,10 +120,8 @@ my $admin_megashops_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -159,10 +152,15 @@ my $admin_user_mega_shop_organization_json =
 
 is( $admin_user_mega_shop_organization_json->{status}, 1, 'Status success.' );
 is(
-    scalar @{ $admin_user_mega_shop_organization_json->{data}->{organizations}
-    },
+    keys %{ $admin_user_mega_shop_organization_json->{data}->{organizations} },
     2,
     'This user belongs to Mega Shops and Supershops'
+);
+
+isnt(
+    $admin_user_mega_shop_organization_json->{data}->{organizations}
+      ->{'Supershops'}->{token},
+    undef, 'API response contains organization token'
 );
 
 is( $admin_user_mega_shop_organization_json->{_hidden_data},
@@ -173,10 +171,8 @@ my $non_admin_megashops_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -208,11 +204,18 @@ my $no_admin_user_mega_shop_organization_json =
 
 is( $no_admin_user_mega_shop_organization_json->{status}, 1,
     'Status success.' );
+
 is(
-    scalar
-      @{ $no_admin_user_mega_shop_organization_json->{data}->{organizations} },
+    keys %{ $no_admin_user_mega_shop_organization_json->{data}->{organizations}
+    },
     2,
-    'This user belongs to Mega Shops and SuperShops'
+    'This user belongs to Mega Shops and Supershops'
+);
+
+isnt(
+    $no_admin_user_mega_shop_organization_json->{data}->{organizations}
+      ->{'Supershops'}->{token},
+    undef, 'API response contains organization token'
 );
 
 is( $no_admin_user_mega_shop_organization_json->{_hidden_data},

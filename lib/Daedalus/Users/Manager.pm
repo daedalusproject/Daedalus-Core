@@ -33,6 +33,19 @@ Daedalus Users Manager
 
 =cut
 
+=head2 check_email_valid
+
+Checks if provided user_email is valid.
+
+=cut
+
+sub check_email_valid {
+
+    my $email = shift;
+
+    return Email::Valid->address($email);
+}
+
 =head2 check_user_passwrd
 
 Checks user password, this methods receives submitted user,
@@ -62,7 +75,22 @@ sub get_user_from_email {
     my $c     = shift;
     my $email = shift;
 
-    my $user = $c->model('CoreRealms::User')->find( { email => $email } );
+    my $user = $c->model('CoreRealms::User')->find( { 'email' => $email } );
+
+    return $user;
+}
+
+=head2 get_user_from_id
+
+Retrieve user data from model using user id
+
+=cut
+
+sub get_user_from_id {
+    my $c       = shift;
+    my $user_id = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { 'id' => $user_id } );
 
     return $user;
 }
@@ -75,12 +103,12 @@ sub get_user_data {
 
     $response->{data} = {
         user => {
-            email   => $user->email,
-            name    => $user->name,
-            surname => $user->surname,
-            phone   => $user->phone,
-            api_key => $user->api_key,
-            active  => $user->active,
+            'e-mail' => $user->email,
+            name     => $user->name,
+            surname  => $user->surname,
+            phone    => $user->phone,
+            api_key  => $user->api_key,
+            active   => $user->active,
         },
     };
 
@@ -152,6 +180,7 @@ sub get_user_from_session_token {
         }
     }
 
+    $response->{error_code} = 400;
     return $response;
 }
 
@@ -169,8 +198,10 @@ sub is_admin_from_session_token {
 
     if ( $user->{status} == 0 ) {
         $response = $user;
+        $response->{error_code} = 400;
     }
     else {
+        $response->{error_code} = 403;
         if ( $user->{data}->{data}->{user}->{is_admin} ) {
             $response->{status} = 1;
             $response->{data}   = $user->{data};
@@ -192,19 +223,22 @@ with database info.
 
 sub auth_user {
 
-    my $c    = shift;
-    my $auth = $c->{request}->{data}->{auth};
+    my $c             = shift;
+    my $required_data = shift;
 
     my $response;
     my $user_data;
 
+    $response->{error_code} = 403;
+
     # Get user from model
-    my $user = get_user_from_email( $c, $auth->{email} );
+    my $user = get_user_from_email( $c, $required_data->{'e-mail'} );
     if ($user) {
         if (
             !(
                 check_user_passwrd(
-                    $auth->{password}, $user->salt, $user->password
+                    $required_data->{'password'}, $user->salt,
+                    $user->password
                 )
             )
             || ( $user->active == 0 )
@@ -274,13 +308,13 @@ sub is_admin_of_any_organization {
 
 }
 
-=head2 is_organization_admin
+=head2 is_organization_member
 
-Return if required user is admin of required Organization
+Return if required user is member of required Organization
 
 =cut
 
-sub is_organization_admin {
+sub is_organization_member {
     my $c               = shift;
     my $user_id         = shift;
     my $organization_id = shift;
@@ -288,34 +322,15 @@ sub is_organization_admin {
     my $response;
 
     $response->{status}  = 0;
-    $response->{message} = "User is not an admin of this organization";
+    $response->{message} = "User is not a memeber of this organization";
 
-    my $organization_master_role_id = $c->model('CoreRealms::Role')
-      ->find( { role_name => "organization_master" } )->id;
+    my $organization_member = $c->model('CoreRealms::UserOrganization')
+      ->find( { user_id => $user_id, organization_id => $organization_id } );
 
-    my @organization_groups = $c->model('CoreRealms::OrganizationGroup')
-      ->search( { organization_id => $organization_id } )->all();
-
-    my @user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
-      ->search( { 'user_id' => $user_id } )->all();
-
-# For the time being only admin users arrive here, it always be at least one value
-# inside @user_groups
-
-    #if (@user_groups) {
-
-    for my $user_group (@user_groups) {
-        for my $organization_group (@organization_groups) {
-            if ( $organization_group->id == $user_group->group_id ) {
-                $response->{status}  = 1;
-                $response->{message} = "User is admin of this organization";
-
-                return $response;
-            }
-        }
+    if ($organization_member) {
+        $response->{status}  = 1;
+        $response->{message} = "User is a memeber of this organization";
     }
-
-    #}
 
     return $response;
 
@@ -369,107 +384,77 @@ Register a new user.
 
 sub register_new_user {
 
-    my $c               = shift;
-    my $admin_user_data = shift;
+    my $c                   = shift;
+    my $admin_user_data     = shift;
+    my $requested_user_data = shift;
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
     my $response = { status => 1, message => "" };
 
-    my $requested_user_data = $c->{request}->{data}->{new_user_data};
+    my $user_model = $c->model('CoreRealms::User');
+    my $user =
+      $user_model->find( { 'email' => $requested_user_data->{'e-mail'} } );
+    if ($user) {
+        $response->{status}  = 0;
+        $response->{message} = "There already exists a user using this e-mail.";
 
-    my @required_user_data = qw/email name surname/;
-
-    # Check required data
-    for my $data (@required_user_data) {
-        if ( !( exists $requested_user_data->{$data} ) ) {
-            $response->{status} = 0;
-            $response->{message} .= "No $data supplied.";
-        }
-        else {
-            chomp $requested_user_data->{$data};
-        }
     }
+    else {
+        #
+        # Create a user
+        my $api_key    = Daedalus::Utils::Crypt::generateRandomString(32);
+        my $auth_token = Daedalus::Utils::Crypt::generateRandomString(63);
+        my $salt       = Daedalus::Utils::Crypt::generateRandomString(256);
+        my $password   = Daedalus::Utils::Crypt::generateRandomString(256);
+        $password = Daedalus::Utils::Crypt::hashPassword( $password, $salt );
 
-    # Check if email is valid
-    if ( $response->{status} != 0 ) {
-        if ( !( Email::Valid->address( $requested_user_data->{email} ) ) ) {
-            $response->{status}  = 0;
-            $response->{message} = "Provided e-mail is invalid.";
-        }
-        else {
-            # check if user already exists
-
-            my $user_model = $c->model('CoreRealms::User');
-            my $user =
-              $user_model->find( { email => $requested_user_data->{email} } );
-            if ($user) {
-                $response->{status} = 0;
-                $response->{message} =
-                  "There already exists a user using this e-mail.";
-
+        my $registered_user = $user_model->create(
+            {
+                name       => $requested_user_data->{'name'},
+                surname    => $requested_user_data->{'surname'},
+                email      => $requested_user_data->{'e-mail'},
+                api_key    => $api_key,
+                password   => $password,
+                salt       => $salt,
+                expires    => "3000-01-01",                        #Change it
+                active     => 0,
+                auth_token => $auth_token,
             }
-            else {
-                #
-                # Create a user
-                my $api_key = Daedalus::Utils::Crypt::generateRandomString(32);
-                my $auth_token =
-                  Daedalus::Utils::Crypt::generateRandomString(63);
-                my $salt = Daedalus::Utils::Crypt::generateRandomString(256);
-                my $password =
-                  Daedalus::Utils::Crypt::generateRandomString(256);
-                $password =
-                  Daedalus::Utils::Crypt::hashPassword( $password, $salt );
+        );
 
-                my $registered_user = $user_model->create(
-                    {
-                        name       => $requested_user_data->{name},
-                        surname    => $requested_user_data->{surname},
-                        email      => $requested_user_data->{email},
-                        api_key    => $api_key,
-                        password   => $password,
-                        salt       => $salt,
-                        expires    => "3000-01-01",                   #Change it
-                        active     => 0,
-                        auth_token => $auth_token,
-                    }
-                );
+        # Who registers who
+        my $registered_users_model = $c->model('CoreRealms::RegisteredUser');
 
-                # Who registers who
-                my $registered_users_model =
-                  $c->model('CoreRealms::RegisteredUser');
-
-                my $user_registered = $registered_users_model->create(
-                    {
-                        registered_user  => $registered_user->id,
-                        registrator_user => $registrator_user_id,
-                    }
-                );
-
-                $response->{status} = 1;
-
-                $response->{message} = "User has been registered.";
-
-                $response->{_hidden_data} = {
-                    new_user => {
-                        email      => $registered_user->email,
-                        auth_token => $registered_user->auth_token,
-                        id         => $registered_user->id,
-                    },
-                };
-
-                # Send notification to new user
-                notify_new_user(
-                    $c,
-                    {
-                        email      => $registered_user->email,
-                        auth_token => $registered_user->auth_token,
-                        name       => $registered_user->name,
-                        surname    => $registered_user->surname
-                    }
-                );
+        my $user_registered = $registered_users_model->create(
+            {
+                registered_user  => $registered_user->id,
+                registrator_user => $registrator_user_id,
             }
-        }
+        );
+
+        $response->{status} = 1;
+
+        $response->{message} = "User has been registered.";
+
+        $response->{_hidden_data} = {
+            new_user => {
+                'e-mail'   => $registered_user->email,
+                auth_token => $registered_user->auth_token,
+                id         => $registered_user->id,
+            },
+        };
+
+        # Send notification to new user
+        notify_new_user(
+            $c,
+            {
+                'e-mail'   => $registered_user->email,
+                auth_token => $registered_user->auth_token,
+                name       => $registered_user->name,
+                surname    => $registered_user->surname
+            }
+        );
     }
 
     return $response;
@@ -506,7 +491,7 @@ sub show_registered_users {
         $user = {
             data => {
                 registered_user => {
-                    email    => $registered_user->registered_user->email,
+                    'e-mail' => $registered_user->registered_user->email,
                     name     => $registered_user->registered_user->name,
                     surname  => $registered_user->registered_user->surname,
                     active   => $registered_user->registered_user->active,
@@ -526,10 +511,10 @@ sub show_registered_users {
             },
         };
         $users->{data}->{registered_users}
-          ->{ $user->{data}->{registered_user}->{email} } =
+          ->{ $user->{data}->{registered_user}->{'e-mail'} } =
           $user->{data}->{registered_user};
         $users->{_hidden_data}->{registered_users}
-          ->{ $user->{data}->{registered_user}->{email} } =
+          ->{ $user->{data}->{registered_user}->{'e-mail'} } =
           $user->{_hidden_data}->{registered_user};
     }
 
@@ -548,59 +533,54 @@ Check auth token and activates inactive users
 =cut
 
 sub confirm_registration {
-    my $c = shift;
+    my $c             = shift;
+    my $required_data = shift;
 
     my $response = {
-        status  => 0,
-        message => 'Invalid Auth Token.'
+        status     => 0,
+        message    => 'Invalid Auth Token.',
+        error_code => 400
     };
+    my $auth_token = $required_data->{auth_token};
+    if ( length($auth_token) == 63 ) {    # auth token lenght
 
-    my $auth_data = $c->{request}->{data}->{auth};
+        #find user
+        my $user_model = $c->model('CoreRealms::User');
+        my $user =
+          $user_model->find( { active => 0, auth_token => $auth_token } );
+        if ($user) {
+            if ( !$required_data->{password} ) {
+                $response->{message} =
+                  'Valid Auth Token found, enter your new password.';
+            }
+            else {
+                my $password = $required_data->{password};
+                my $password_strenght =
+                  Daedalus::Utils::Crypt::checkPassword($password);
+                if ( !$password_strenght->{status} ) {
+                    $response->{message} = 'Password is invalid.';
+                }
+                else {
+                    # Password is valid
+                    my $new_auth_token =
+                      Daedalus::Utils::Crypt::generateRandomString(64);
+                    my $new_salt =
+                      Daedalus::Utils::Crypt::generateRandomString(256);
+                    $password =
+                      Daedalus::Utils::Crypt::hashPassword( $password,
+                        $new_salt );
 
-    if ($auth_data) {
-        if ( exists( $auth_data->{auth_token} ) ) {
-            my $auth_token = $auth_data->{auth_token};
-            if ( length($auth_token) == 63 ) {    # auth token lenght
+                    $response->{status}  = 1;
+                    $response->{message} = 'Account activated.';
 
-                #find user
-                my $user_model = $c->model('CoreRealms::User');
-                my $user       = $user_model->find(
-                    { active => 0, auth_token => $auth_token } );
-                if ($user) {
-                    if ( !( exists( $auth_data->{password} ) ) ) {
-                        $response->{message} =
-                          'Valid Auth Token found, enter your new password.';
-                    }
-                    else {
-                        my $password = $auth_data->{password};
-                        my $password_strenght =
-                          Daedalus::Utils::Crypt::checkPassword($password);
-                        if ( !$password_strenght->{status} ) {
-                            $response->{message} = 'Password is invalid.';
+                    $user->update(
+                        {
+                            password   => $password,
+                            salt       => $new_salt,
+                            auth_token => $new_auth_token,
+                            active     => 1
                         }
-                        else {
-                            # Password is valid
-                            my $new_auth_token =
-                              Daedalus::Utils::Crypt::generateRandomString(64);
-                            my $new_salt =
-                              Daedalus::Utils::Crypt::generateRandomString(256);
-                            $password =
-                              Daedalus::Utils::Crypt::hashPassword( $password,
-                                $new_salt );
-
-                            $response->{status}  = 1;
-                            $response->{message} = 'Account activated.';
-
-                            $user->update(
-                                {
-                                    password   => $password,
-                                    salt       => $new_salt,
-                                    auth_token => $new_auth_token,
-                                    active     => 1
-                                }
-                            );
-                        }
-                    }
+                    );
                 }
             }
         }
@@ -708,7 +688,7 @@ sub get_organization_users {
     };
 
     if ($is_super_admin) {
-        $response->{_hidden_data} => { users => {} };
+        $response->{_hidden_data} = { users => {} };
     }
 
     my @organization_users = $c->model('CoreRealms::UserOrganization')
@@ -721,10 +701,10 @@ sub get_organization_users {
         # There are always almost one user here
         #if ( !exists( $response->{data}->{users}->{ $user->email } ) ) {
         $response->{data}->{users}->{ $user->email } = {
-            email   => $user->email,
-            name    => $user->name,
-            surname => $user->surname,
-            phone   => $user->phone,
+            'e-mail' => $user->email,
+            name     => $user->name,
+            surname  => $user->surname,
+            phone    => $user->phone,
         };
 
         if ($is_super_admin) {
@@ -797,10 +777,6 @@ sub show_orphan_users {
 =head1 AUTHOR
 
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
-
-=head1 LICENSE
-
-This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
 
 =cut
 

@@ -23,10 +23,8 @@ my $non_admin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -56,22 +54,20 @@ my $failed_no_admin = request(
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_no_admin_json->{message}, 'Invalid organization token.', );
 
 my $admin_megashops_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'otheradminagain@megashops.com',
-                password => '__::___Password_1234',
-            }
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => '__::___Password_1234',
         }
     )
 );
@@ -103,7 +99,7 @@ my $megashops_admin_invalid_short_token_json =
 is( $megashops_admin_invalid_short_token_json->{status}, 0, );
 is(
     $megashops_admin_invalid_short_token_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $megashops_admin_invalid_token = request(
@@ -120,7 +116,7 @@ my $megashops_admin_invalid_token_json =
 is( $megashops_admin_invalid_token_json->{status}, 0, );
 is(
     $megashops_admin_invalid_token_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $megashops_admin_daedalus_token = request(
@@ -138,7 +134,7 @@ my $megashops_admin_daedalus_token_json =
 is( $megashops_admin_daedalus_token_json->{status}, 0, );
 is(
     $megashops_admin_daedalus_token_json->{message},
-    'Invalid Organization token.',
+    'Invalid organization token.',
 );
 
 my $megashops_admin_valid_token = request(
@@ -165,10 +161,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );
@@ -196,7 +190,7 @@ is( $superadmin_token->code(), 200, );
 my $superadmin_token_json = decode_json( $superadmin_token->content );
 
 is( keys %{ $superadmin_token_json->{data}->{users} },
-    1, 'Daedalus Project has only one user so far' );
+    2, 'Daedalus Project has only two users so far' );
 
 isnt( $superadmin_token_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
@@ -226,7 +220,7 @@ my $superadmin_expired_token = request(
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
-is( $superadmin_expired_token->code(), 403, );
+is( $superadmin_expired_token->code(), 400, );
 
 my $superadmin_expired_token_json =
   decode_json( $superadmin_expired_token->content );

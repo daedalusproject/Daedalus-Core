@@ -22,10 +22,8 @@ my $failed_login_user_post_content = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@nodomain.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@nodomain.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );
@@ -43,15 +41,52 @@ is_deeply(
     }
 );
 
+my $failed_login_user_post_no_email = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $failed_login_user_post_no_email->code(), 400, );
+
+my $failed_login_user_post_no_email_json =
+  decode_json( $failed_login_user_post_no_email->content );
+
+is( $failed_login_user_post_no_email_json->{status},  0, );
+is( $failed_login_user_post_no_email_json->{message}, 'No e-mail provided.', );
+
+my $failed_login_user_post_no_password = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+        }
+    )
+);
+
+is( $failed_login_user_post_no_password->code(), 400, );
+
+my $failed_login_user_post_no_password_json =
+  decode_json( $failed_login_user_post_no_password->content );
+
+is( $failed_login_user_post_no_password_json->{status}, 0, );
+is(
+    $failed_login_user_post_no_password_json->{message},
+    'No password provided.',
+);
+
 my $failed_login_password_post_content = request(
     POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Failed_password',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Failed_password',
         }
     )
 );
@@ -74,10 +109,8 @@ my $login_non_admin_post_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -90,7 +123,7 @@ my $login_non_admin_post_success_json =
 is( $login_non_admin_post_success_json->{status},  1, );
 is( $login_non_admin_post_success_json->{message}, 'Auth Successful.', );
 is(
-    $login_non_admin_post_success_json->{data}->{user}->{email},
+    $login_non_admin_post_success_json->{data}->{user}->{'e-mail'},
     'notanadmin@daedalus-project.io',
 );
 is( $login_non_admin_post_success_json->{data}->{user}->{is_admin}, 0, );
@@ -102,10 +135,8 @@ my $login_admin_post_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );
@@ -117,7 +148,7 @@ my $login_admin_post_success_json =
 
 is( $login_admin_post_success_json->{status},  1, );
 is( $login_admin_post_success_json->{message}, 'Auth Successful.', );
-is( $login_admin_post_success_json->{data}->{user}->{email},
+is( $login_admin_post_success_json->{data}->{user}->{'e-mail'},
     'admin@daedalus-project.io', );
 is( $login_admin_post_success_json->{data}->{user}->{is_admin}, 1, );
 isnt( $login_admin_post_success_json->{_hidden_data},

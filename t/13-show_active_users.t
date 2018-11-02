@@ -27,23 +27,16 @@ is( $failed_because_no_auth->code(), 403, );
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
 
-is_deeply(
-    $failed_because_no_auth_json,
-    {
-        'status'  => '0',
-        'message' => 'No session token provided.',
-    }
-);
+is( $failed_because_no_auth_json->{status},  0, );
+is( $failed_because_no_auth_json->{message}, 'No session token provided.', );
 
 my $non_admin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'notanadmin@daedalus-project.io',
-                password => 'Test_is_th1s_123',
-            }
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
         }
     )
 );
@@ -79,10 +72,8 @@ my $superadmin_success = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                email    => 'admin@daedalus-project.io',
-                password => 'this_is_a_Test_1234',
-            }
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
         }
     )
 );
@@ -119,10 +110,8 @@ my $other_admin_success = request(
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
         {
-            auth => {
-                email    => 'adminagain@daedalus-project.io',
-                password => '__:___Password_1234',
-            }
+            'e-mail' => 'adminagain@daedalus-project.io',
+            password => '__:___Password_1234',
         }
     )
 );
@@ -182,10 +171,8 @@ my $success_valid_auth_token_and_password = request(
     Content_Type => 'application/json',
     Content      => encode_json(
         {
-            auth => {
-                auth_token => $inactive_user_data_auth_token,
-                password   => 'val1d_Pa55w0rd',
-            }
+            auth_token => $inactive_user_data_auth_token,
+            password   => 'val1d_Pa55w0rd',
         }
     )
 );
