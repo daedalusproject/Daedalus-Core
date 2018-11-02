@@ -154,10 +154,6 @@ sub retrieve_token_data {
 
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
 
-=head1 LICENSE
-
-This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
-
 =cut
 
 __PACKAGE__->meta->make_immutable;

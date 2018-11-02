@@ -67,10 +67,6 @@ L<Daedalus::Core::Controller::Root>, L<Catalyst>
 
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
 
-=head1 LICENSE
-
-This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
-
 =cut
 
 1;

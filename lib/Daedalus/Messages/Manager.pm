@@ -77,5 +77,11 @@ sub notify_new_user {
     undef $HERMES;
 }
 
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=cut
+
 __PACKAGE__->meta->make_immutable;
 1;
