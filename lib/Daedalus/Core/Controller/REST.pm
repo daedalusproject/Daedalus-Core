@@ -374,6 +374,11 @@ sub authorize_and_validate {
                 }
             }
         }    # for required data
+
+        if ( $organization_token_check->{status} == 0 ) {
+            $response = $organization_token_check;
+        }
+
     }
 
     $response->{data} = $data;

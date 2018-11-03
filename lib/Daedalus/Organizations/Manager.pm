@@ -210,7 +210,7 @@ sub get_organization_from_token {
     my $response;
     $response->{status}     = 0;
     $response->{error_code} = 400;
-    $response->{message}    = 'Invalid Organization token.';
+    $response->{message}    = 'Invalid organization token.';
 
     my $organization = $c->model('CoreRealms::Organization')
       ->find( { token => $organization_token } );
