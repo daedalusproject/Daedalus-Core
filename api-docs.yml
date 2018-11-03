@@ -34,18 +34,13 @@ paths:
             schema:
               type: object
               required:
-                - auth
+                - e-mail
+                - password
               properties:
-                auth:
-                  type: object
-                  required:
-                    - password
-                    - email
-                  properties:
-                    password:
-                      type: string
-                    email:
-                      type: string
+                password:
+                  type: string
+                e-mail:
+                  type: string
             examples:
               '0':
                 value: >-
@@ -147,10 +142,35 @@ paths:
                   status:
                     type: integer
                     enum:
-                      - 0
+                      - 403
               examples:
                 '0':
                   value: '{"status":0, "message":"Wrong e-mail or password."}'
+        '400':
+          description: Examples of invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 400
+              examples:
+                '0':
+                  value: '{"status":0, "message":"e-mail is invalid."}'    
+                '1':
+                  value: '{"status":0, "message":"No e-mail provided. No password provided."}'      
+                '2':
+                  value: '{"status":0, "message":"e-mail is invalid. No password provided."}'    
+                '3':
+                  value: '{"status":0, "message":"No password provided."}'     
   /organization/create:
     post:
       description: Admin users are allowed to create organizations
@@ -161,14 +181,11 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+               - name
               properties:
-                organization_data:
-                  type: object
-                  required:
-                    - name
-                  properties:
-                    name: 
-                      type: string
+                name: 
+                  type: string
             examples:
               '0':
                 value: '{"organization_data":{"name":"Mega Shops"}}'
@@ -234,16 +251,6 @@ paths:
                   - message
                   - status
                 properties:
-                  _hidden_data:
-                    type: object
-                    properties:
-                      user:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                          is_super_admin:
-                            type: integer
                   message:
                     type: string
                   status:
@@ -257,7 +264,7 @@ paths:
                     name.","_hidden_data":{"user":{"id":1,"is_super_admin":1}},"status":0}
                 '1':
                   value: >-
-                    {"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"Invalid
+                    {"message":"Invalid
                     organization data.","status":0}
         '403':
           description: Non admin users are not allowed to create organizations
@@ -356,16 +363,17 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - name
+                - surname
+                - e-mail
               properties:
-                new_user_data:
-                  type: object
-                  properties:
-                    surname:
-                      type: string
-                    name:
-                      type: string
-                    email:
-                      type: string
+                surname:
+                  type: string
+                name:
+                  type: string
+                e-mail:
+                  type: string
             examples:
               '0':
                 value: >-
@@ -478,38 +486,33 @@ paths:
             schema:
               type: object
               required:
-                - auth
+                - auth_token
+                - password
               properties:
-                auth:
-                  type: object
-                  required:
-                    - auth_token
-                    - password
-                  properties:
-                    password:
-                      type: string
-                    auth_token:
-                      type: string
+                password:
+                  type: string
+                auth_token:
+                  type: string
             examples:
               '0':
-                value: '{"auth":{}}'
+                value: '{}'
               '1':
-                value: '{"auth":{"auth_token":"invaid_token"}}'
+                value: '{"auth_token":"invaid_token"}'
               '2':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc"}
               '3':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
-                  "password":"poorone"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"poorone"}
               '4':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
-                  "password":"val1d_Pa55w0rd"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}
               '5':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
-                  "password":"val1d_Pa55w0rd"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}
       responses:
         '200':
           description: Correct response, auth and correct password are provided
@@ -910,7 +913,7 @@ paths:
                           properties:
                             name:
                               type: string
-                            token:
+                            organization_token:
                               type: string
                               
                   _hidden_data:
