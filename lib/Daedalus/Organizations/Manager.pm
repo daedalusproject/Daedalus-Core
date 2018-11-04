@@ -422,12 +422,32 @@ sub get_user_organization_groups {
     my $user_data         = shift;
     my $organization_data = shift;
 
+    my $user_email = $user_data->{data}->{user}->{'e-mail'};
+
     my $user_organization_groups;
     my $organization_id =
       $organization_data->{_hidden_data}->{organization}->{id};
 
     my $organization_groups = get_organization_groups( $c,
         $organization_data->{_hidden_data}->{organization}->{id} );
+
+    for my $organization_group ( keys %{ $organization_groups->{data} } ) {
+        if (
+            !(
+                grep /^$user_email$/,
+                @{
+                    $organization_groups->{data}->{$organization_group}->{users}
+                }
+            )
+          )
+        {
+            # User does not belong to this group, remove it
+            delete( $organization_groups->{data}->{$organization_group} );
+            delete(
+                $organization_groups->{_hidden_data}->{$organization_group} );
+        }
+    }
+
     $user_organization_groups->{data}->{groups} = $organization_groups->{data};
     $user_organization_groups->{_hidden_data}->{groups} =
       $organization_groups->{_hidden_data};
