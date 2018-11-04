@@ -175,7 +175,7 @@ paths:
     post:
       description: Admin users are allowed to create organizations
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       requestBody:
         content:
           application/json:
@@ -294,7 +294,7 @@ paths:
     get:
       description: Returns if user is admin
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Examples of success responses
@@ -357,7 +357,7 @@ paths:
     post:
       description: Admin users can register new users
       security:
-        - AdminSecurity: []      
+        - TokenSecurity: []      
       requestBody:
         content:
           application/json:
@@ -559,7 +559,7 @@ paths:
     get:
       description: Admin users are allowed to see its active registered users
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success response
@@ -621,7 +621,7 @@ paths:
     get:
       description: Admin users are allowed its registered user who has not activated their accounts
       security:
-        - AdminSecurity: []      
+        - TokenSecurity: []      
       responses:
         '200':
           description: Success response
@@ -712,7 +712,7 @@ paths:
     get:
       description: Admin useres are allowed to see their registered users.
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success response
@@ -804,7 +804,7 @@ paths:
     get:
       description: Admin users are allowed to see registers users without any organization
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success response
@@ -892,7 +892,7 @@ paths:
     get:
       description: Users are allowed to show their organizations names and tokens
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success request
@@ -952,7 +952,7 @@ paths:
     get:
       description: Admin users are allowed to see its organization user
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '400':
           description: Wrong organization token
@@ -982,10 +982,283 @@ paths:
               examples:
                 '0':
                   value: '{"message":"You are not an admin user.","status":0}'           
+
+  /organization/adduser:
+    post:
+      description: Admin users are allowed to add users to its organizations
+      security:
+        - TokenSecurity: []    
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_email
+                - organization_token
+              properties:
+                user_email:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"invalidtoken"}'
+              '1':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"Invalidemail"}
+              '2':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"nonexisten@user.com"}
+              '3':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"existentuser@gmail.com"}
+              '4':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"alvaro.castellano.vela@gmail.com"}
+              '5':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku",
+                  "user_email":"alvaro.castellano.vela@gmail.com"}
+      responses:
+        '200':
+          description: User has been added to organization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"User
+                    has been registered."}
+        '400':
+          description: Failed requests, if admin user does not belong to required organization it will receive 400 response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"No session token provided.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"No organization_token provided."}'
+                '2':
+                  value: '{"message":"No user_email provided.","status":0}'
+                '3':
+                  value: '{"message":"user_email is invalid.","status":0}'
+                '4':
+                  value: >-
+                    {"message":"There is no registered user with that e-mail
+                    address.","status":0}
+                '5':
+                  value: '{"message":"Session token expired.","status":0}'
+                '6':
+                  value: '{"status":0,"message":"Invalid organization token."}'
                   
+        '403':
+          description: Non admin users of given organization are not allowed to add users to its organizations
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"You are not a organization master of this organization.","status":0}'
+
+  /organization/showusergroups:
+    get:
+      description: Users are allowed to list its organization groups
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Common response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Organizations'
+                  _hidden_data:
+                    $ref: '#/components/schemas/HiddenOrganizations'
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}},"token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","name":"Megashops"},"Daedalus
+                    Project":{"groups":{"Daedalus Super
+                    Administrators":{"roles":["organization_master","daedalus_manager"],"users":["admin@daedalus-project.io"]}},"token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","name":"Daedalus
+                    Project"}}},"status":1,"_hidden_data":{"user":{"is_super_admin":1,"id":1},"organizations":{"Daedalus
+                    Project":{"id":1,"groups":{"Daedalus Super
+                    Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"e-mail":"admin@daedalus-project.io","phone":"","surname":"User","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","is_admin":1,"name":"Admin","active":1}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"roles":{"daedalus_manager":8,"organization_master":1},"id":1}}},"Megashops":{"id":2,"groups":{"Megashops
+                    Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"surname":"User","phone":"","e-mail":"admin@daedalus-project.io","active":1,"name":"Admin","is_admin":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p"}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"roles":{"organization_master":1},"id":2}}}}}}
+                '1':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"name":"Megashops","groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}},"token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}}},"status":1}
+                '2':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"name":"Megashops","groups":{},"token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}}},"status":1}
+                '3':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"name":"Megashops","token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}}},"Daedalus
+                    Project":{"groups":{"Daedalus Super
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master","daedalus_manager"]}},"token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","name":"Daedalus
+                    Project"}}},"_hidden_data":{"user":{"id":1,"is_super_admin":1},"organizations":{"Daedalus
+                    Project":{"id":1,"groups":{"Daedalus Super
+                    Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"e-mail":"admin@daedalus-project.io","surname":"User","is_admin":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","active":1,"name":"Admin","phone":""}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"id":1,"roles":{"daedalus_manager":8,"organization_master":1}}}},"Megashops":{"groups":{"Megashops
+                    Administrators":{"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"data":{"user":{"is_admin":1,"phone":"","name":"Admin","active":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","surname":"User","e-mail":"admin@daedalus-project.io"}}}},"id":2,"roles":{"organization_master":1}}},"id":2}}},"status":1}
+                    
+  /organization/showusergroups/organization_token:
+    get:
+      description: Users are allowed to list its organization groups, organization_token specified
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Common response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OrganizationGroup'
+                  _hidden_data:
+                    $ref: '#/components/schemas/HiddenOrganizationGroup'
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}}},"_hidden_data":{"groups":{"Megashops
+                    Administrators":{"roles":{"organization_master":1},"id":2,"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"data":{"user":{"active":1,"name":"Admin","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","phone":"","is_admin":1,"e-mail":"admin@daedalus-project.io","surname":"User"}}}}}},"user":{"id":1,"is_super_admin":1}},"status":1}
+                '1':
+                  value: '{"data":{"groups":{}},"status":1}'       
+                    
 components:
   securitySchemes:
-    AdminSecurity:
+    TokenSecurity:
       type: http
       scheme: basic
       description: Username is session_token
+      
+  schemas:
+    Organizations:        # <---- dictionary
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Organization'
+    Organization:
+      type: object
+      properties:
+        name:
+          type: string
+        token:
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationGroup'
+    OrganizationGroup:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+    UserData:
+      type: object
+      properties:
+        e-mail:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        is_admin:
+          type: integer
+        api_key:
+          type: string
+        active:
+          type: integer
+        phone:
+          type: integer
+    HiddenUserData:
+      type: object
+      properties:
+        id:
+          type: integer
+        is_super_admin:
+          type: integer
+    HiddenOrganizations:        # <---- dictionary
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/HiddenOrganization'
+    HiddenOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+        groups:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/HiddenOrganizationGroup'
+    HiddenOrganizationGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+        users:
+          type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserData'
+            _hidden_data:
+              $ref: '#/components/schemas/HiddenUserData'
+        roles:
+          type: object
+          additionalProperties:
+            type: integer
+            
+        
