@@ -369,8 +369,7 @@ sub get_user_organizations_groups {
     my $c         = shift;
     my $user_data = shift;
 
-    my $user_email     = $user_data->{data}->{user}->{'e-mail'};
-    my $is_super_admin = $user_data->{_hidden_data}->{user}->{is_super_admin};
+    my $user_email = $user_data->{data}->{user}->{'e-mail'};
 
     my $user_organizations = get_organizations_from_user( $c, $user_data );
 
@@ -383,26 +382,22 @@ sub get_user_organizations_groups {
         my $organization_groups =
           get_organization_groups( $c, $organization_id );
 
-        if ( $is_super_admin == 0 ) {
-            for
-              my $organization_group ( keys %{ $organization_groups->{data} } )
+        for my $organization_group ( keys %{ $organization_groups->{data} } ) {
+            if (
+                !(
+                    grep /^$user_email$/,
+                    @{
+                        $organization_groups->{data}->{$organization_group}
+                          ->{users}
+                    }
+                )
+              )
             {
-                if (
-                    !(
-                        grep /^$user_email$/,
-                        @{
-                            $organization_groups->{data}->{$organization_group}
-                              ->{users}
-                        }
-                    )
-                  )
-                {
-                    # User does not belong to this group, remove it
-                    delete(
-                        $organization_groups->{data}->{$organization_group} );
-                    delete( $organization_groups->{_hidden_data}
-                          ->{$organization_group} );
-                }
+                # User does not belong to this group, remove it
+                delete( $organization_groups->{data}->{$organization_group} );
+                delete(
+                    $organization_groups->{_hidden_data}->{$organization_group}
+                );
             }
         }
         $user_organizations->{data}->{organizations}->{$organization_name}
