@@ -258,7 +258,7 @@ sub authorize_and_validate {
                     $response->{status}     = 0;
                     $response->{error_code} = 403;
                     $response->{message} =
-                      "You are not a $prety_role_name of this organization.";
+"Your organization roles does not match with the following roles: $prety_role_name.";
                 }
                 else {
                     $data->{organization_groups} =
