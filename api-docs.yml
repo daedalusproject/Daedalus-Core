@@ -1678,7 +1678,7 @@ paths:
                     {"message":"Required user is already assigned to this
                     group.","status":0}
         '403':
-          description: Auto generated using Swagger Inspector
+          description: Non admin user request response
           content:
             application/json:
               schema:
@@ -1693,6 +1693,167 @@ paths:
                   value: >-
                     {"status":0,"message":"Your organization roles does not
                     match with the following roles: organization master."}
+
+  /organization/removeuserfromgroup:
+    delete:
+      description: Admin users are allowed to remove users from its organization groups
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Succeded response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"message":"Required
+                    user has been removed from organization group."}
+        '400':
+          description: Invalid request responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Required user does not belong to this
+                    group."}
+                '1':
+                  value: '{"message":"user_email is invalid.","status":0}'
+                '2':
+                  value: >-
+                    {"status":0,"message":"There is no registered user with that
+                    e-mail address."}
+                '3':
+                  value: '{"message":"Invalid organization token.","status":0}'
+                '4':
+                  value: >-
+                    {"message":"There is no registered user with that e-mail
+                    address.","status":0}
+                '5':
+                  value: >-
+                    {"message":"There is no registered user with that e-mail
+                    address.","status":0}
+                '6':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '7':
+                  value: '{"status":0,"message":"No user_email provided."}'
+                '8':
+                  value: >-
+                    {"status":0,"message":"No group_name provided. No user_email
+                    provided."}
+
+        '403':
+          description: Non admin user request response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
+  /organization/removeorganizationgroup:
+    delete:
+      description: Admin users are allowed to remove entire organization groups
+      responses:
+        '200':
+          description: Succeded response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"message":"Selected
+                    group has been removed from organization."}
+        '400':
+          description: Invalid request responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"Session token expired.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: '{"message":"No group_name provided.","status":0}'
+                '3':
+                  value: '{"message":"Required group does not exist.","status":0}'
+                '4':
+                  value: '{"status":0,"message":"Required group does not exist."}'
+                '5':
+                  value: '{"message":"Required group does not exist.","status":0}'
+        '403':
+          description: Non admin user request response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Your organization roles does not match with the
+                    following roles: organization master.","status":0}
 
 components:
   securitySchemes:
