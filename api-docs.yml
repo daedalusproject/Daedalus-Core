@@ -1360,6 +1360,130 @@ paths:
                     {"message":"Your organization roles does not match with the
                     following roles: organization master.","status":0}
 
+  /organization/addrolegroup:
+    post:
+      description: Admin users are allowed to add roles to organization groups
+      security:
+        - TokenSecurity: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_name:
+                  type: string
+                group_name:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '1':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"non existent group"}
+              '2':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"non existent group","role_name":"firemen"}
+              '3':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"Daedalus Core Sysadmins","role_name":"firemen"}
+              '4':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"Daedalus Core Sysadmins","role_name":"fireman"}
+              '5':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku",
+                  "group_name":"Megashops Sysadmins","role_name":"fireman"}
+
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organization_group_role:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Selected role has been added to organization
+                    group.","_hidden_data":{"user":{"id":1,"is_super_admin":1},"organization_group_role":{"id":6}},"status":1}
+                '1':
+                  value: >-
+                    {"_hidden_data":{"user":{"id":1,"is_super_admin":1},"organization_group_role":{"id":6}},"status":1,"message":"Selected
+                    role has been added to organization group."}
+        '400':
+          description: Invalid requests, if user does not belong to required organization API response has 400 code.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"No organization_token provided.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: >-
+                    {"status":0,"message":"No group_name provided. No role_name
+                    provided."}
+                '3':
+                  value: '{"status":0,"message":"No role_name provided."}'
+                '4':
+                  value: '{"status":0,"message":"Required group does not exist."}'
+                '5':
+                  value: '{"status":0,"message":"Required role does not exist."}'
+                '6':
+                  value: >-
+                    {"status":0,"message":"Required role is already assigned to
+                    this group."}
+        '403':
+          description: Non admin requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
 components:
   securitySchemes:
     TokenSecurity:
