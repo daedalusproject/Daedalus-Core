@@ -1176,6 +1176,8 @@ paths:
   /organization/showoallgroups/organization_token:
     get:
       description: Admin users are allowed to list all organization groups
+      security:
+        - TokenSecurity: []
       responses:
         '200':
           description: Succeded request
@@ -1227,7 +1229,137 @@ paths:
                   value: >-
                     {"status":0,"message":"Your organization roles does not
                     match with the following roles: organization master."}
-                    
+
+  /organization/creategroup:
+    post:
+      description: Admin users are allowed to create new groups inside its organizations.
+      security:
+        - TokenSecurity: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - group_name
+                - organization_token
+              properties:
+                group_name:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"invalidtoken"}'
+              '1':
+                value: '{"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn"}'
+              '2':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '3':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '4':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","group_name":"Daedalus
+                  Core Sysadmins"}
+              '5':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","group_name":"Daedalus
+                  Core Sysadmins"}
+              '6':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Megashops
+                  Sysadmins"}
+              '7':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Megashops
+                  Sysadmins"}
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      organization_groups:
+                        type: object
+                        properties:
+                          group_name:
+                            type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organization_groups:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"_hidden_data":{"user":{"is_super_admin":1,"id":1},"organization_groups":{"id":"3"}},"data":{"organization_groups":{"group_name":"Daedalus
+                    Core Sysadmins"}},"status":1,"message":"Organization group
+                    has been created."}
+                '1':
+                  value: >-
+                    {"message":"Organization group has been
+                    created.","_hidden_data":{"user":{"id":1,"is_super_admin":1},"organization_groups":{"id":"4"}},"status":1,"data":{"organization_groups":{"group_name":"Megashops
+                    Sysadmins"}}}
+        '400':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"No organization_token provided."}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '3':
+                  value: '{"status":0,"message":"No group_name provided."}'
+                '4':
+                  value: '{"status":0,"message":"Duplicated group name."}'
+                '5':
+                  value: '{"status":0,"message":"Duplicated group name."}'
+        '403':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Your organization roles does not match with the
+                    following roles: organization master.","status":0}
+
 components:
   securitySchemes:
     TokenSecurity:
