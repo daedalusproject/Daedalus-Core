@@ -487,7 +487,7 @@ my $failed_no_admin_users_left_json =
 is( $failed_no_admin_users_left_json->{status}, 0, );
 is(
     $failed_no_admin_users_left_json->{message},
-    'You are not a organization master of this organization.',
+'Your organization roles does not match with the following roles: organization master.',
 );
 
 my $add_new_admin_group = request(
@@ -734,7 +734,7 @@ my $marvin_is_not_admin_json = decode_json( $marvin_is_not_admin->content );
 is( $marvin_is_not_admin_json->{status}, 0, );
 is(
     $marvin_is_not_admin_json->{message},
-    'You are not a organization master of this organization.',
+'Your organization roles does not match with the following roles: organization master.',
 );
 
 done_testing();

@@ -235,6 +235,29 @@ my $failed_inactive_user_json = decode_json( $failed_inactive_user->content );
 is( $failed_inactive_user_json->{status},  0, );
 is( $failed_inactive_user_json->{message}, 'Required user is not active.', );
 
+my $failed_non_existent_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic", #Daedalus Project token
+    Content       => encode_json(
+        {
+            organization_token => 'nonexistentorganization',
+            user_email         => 'marvin@megashops.com'
+        }
+    ),
+);
+
+is( $failed_non_existent_organization->code(), 400, );
+#
+my $failed_non_existent_organization_json =
+  decode_json( $failed_non_existent_organization->content );
+
+is( $failed_non_existent_organization_json->{status}, 0, );
+is(
+    $failed_non_existent_organization_json->{message},
+    'Invalid organization token.',
+);
+
 my $failed_not_my_organization = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -342,6 +365,30 @@ my $superadmin_session_token =
 
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_failed_non_existent_organization = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Daedalus Project token
+    Content => encode_json(
+        {
+            organization_token => 'nonexistentorganization',
+            user_email         => 'marvin@megashops.com'
+        }
+    ),
+);
+
+is( $superadmin_failed_non_existent_organization->code(), 400, );
+#
+my $superadmin_failed_non_existent_organization_json =
+  decode_json( $superadmin_failed_non_existent_organization->content );
+
+is( $superadmin_failed_non_existent_organization_json->{status}, 0, );
+is(
+    $superadmin_failed_non_existent_organization_json->{message},
+    'Invalid organization token.',
+);
 
 my $add_user_success_superuser = request(
     POST $endpoint,

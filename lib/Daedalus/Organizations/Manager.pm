@@ -210,7 +210,7 @@ sub get_organization_from_token {
     my $response;
     $response->{status}     = 0;
     $response->{error_code} = 400;
-    $response->{message}    = 'Invalid Organization token.';
+    $response->{message}    = 'Invalid organization token.';
 
     my $organization = $c->model('CoreRealms::Organization')
       ->find( { token => $organization_token } );
@@ -358,7 +358,7 @@ sub get_organization_groups {
     return $response;
 }
 
-=head2 get_user_organization_groups
+=head2 get_user_organizations_groups
 
 Get user groups for each organization
 
@@ -368,6 +368,8 @@ sub get_user_organizations_groups {
 
     my $c         = shift;
     my $user_data = shift;
+
+    my $user_email = $user_data->{data}->{user}->{'e-mail'};
 
     my $user_organizations = get_organizations_from_user( $c, $user_data );
 
@@ -379,6 +381,25 @@ sub get_user_organizations_groups {
           ->{$organization_name}->{id};
         my $organization_groups =
           get_organization_groups( $c, $organization_id );
+
+        for my $organization_group ( keys %{ $organization_groups->{data} } ) {
+            if (
+                !(
+                    grep /^$user_email$/,
+                    @{
+                        $organization_groups->{data}->{$organization_group}
+                          ->{users}
+                    }
+                )
+              )
+            {
+                # User does not belong to this group, remove it
+                delete( $organization_groups->{data}->{$organization_group} );
+                delete(
+                    $organization_groups->{_hidden_data}->{$organization_group}
+                );
+            }
+        }
         $user_organizations->{data}->{organizations}->{$organization_name}
           ->{groups} = $organization_groups->{data};
         $user_organizations->{_hidden_data}->{organizations}
@@ -386,7 +407,6 @@ sub get_user_organizations_groups {
           $organization_groups->{_hidden_data};
 
     }
-
     return $user_organizations;
 }
 
@@ -402,12 +422,32 @@ sub get_user_organization_groups {
     my $user_data         = shift;
     my $organization_data = shift;
 
+    my $user_email = $user_data->{data}->{user}->{'e-mail'};
+
     my $user_organization_groups;
     my $organization_id =
       $organization_data->{_hidden_data}->{organization}->{id};
 
     my $organization_groups = get_organization_groups( $c,
         $organization_data->{_hidden_data}->{organization}->{id} );
+
+    for my $organization_group ( keys %{ $organization_groups->{data} } ) {
+        if (
+            !(
+                grep /^$user_email$/,
+                @{
+                    $organization_groups->{data}->{$organization_group}->{users}
+                }
+            )
+          )
+        {
+            # User does not belong to this group, remove it
+            delete( $organization_groups->{data}->{$organization_group} );
+            delete(
+                $organization_groups->{_hidden_data}->{$organization_group} );
+        }
+    }
+
     $user_organization_groups->{data}->{groups} = $organization_groups->{data};
     $user_organization_groups->{_hidden_data}->{groups} =
       $organization_groups->{_hidden_data};
