@@ -1147,7 +1147,7 @@ paths:
                     Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"e-mail":"admin@daedalus-project.io","surname":"User","is_admin":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","active":1,"name":"Admin","phone":""}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"id":1,"roles":{"daedalus_manager":8,"organization_master":1}}}},"Megashops":{"groups":{"Megashops
                     Administrators":{"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"data":{"user":{"is_admin":1,"phone":"","name":"Admin","active":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","surname":"User","e-mail":"admin@daedalus-project.io"}}}},"id":2,"roles":{"organization_master":1}}},"id":2}}},"status":1}
                     
-  /organization/showusergroups/organization_token:
+  /organization/showorganizationusergroups/organization_token:
     get:
       description: Users are allowed to list its organization groups, organization_token specified
       security:
@@ -1172,6 +1172,61 @@ paths:
                     Administrators":{"roles":{"organization_master":1},"id":2,"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"data":{"user":{"active":1,"name":"Admin","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","phone":"","is_admin":1,"e-mail":"admin@daedalus-project.io","surname":"User"}}}}}},"user":{"id":1,"is_super_admin":1}},"status":1}
                 '1':
                   value: '{"data":{"groups":{}},"status":1}'       
+
+  /organization/showoallgroups/organization_token:
+    get:
+      description: Admin users are allowed to list all organization groups
+      responses:
+        '200':
+          description: Succeded request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OrganizationGroup'
+                  _hidden_data:
+                    $ref: '#/components/schemas/HiddenOrganizationGroup'          
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"groups":{"Daedalus Super
+                    Administrators":{"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"data":{"user":{"active":1,"surname":"User","e-mail":"admin@daedalus-project.io","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","name":"Admin","is_admin":1,"phone":""}}}},"roles":{"organization_master":1,"daedalus_manager":8},"id":1}},"user":{"is_super_admin":1,"id":1}},"data":{"groups":{"Daedalus
+                    Super
+                    Administrators":{"roles":["organization_master","daedalus_manager"],"users":["admin@daedalus-project.io"]}}}}
+        '400':
+          description: If user does not belong to required organization, API response does not return if organization_token exists or not.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"Invalid organization token.","status":0}'
+        '403':
+          description: If user belongs to required organization API response is forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
                     
 components:
   securitySchemes:
@@ -1260,5 +1315,3 @@ components:
           type: object
           additionalProperties:
             type: integer
-            
-        
