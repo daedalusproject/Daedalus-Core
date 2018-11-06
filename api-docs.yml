@@ -34,18 +34,13 @@ paths:
             schema:
               type: object
               required:
-                - auth
+                - e-mail
+                - password
               properties:
-                auth:
-                  type: object
-                  required:
-                    - password
-                    - email
-                  properties:
-                    password:
-                      type: string
-                    email:
-                      type: string
+                password:
+                  type: string
+                e-mail:
+                  type: string
             examples:
               '0':
                 value: >-
@@ -147,28 +142,50 @@ paths:
                   status:
                     type: integer
                     enum:
-                      - 0
+                      - 403
               examples:
                 '0':
                   value: '{"status":0, "message":"Wrong e-mail or password."}'
+        '400':
+          description: Examples of invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - message
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+                    enum:
+                      - 400
+              examples:
+                '0':
+                  value: '{"status":0, "message":"e-mail is invalid."}'    
+                '1':
+                  value: '{"status":0, "message":"No e-mail provided. No password provided."}'      
+                '2':
+                  value: '{"status":0, "message":"e-mail is invalid. No password provided."}'    
+                '3':
+                  value: '{"status":0, "message":"No password provided."}'     
   /organization/create:
     post:
       description: Admin users are allowed to create organizations
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       requestBody:
         content:
           application/json:
             schema:
               type: object
+              required:
+               - name
               properties:
-                organization_data:
-                  type: object
-                  required:
-                    - name
-                  properties:
-                    name: 
-                      type: string
+                name: 
+                  type: string
             examples:
               '0':
                 value: '{"organization_data":{"name":"Mega Shops"}}'
@@ -234,16 +251,6 @@ paths:
                   - message
                   - status
                 properties:
-                  _hidden_data:
-                    type: object
-                    properties:
-                      user:
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                          is_super_admin:
-                            type: integer
                   message:
                     type: string
                   status:
@@ -257,7 +264,7 @@ paths:
                     name.","_hidden_data":{"user":{"id":1,"is_super_admin":1}},"status":0}
                 '1':
                   value: >-
-                    {"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"Invalid
+                    {"message":"Invalid
                     organization data.","status":0}
         '403':
           description: Non admin users are not allowed to create organizations
@@ -287,7 +294,7 @@ paths:
     get:
       description: Returns if user is admin
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Examples of success responses
@@ -350,22 +357,23 @@ paths:
     post:
       description: Admin users can register new users
       security:
-        - AdminSecurity: []      
+        - TokenSecurity: []      
       requestBody:
         content:
           application/json:
             schema:
               type: object
+              required:
+                - name
+                - surname
+                - e-mail
               properties:
-                new_user_data:
-                  type: object
-                  properties:
-                    surname:
-                      type: string
-                    name:
-                      type: string
-                    email:
-                      type: string
+                surname:
+                  type: string
+                name:
+                  type: string
+                e-mail:
+                  type: string
             examples:
               '0':
                 value: >-
@@ -478,38 +486,33 @@ paths:
             schema:
               type: object
               required:
-                - auth
+                - auth_token
+                - password
               properties:
-                auth:
-                  type: object
-                  required:
-                    - auth_token
-                    - password
-                  properties:
-                    password:
-                      type: string
-                    auth_token:
-                      type: string
+                password:
+                  type: string
+                auth_token:
+                  type: string
             examples:
               '0':
-                value: '{"auth":{}}'
+                value: '{}'
               '1':
-                value: '{"auth":{"auth_token":"invaid_token"}}'
+                value: '{"auth_token":"invaid_token"}'
               '2':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc"}
               '3':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
-                  "password":"poorone"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"poorone"}
               '4':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
-                  "password":"val1d_Pa55w0rd"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}
               '5':
                 value: >-
-                  {"auth":{"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
-                  "password":"val1d_Pa55w0rd"}}
+                  {"auth_token":"ubV8bzBc4utKXtyDQIJ7em1OQuP2FUUo4rb9nXwRoq8jr3e9dwzfSNqrSHvShMc",
+                  "password":"val1d_Pa55w0rd"}
       responses:
         '200':
           description: Correct response, auth and correct password are provided
@@ -556,7 +559,7 @@ paths:
     get:
       description: Admin users are allowed to see its active registered users
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success response
@@ -618,7 +621,7 @@ paths:
     get:
       description: Admin users are allowed its registered user who has not activated their accounts
       security:
-        - AdminSecurity: []      
+        - TokenSecurity: []      
       responses:
         '200':
           description: Success response
@@ -709,7 +712,7 @@ paths:
     get:
       description: Admin useres are allowed to see their registered users.
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success response
@@ -801,7 +804,7 @@ paths:
     get:
       description: Admin users are allowed to see registers users without any organization
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success response
@@ -889,7 +892,7 @@ paths:
     get:
       description: Users are allowed to show their organizations names and tokens
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '200':
           description: Success request
@@ -910,7 +913,7 @@ paths:
                           properties:
                             name:
                               type: string
-                            token:
+                            organization_token:
                               type: string
                               
                   _hidden_data:
@@ -949,7 +952,7 @@ paths:
     get:
       description: Admin users are allowed to see its organization user
       security:
-        - AdminSecurity: []
+        - TokenSecurity: []
       responses:
         '400':
           description: Wrong organization token
@@ -979,10 +982,963 @@ paths:
               examples:
                 '0':
                   value: '{"message":"You are not an admin user.","status":0}'           
+
+  /organization/adduser:
+    post:
+      description: Admin users are allowed to add users to its organizations
+      security:
+        - TokenSecurity: []    
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_email
+                - organization_token
+              properties:
+                user_email:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"invalidtoken"}'
+              '1':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"Invalidemail"}
+              '2':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"nonexisten@user.com"}
+              '3':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"existentuser@gmail.com"}
+              '4':
+                value: >-
+                  {"organization_token":"invalidtoken",
+                  "user_email":"alvaro.castellano.vela@gmail.com"}
+              '5':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku",
+                  "user_email":"alvaro.castellano.vela@gmail.com"}
+      responses:
+        '200':
+          description: User has been added to organization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"User
+                    has been registered."}
+        '400':
+          description: Failed requests, if admin user does not belong to required organization it will receive 400 response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"No session token provided.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"No organization_token provided."}'
+                '2':
+                  value: '{"message":"No user_email provided.","status":0}'
+                '3':
+                  value: '{"message":"user_email is invalid.","status":0}'
+                '4':
+                  value: >-
+                    {"message":"There is no registered user with that e-mail
+                    address.","status":0}
+                '5':
+                  value: '{"message":"Session token expired.","status":0}'
+                '6':
+                  value: '{"status":0,"message":"Invalid organization token."}'
                   
+        '403':
+          description: Non admin users of given organization are not allowed to add users to its organizations
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - status
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"You are not a organization master of this organization.","status":0}'
+
+  /organization/showusergroups:
+    get:
+      description: Users are allowed to list its organization groups
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Common response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Organizations'
+                  _hidden_data:
+                    $ref: '#/components/schemas/HiddenOrganizations'
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}},"token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","name":"Megashops"},"Daedalus
+                    Project":{"groups":{"Daedalus Super
+                    Administrators":{"roles":["organization_master","daedalus_manager"],"users":["admin@daedalus-project.io"]}},"token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","name":"Daedalus
+                    Project"}}},"status":1,"_hidden_data":{"user":{"is_super_admin":1,"id":1},"organizations":{"Daedalus
+                    Project":{"id":1,"groups":{"Daedalus Super
+                    Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"e-mail":"admin@daedalus-project.io","phone":"","surname":"User","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","is_admin":1,"name":"Admin","active":1}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"roles":{"daedalus_manager":8,"organization_master":1},"id":1}}},"Megashops":{"id":2,"groups":{"Megashops
+                    Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"surname":"User","phone":"","e-mail":"admin@daedalus-project.io","active":1,"name":"Admin","is_admin":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p"}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"roles":{"organization_master":1},"id":2}}}}}}
+                '1':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"name":"Megashops","groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}},"token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}}},"status":1}
+                '2':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"name":"Megashops","groups":{},"token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}}},"status":1}
+                '3':
+                  value: >-
+                    {"data":{"organizations":{"Megashops":{"name":"Megashops","token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}}},"Daedalus
+                    Project":{"groups":{"Daedalus Super
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master","daedalus_manager"]}},"token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","name":"Daedalus
+                    Project"}}},"_hidden_data":{"user":{"id":1,"is_super_admin":1},"organizations":{"Daedalus
+                    Project":{"id":1,"groups":{"Daedalus Super
+                    Administrators":{"users":{"admin@daedalus-project.io":{"data":{"user":{"e-mail":"admin@daedalus-project.io","surname":"User","is_admin":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","active":1,"name":"Admin","phone":""}},"_hidden_data":{"user":{"id":1,"is_super_admin":1}}}},"id":1,"roles":{"daedalus_manager":8,"organization_master":1}}}},"Megashops":{"groups":{"Megashops
+                    Administrators":{"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"data":{"user":{"is_admin":1,"phone":"","name":"Admin","active":1,"api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","surname":"User","e-mail":"admin@daedalus-project.io"}}}},"id":2,"roles":{"organization_master":1}}},"id":2}}},"status":1}
+                    
+  /organization/showorganizationusergroups/organization_token:
+    get:
+      description: Users are allowed to list its organization groups, organization_token specified
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Common response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OrganizationGroup'
+                  _hidden_data:
+                    $ref: '#/components/schemas/HiddenOrganizationGroup'
+              examples:
+                '0':
+                  value: >-
+                    {"data":{"groups":{"Megashops
+                    Administrators":{"users":["admin@daedalus-project.io"],"roles":["organization_master"]}}},"_hidden_data":{"groups":{"Megashops
+                    Administrators":{"roles":{"organization_master":1},"id":2,"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"data":{"user":{"active":1,"name":"Admin","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","phone":"","is_admin":1,"e-mail":"admin@daedalus-project.io","surname":"User"}}}}}},"user":{"id":1,"is_super_admin":1}},"status":1}
+                '1':
+                  value: '{"data":{"groups":{}},"status":1}'       
+
+  /organization/showoallgroups/organization_token:
+    get:
+      description: Admin users are allowed to list all organization groups
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Succeded request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OrganizationGroup'
+                  _hidden_data:
+                    $ref: '#/components/schemas/HiddenOrganizationGroup'          
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"groups":{"Daedalus Super
+                    Administrators":{"users":{"admin@daedalus-project.io":{"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"data":{"user":{"active":1,"surname":"User","e-mail":"admin@daedalus-project.io","api_key":"jHkE6BcnNNYIQFGlJiYzrRVo6Feypv5p","name":"Admin","is_admin":1,"phone":""}}}},"roles":{"organization_master":1,"daedalus_manager":8},"id":1}},"user":{"is_super_admin":1,"id":1}},"data":{"groups":{"Daedalus
+                    Super
+                    Administrators":{"roles":["organization_master","daedalus_manager"],"users":["admin@daedalus-project.io"]}}}}
+        '400':
+          description: If user does not belong to required organization, API response does not return if organization_token exists or not.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"Invalid organization token.","status":0}'
+        '403':
+          description: If user belongs to required organization API response is forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
+  /organization/creategroup:
+    post:
+      description: Admin users are allowed to create new groups inside its organizations.
+      security:
+        - TokenSecurity: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - group_name
+                - organization_token
+              properties:
+                group_name:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"invalidtoken"}'
+              '1':
+                value: '{"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn"}'
+              '2':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '3':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '4':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","group_name":"Daedalus
+                  Core Sysadmins"}
+              '5':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","group_name":"Daedalus
+                  Core Sysadmins"}
+              '6':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Megashops
+                  Sysadmins"}
+              '7':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Megashops
+                  Sysadmins"}
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      organization_groups:
+                        type: object
+                        properties:
+                          group_name:
+                            type: string
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organization_groups:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"_hidden_data":{"user":{"is_super_admin":1,"id":1},"organization_groups":{"id":"3"}},"data":{"organization_groups":{"group_name":"Daedalus
+                    Core Sysadmins"}},"status":1,"message":"Organization group
+                    has been created."}
+                '1':
+                  value: >-
+                    {"message":"Organization group has been
+                    created.","_hidden_data":{"user":{"id":1,"is_super_admin":1},"organization_groups":{"id":"4"}},"status":1,"data":{"organization_groups":{"group_name":"Megashops
+                    Sysadmins"}}}
+        '400':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"No organization_token provided."}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '3':
+                  value: '{"status":0,"message":"No group_name provided."}'
+                '4':
+                  value: '{"status":0,"message":"Duplicated group name."}'
+                '5':
+                  value: '{"status":0,"message":"Duplicated group name."}'
+        '403':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Your organization roles does not match with the
+                    following roles: organization master.","status":0}
+
+  /organization/addrolegroup:
+    post:
+      description: Admin users are allowed to add roles to organization groups
+      security:
+        - TokenSecurity: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_name:
+                  type: string
+                group_name:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '1':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"non existent group"}
+              '2':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"non existent group","role_name":"firemen"}
+              '3':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"Daedalus Core Sysadmins","role_name":"firemen"}
+              '4':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn",
+                  "group_name":"Daedalus Core Sysadmins","role_name":"fireman"}
+              '5':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku",
+                  "group_name":"Megashops Sysadmins","role_name":"fireman"}
+
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      organization_group_role:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Selected role has been added to organization
+                    group.","_hidden_data":{"user":{"id":1,"is_super_admin":1},"organization_group_role":{"id":6}},"status":1}
+                '1':
+                  value: >-
+                    {"_hidden_data":{"user":{"id":1,"is_super_admin":1},"organization_group_role":{"id":6}},"status":1,"message":"Selected
+                    role has been added to organization group."}
+        '400':
+          description: Invalid requests, if user does not belong to required organization API response has 400 code.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"No organization_token provided.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: >-
+                    {"status":0,"message":"No group_name provided. No role_name
+                    provided."}
+                '3':
+                  value: '{"status":0,"message":"No role_name provided."}'
+                '4':
+                  value: '{"status":0,"message":"Required group does not exist."}'
+                '5':
+                  value: '{"status":0,"message":"Required role does not exist."}'
+                '6':
+                  value: >-
+                    {"status":0,"message":"Required role is already assigned to
+                    this group."}
+        '403':
+          description: Non admin requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
+  /organization/removerolegroup:
+    delete:
+      description: Admin users are allowed to remove roles from organization groups
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/HiddenUserData'
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Selected role has been removed from organization
+                    group.","_hidden_data":{"user":{"id":1,"is_super_admin":1}},"status":1}
+        '400':
+          description: Invalid request responses.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"status":0,"message":"Required role does not exist."}'
+                '1':
+                  value: '{"message":"Invalid organization token.","status":0}'
+                '2':
+                  value: >-
+                    {"message":"No group_name provided. No role_name
+                    provided.","status":0}
+                '3':
+                  value: >-
+                    {"status":0,"message":"Required role is not assigned to this
+                    group."}
+                '4':
+                  value: '{"status":0,"message":"Required role does not exist."}'
+                '5':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '6':
+                  value: '{"status":0,"message":"No organization_token provided."}'
+                '7':
+                  value: '{"message":"Required group does not exist.","status":0}'
+        '403':
+          description: If organization user is not admin of that organization it receives the following response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
+  /organization/addusertogroup:
+    post:
+      description: Auto generated using Swagger Inspector
+      security:
+        - TokenSecurity: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_email:
+                  type: string
+                group_name:
+                  type: string
+                organization_token:
+                  type: string
+            examples:
+              '0':
+                value: '{"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn"}'
+              '1':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '2':
+                value: '{"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku"}'
+              '3':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Invalid
+                  group name","user_email":"invaliduser@email.com"}
+              '4':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Invalid
+                  group name","user_email":"invaliduseremail.com"}
+              '5':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Invalid
+                  group name","user_email":"alvaro.castellano.vela@gmail.com"}
+              '6':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Daedalus
+                  Core
+                  Sysadmins","user_email":"alvaro.castellano.vela@gmail.com"}
+              '7':
+                value: >-
+                  {"organization_token":"5XJD38czqtm8ieh8TvrBRXlvAD7JM6Nn","group_name":"Daedalus
+                  Core
+                  Sysadmins","user_email":"alvaro.castellano.vela@gmail.com"}
+              '8':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Megashops
+                  Sysadmins","user_email":"alvaro.castellano.vela@gmail.com"}
+              '9':
+                value: >-
+                  {"organization_token":"kCZKBk5KvHz5bCX9xwfUOLVvyRbbj5Ku","group_name":"Megashops
+                  Sysadmins","user_email":"alvaro.castellano.vela@gmail.com"}
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          is_super_admin:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"id":1,"is_super_admin":1}},"message":"Required
+                    user has been added to organization group."}
+        '400':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"No organization_token provided.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: >-
+                    {"status":0,"message":"No group_name provided. No user_email
+                    provided."}
+                '3':
+                  value: >-
+                    {"status":0,"message":"There is no registered user with that
+                    e-mail address."}
+                '4':
+                  value: '{"message":"user_email is invalid.","status":0}'
+                '5':
+                  value: '{"status":0,"message":"Required group does not exist."}'
+                '6':
+                  value: '{"status":0,"message":"Required group does not exist."}'
+                '7':
+                  value: '{"message":"Invalid user.","status":0}'
+                '8':
+                  value: >-
+                    {"message":"Required user is already assigned to this
+                    group.","status":0}
+        '403':
+          description: Non admin user request response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
+  /organization/removeuserfromgroup:
+    delete:
+      description: Admin users are allowed to remove users from its organization groups
+      security:
+        - TokenSecurity: []
+      responses:
+        '200':
+          description: Succeded response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"message":"Required
+                    user has been removed from organization group."}
+        '400':
+          description: Invalid request responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Required user does not belong to this
+                    group."}
+                '1':
+                  value: '{"message":"user_email is invalid.","status":0}'
+                '2':
+                  value: >-
+                    {"status":0,"message":"There is no registered user with that
+                    e-mail address."}
+                '3':
+                  value: '{"message":"Invalid organization token.","status":0}'
+                '4':
+                  value: >-
+                    {"message":"There is no registered user with that e-mail
+                    address.","status":0}
+                '5':
+                  value: >-
+                    {"message":"There is no registered user with that e-mail
+                    address.","status":0}
+                '6':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '7':
+                  value: '{"status":0,"message":"No user_email provided."}'
+                '8':
+                  value: >-
+                    {"status":0,"message":"No group_name provided. No user_email
+                    provided."}
+
+        '403':
+          description: Non admin user request response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":0,"message":"Your organization roles does not
+                    match with the following roles: organization master."}
+
+  /organization/removeorganizationgroup:
+    delete:
+      description: Admin users are allowed to remove entire organization groups
+      responses:
+        '200':
+          description: Succeded response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _hidden_data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          is_super_admin:
+                            type: integer
+                          id:
+                            type: integer
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"status":1,"_hidden_data":{"user":{"is_super_admin":1,"id":1}},"message":"Selected
+                    group has been removed from organization."}
+        '400':
+          description: Invalid request responses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: '{"message":"Session token expired.","status":0}'
+                '1':
+                  value: '{"status":0,"message":"Invalid organization token."}'
+                '2':
+                  value: '{"message":"No group_name provided.","status":0}'
+                '3':
+                  value: '{"message":"Required group does not exist.","status":0}'
+                '4':
+                  value: '{"status":0,"message":"Required group does not exist."}'
+                '5':
+                  value: '{"message":"Required group does not exist.","status":0}'
+        '403':
+          description: Non admin user request response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: integer
+              examples:
+                '0':
+                  value: >-
+                    {"message":"Your organization roles does not match with the
+                    following roles: organization master.","status":0}
+
 components:
   securitySchemes:
-    AdminSecurity:
+    TokenSecurity:
       type: http
       scheme: basic
       description: Username is session_token
+      
+  schemas:
+    Organizations:        # <---- dictionary
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Organization'
+    Organization:
+      type: object
+      properties:
+        name:
+          type: string
+        token:
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationGroup'
+    OrganizationGroup:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            type: string
+    UserData:
+      type: object
+      properties:
+        e-mail:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        is_admin:
+          type: integer
+        api_key:
+          type: string
+        active:
+          type: integer
+        phone:
+          type: integer
+    HiddenUserData:
+      type: object
+      properties:
+        id:
+          type: integer
+        is_super_admin:
+          type: integer
+    HiddenOrganizations:        # <---- dictionary
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/HiddenOrganization'
+    HiddenOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+        groups:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/HiddenOrganizationGroup'
+    HiddenOrganizationGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+        users:
+          type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UserData'
+            _hidden_data:
+              $ref: '#/components/schemas/HiddenUserData'
+        roles:
+          type: object
+          additionalProperties:
+            type: integer

@@ -699,7 +699,7 @@ my $remove_failed_no_admin_json =
 is( $remove_failed_no_admin_json->{status}, 0, );
 is(
     $remove_failed_no_admin_json->{message},
-    'You are not a organization master of this organization.',
+'Your organization roles does not match with the following roles: organization master.',
 );
 
 is( $remove_failed_no_admin_json->{_hidden_data}, undef, );
