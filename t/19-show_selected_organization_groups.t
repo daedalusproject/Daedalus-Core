@@ -28,6 +28,46 @@ my $failed_because_no_auth_json =
 is( $failed_because_no_auth_json->{status},  0, );
 is( $failed_because_no_auth_json->{message}, "No session token provided.", );
 
+my $non_admin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'notanadmin@daedalus-project.io',
+            password => 'Test_is_th1s_123',
+        }
+    )
+);
+
+is( $non_admin_success->code(), 200, );
+
+my $non_admin_success_json = decode_json( $non_admin_success->content );
+
+is( $non_admin_success_json->{status}, 1, );
+
+my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
+
+my $not_admin_authorization_basic =
+  MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
+
+my $non_admin_valid_token = request(
+    GET "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $not_admin_authorization_basic",
+);
+
+is( $non_admin_valid_token->code(), 200, );
+
+my $non_admin_valid_token_json = decode_json( $non_admin_valid_token->content );
+
+is( $non_admin_valid_token_json->{status}, 1, );
+
+is( %{ $non_admin_valid_token_json->{data}->{groups} },
+    0, 'This user does not belong to any group' );
+
+is( $non_admin_valid_token_json->{_hidden_data},
+    undef, 'Non Super admin users do no receive hidden data' );
+
 my $admin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
