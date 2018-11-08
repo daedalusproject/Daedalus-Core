@@ -376,6 +376,30 @@ is(
 'For the time being Mega Shop Sysadmins group has marvin@megashops.com as user.'
 );
 
+my $failed_not_organization_user = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins',
+            user_email         => 'admin@daedalus-project.io'
+        }
+    ),
+);
+
+is( $failed_not_organization_user->code(), 400, );
+
+my $failed_not_organization_user_json =
+  decode_json( $failed_not_organization_user->content );
+
+is( $failed_not_organization_user_json->{status}, 0, );
+is(
+    $failed_not_organization_user_json->{message},
+    'Required user does not belong to this organization.',
+);
+
 my $failed_not_your_organization = request(
     POST $endpoint,
     Content_Type  => 'application/json',
