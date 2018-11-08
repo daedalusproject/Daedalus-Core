@@ -100,8 +100,6 @@ my $admin_session_token = $admin_success_json->{data}->{session_token};
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
-# populate SuperShops groups
-
 my $list_users = request(
     GET '/user/showregistered',
     Content_Type  => 'application/json',
@@ -166,7 +164,8 @@ my $failed_not_my_registered_user = request(
     DELETE $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content => encode_json( { user_email => 'admin@daedalus-project.io' } ),
+    Content =>
+      encode_json( { user_email => 'othernotanadmin@daedalus-project.io' } ),
 );
 
 is( $failed_not_my_registered_user->code(), 400, );
@@ -233,6 +232,27 @@ is(
 
 is( $add_user_to_group_success_json->{_hidden_data}, undef, );
 
+my $get_noadmin_is_sysadmin = request(
+    GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $get_noadmin_is_sysadmin->code(), 200, );
+
+my $get_noadmin_is_sysadmin_json =
+  decode_json( $get_noadmin_is_sysadmin->content );
+
+is( $get_noadmin_is_sysadmin_json->{status}, 1, 'Status success.' );
+is(
+    @{
+        $get_noadmin_is_sysadmin->{data}->{groups}
+          ->{"Mega Shops Administrators"}->{users}
+    }[0],
+    'otheradminagain@megashops.com',
+    'User has been added'
+);
+
 my $remove_user_success = request(
     DELETE $endpoint,
     Content_Type => 'application/json',
@@ -255,6 +275,136 @@ is(
     'Selected user has been removed from organization.',
 );
 
-is( $remove_group_success_json->{_hidden_data}, undef, );
+is( $remove_user_success_json->{_hidden_data}, undef, );
+
+my $list_users_again = request(
+    GET '/user/showregistered',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $list_users_again->code(), 200, );
+
+my $list_users_again_json = decode_json( $list_users_again->content );
+
+is( $list_users_again_json->{status}, 1, 'Status success.' );
+is( keys %{ $list_users_again_json->{data}->{registered_users} },
+    3, 'noadmin@megashops.com has been deleted' );
+
+my $get_sysadmins = request(
+    GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $get_sysadmins->code(), 200, );
+
+my $get_sysadmins_json = decode_json( $get_sysadmins->content );
+
+is( $get_sysadmins_json->{status}, 1, 'Status success.' );
+is(
+    @{
+        $get_sysadmins->{data}->{groups}->{"Mega Shops Administrators"}->{users}
+    },
+    [],
+    'User has been removed'
+);
+
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_removes_marvin = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            user_email => 'noadmin@megashops.com',
+        }
+    ),
+);
+
+is( $superadmin_removes_marvin->code(), 200, );
+
+my $superadmin_removes_marvin_json =
+  decode_json( $superadmin_removes_marvin->content );
+
+is( $superadmin_removes_marvin_json->{status}, 1, );
+is(
+    $superadmin_removes_marvin_json->{message},
+    'Selected user has been removed from organization.',
+);
+
+isnt( $superadmin_removes_marvin_json->{_hidden_data}, undef, );
+
+my $already_removed_fail = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            user_email => 'noadmin@megashops.com',
+        }
+    ),
+);
+
+is( $already_removed_fail->code(), 400, );
+
+my $already_removed_fail_json = decode_json( $already_removed_fail->content );
+
+is( $already_removed_fail_json->{status}, 0, );
+is(
+    $already_removed_fail_json->{message},
+    'Requested user does not exists or it has not been registered by you.',
+);
+
+is( $already_removed_fail_json->{_hidden_data}, undef, );
+
+my $already_removed_fail_superadmin = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            user_email => 'noadmin@megashops.com',
+        }
+    ),
+);
+
+is( $already_removed_fail_superadmin->code(), 400, );
+
+my $already_removed_fail_superadmin_json =
+  decode_json( $already_removed_fail_superadmin->content );
+
+is( $already_removed_fail_superadmin_json->{status}, 0, );
+is(
+    $already_removed_fail_superadmin_json->{message},
+    'Requested user does not exists or it has not been registered by you.',
+);
+
+is( $already_removed_fail_superadmin_json->{_hidden_data}, undef, );
 
 done_testing();
