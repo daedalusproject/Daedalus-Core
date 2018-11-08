@@ -394,11 +394,8 @@ is( $failed_not_organization_user->code(), 400, );
 my $failed_not_organization_user_json =
   decode_json( $failed_not_organization_user->content );
 
-is( $failed_not_organization_user_json->{status}, 0, );
-is(
-    $failed_not_organization_user_json->{message},
-    'Required user does not belong to this organization.',
-);
+is( $failed_not_organization_user_json->{status},  0, );
+is( $failed_not_organization_user_json->{message}, 'Invalid user.', );
 
 my $failed_not_your_organization = request(
     POST $endpoint,
