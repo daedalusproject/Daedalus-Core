@@ -47,18 +47,15 @@ my $not_admin_session_token = $non_admin_success_json->{data}->{session_token};
 my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-my $failed_no_token = request(
-    DELETE $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $not_admin_authorization_basic",
-);
+my $failed_no_token =
+  request( DELETE $endpoint, Content_Type => 'application/json', );
 
 is( $failed_no_token->code(), 400, );
 
 my $failed_no_token_json = decode_json( $failed_no_token->content );
 
 is( $failed_no_token_json->{status},  0, );
-is( $failed_no_token_json->{message}, 'No organization_token provided.', );
+is( $failed_no_token_json->{message}, 'No auth_token provided.', );
 
 my $failed_no_admin = request(
     DELETE $endpoint,

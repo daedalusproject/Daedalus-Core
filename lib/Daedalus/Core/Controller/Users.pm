@@ -372,6 +372,50 @@ sub show_orphan_users_GET {
     $self->return_response( $c, $response );
 }
 
+sub remove_user : Path('/user/remove') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub remove_user_DELETE {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $organization;
+
+    my $target_user_email;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin',
+            },
+            required_data => {
+                user_email => {
+                    type     => 'e-mail',
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $target_user_email =
+          $authorization_and_validatation->{data}->{required_data}
+          ->{user_email};
+
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 AUTHOR
