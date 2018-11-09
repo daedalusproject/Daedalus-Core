@@ -264,13 +264,10 @@ my $get_noadmin_is_sysadmin_json =
   decode_json( $get_noadmin_is_sysadmin->content );
 
 is( $get_noadmin_is_sysadmin_json->{status}, 1, 'Status success.' );
-is(
-    @{
-        $get_noadmin_is_sysadmin->{data}->{groups}->{"Mega Shop Sysadmins"}
-          ->{users}
-    },
-    ['noadmin@megashops.com'],
-    'User has been added'
+isnt(
+    $get_noadmin_is_sysadmin_json->{_hidden_data}->{groups}
+      ->{"Mega Shop Sysadmins"}->{users}->{'noadmin@megashops.com'},
+    undef, 'User has been added'
 );
 
 my $remove_user_success = request(
@@ -314,7 +311,7 @@ is( keys %{ $list_users_again_json->{data}->{registered_users} },
 my $get_sysadmins = request(
     GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
     Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $get_sysadmins->code(), 200, );
@@ -323,11 +320,9 @@ my $get_sysadmins_json = decode_json( $get_sysadmins->content );
 
 is( $get_sysadmins_json->{status}, 1, 'Status success.' );
 is(
-    @{
-        $get_sysadmins->{data}->{groups}->{"Mega Shops Administrators"}->{users}
-    },
-    [],
-    'User has been removed'
+    $get_sysadmins_json->{_hidden_data}->{groups}->{"Mega Shop Sysadmins"}
+      ->{users}->{'noadmin@megashops.com'},
+    undef, 'User has been removed'
 );
 
 my $superadmin_removes_marvin = request(
@@ -337,7 +332,7 @@ my $superadmin_removes_marvin = request(
       "Basic $superadmin_authorization_basic",    #Megashops Project token
     Content => encode_json(
         {
-            user_email => 'noadmin@megashops.com',
+            user_email => 'marvin@megashops.com',
         }
     ),
 );
@@ -352,8 +347,6 @@ is(
     $superadmin_removes_marvin_json->{message},
     'Selected user has been removed from organization.',
 );
-
-isnt( $superadmin_removes_marvin_json->{_hidden_data}, undef, );
 
 my $already_removed_fail = request(
     DELETE $endpoint,
