@@ -772,6 +772,61 @@ sub show_orphan_users {
     return $response;
 }
 
+=head2 remove_user
+
+Removes selected user.
+
+=cut
+
+sub remove_user {
+    my $c         = shift;
+    my $user_data = shift;
+
+    my $user_id = $user_data->id;
+
+    my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
+        {
+            user_id => $user_id
+        }
+    );
+
+    $user_group->delete() if ($user_group);
+
+    my $role_group = $c->model('CoreRealms::UserOrganization')->find(
+        {
+            user_id => $user_id
+        }
+    );
+
+    $role_group->delete() if ($role_group);
+
+    my $registrator_user = $c->model('CoreRealms::RegisteredUser')->find(
+        {
+            registrator_user => $user_id
+        }
+    );
+
+    #Daedalus-Core admin becomes registrator
+
+    $registrator_user->update( { registrator_user => 1 } )
+      if ($registrator_user);
+
+    my $registered_user = $c->model('CoreRealms::RegisteredUser')->find(
+        {
+            registered_user => $user_id
+        }
+    );
+
+    $registered_user->delete() if ($registered_user);
+
+    my $user = $c->model('CoreRealms::User')->find(
+        {
+            id => $user_id
+        }
+    )->delete();
+
+}
+
 =encoding utf8
 
 =head1 AUTHOR

@@ -372,6 +372,85 @@ sub show_orphan_users_GET {
     $self->return_response( $c, $response );
 }
 
+sub remove_user : Path('/user/remove') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub remove_user_DELETE {
+
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $organization;
+
+    my $target_user;
+    my $target_user_email;
+
+    my $able_to_remove = 1;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'admin',
+            },
+            required_data => {
+                user_email => {
+                    type     => 'e-mail',
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $target_user_email =
+          $authorization_and_validatation->{data}->{required_data}
+          ->{user_email};
+        $target_user = Daedalus::Users::Manager::get_user_from_email( $c,
+            $target_user_email );
+
+        $response->{error_code} = 400;
+        $response->{status}     = 0;
+        $response->{message} =
+"Requested user does not exists or it has not been registered by you.";
+
+        if ( defined $target_user ) {
+            if ( $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 ) {
+                if (
+                    !defined Daedalus::Users::Manager::show_registered_users(
+                        $c, $user_data )->{data}->{registered_users}
+                    ->{ $target_user->email }
+                  )
+                {
+                    $able_to_remove = 0;
+                }
+            }
+            else {
+                if ( $user_data->{data}->{user}->{"e-mail"} eq
+                    $target_user->email )
+                {
+                    $able_to_remove = 0;
+                }
+            }
+            if ( $able_to_remove == 1 ) {
+                Daedalus::Users::Manager::remove_user( $c, $target_user );
+                $response->{status} = 1;
+                $response->{message} =
+                  "Selected user has been removed from organization.";
+            }
+        }
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 AUTHOR
