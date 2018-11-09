@@ -397,4 +397,29 @@ is(
 
 is( $already_removed_fail_superadmin_json->{_hidden_data}, undef, );
 
+my $remove_myslef_fail_superadmin = request(
+    DELETE $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            user_email => 'admin@daedalus-project.io',
+        }
+    ),
+);
+
+is( $remove_myslef_fail_superadmin->code(), 400, );
+
+my $remove_myslef_fail_superadmin_json =
+  decode_json( $remove_myslef_fail_superadmin->content );
+
+is( $remove_myslef_fail_superadmin_json->{status}, 0, );
+is(
+    $remove_myslef_fail_superadmin_json->{message},
+    'Requested user does not exists or it has not been registered by you.',
+);
+
+is( $remove_myslef_fail_superadmin_json->{_hidden_data}, undef, );
+
 done_testing();
