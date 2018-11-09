@@ -55,7 +55,7 @@ is( $failed_no_token->code(), 400, );
 my $failed_no_token_json = decode_json( $failed_no_token->content );
 
 is( $failed_no_token_json->{status},  0, );
-is( $failed_no_token_json->{message}, 'No auth_token provided.', );
+is( $failed_no_token_json->{message}, 'No session token provided.', );
 
 my $failed_no_admin = request(
     DELETE $endpoint,
@@ -97,6 +97,29 @@ my $admin_session_token = $admin_success_json->{data}->{session_token};
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
 my $list_users = request(
     GET '/user/showregistered',
     Content_Type  => 'application/json',
@@ -137,7 +160,7 @@ is( $failed_invalid_email->code(), 400, );
 my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
 
 is( $failed_invalid_email_json->{status},  0, );
-is( $failed_invalid_email_json->{message}, 'Invalid user_email', );
+is( $failed_invalid_email_json->{message}, 'user_email is invalid.', );
 
 my $failed_non_existent_user = request(
     DELETE $endpoint,
@@ -232,7 +255,7 @@ is( $add_user_to_group_success_json->{_hidden_data}, undef, );
 my $get_noadmin_is_sysadmin = request(
     GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
     Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $get_noadmin_is_sysadmin->code(), 200, );
@@ -243,10 +266,10 @@ my $get_noadmin_is_sysadmin_json =
 is( $get_noadmin_is_sysadmin_json->{status}, 1, 'Status success.' );
 is(
     @{
-        $get_noadmin_is_sysadmin->{data}->{groups}
-          ->{"Mega Shops Administrators"}->{users}
-    }[0],
-    'otheradminagain@megashops.com',
+        $get_noadmin_is_sysadmin->{data}->{groups}->{"Mega Shop Sysadmins"}
+          ->{users}
+    },
+    ['noadmin@megashops.com'],
     'User has been added'
 );
 
@@ -306,29 +329,6 @@ is(
     [],
     'User has been removed'
 );
-
-my $superadmin_success = request(
-    POST '/user/login',
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            'e-mail' => 'admin@daedalus-project.io',
-            password => 'this_is_a_Test_1234',
-        }
-    )
-);
-
-is( $superadmin_success->code(), 200, );
-
-my $superadmin_success_json = decode_json( $superadmin_success->content );
-
-is( $superadmin_success_json->{status}, 1, );
-
-my $superadmin_session_token =
-  $superadmin_success_json->{data}->{session_token};
-
-my $superadmin_authorization_basic =
-  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
 my $superadmin_removes_marvin = request(
     DELETE $endpoint,

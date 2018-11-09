@@ -772,6 +772,37 @@ sub show_orphan_users {
     return $response;
 }
 
+=head2 remove_user
+
+Removes selected user.
+
+=cut
+
+sub remove_user {
+    my $c         = shift;
+    my $user_data = shift;
+
+    my $user_id = $user_data->id;
+
+    my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
+        {
+            user_id => $user_id
+        }
+    )->delete();
+
+    my $role_group = $c->model('CoreRealms::UserOrganization')->find(
+        {
+            user_id => $user_id
+        }
+    )->delete();
+
+    my $user = $c->model('CoreRealms::User')->find(
+        {
+            id => $user_id
+        }
+    )->delete();
+}
+
 =encoding utf8
 
 =head1 AUTHOR
