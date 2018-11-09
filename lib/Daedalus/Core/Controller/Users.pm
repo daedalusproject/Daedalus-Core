@@ -434,7 +434,7 @@ sub remove_user_DELETE {
             }
             else {
                 if ( $user_data->{data}->{user}->{"e-mail"} eq
-                    $target_user->{data}->{user}->{"e-mail"} )
+                    $target_user->email )
                 {
                     $able_to_remove = 0;
                 }
