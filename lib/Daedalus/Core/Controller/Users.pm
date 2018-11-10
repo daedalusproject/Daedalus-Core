@@ -451,17 +451,17 @@ sub remove_user_DELETE {
     $self->return_response( $c, $response );
 }
 
-=head2 show_user_data
+=head2 user_data
 
-Shows user data
+Manages user data
 
 =cut
 
-sub show_user_data : Path('/user') : Args(0) : ActionClass('REST') {
+sub user_data : Path('/user') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub show_user_data_GET {
+sub user_data_GET {
     my ( $self, $c ) = @_;
 
     my $response;
@@ -478,6 +478,54 @@ sub show_user_data_GET {
         $response->{status}       = 1;
         $response->{data}         = $user_data->{data};
         $response->{_hidden_data} = $user_data->{_hidden_data};
+    }
+
+    $self->return_response( $c, $response );
+}
+
+=head2 user_data_PUT
+
+Updates user data
+
+=cut
+
+sub user_data_PUT {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user',
+            },
+            required_data => {
+                neme => {
+                    type     => 'string',
+                    required => 0,
+                },
+                surname => {
+                    type     => "string",
+                    required => 0,
+                },
+                phone_number => {
+                    type     => "phone_number",
+                    required => 0,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    elsif ( $authorization_and_validatation->{status} == 1 ) {
+        die Dumper($authorization_and_validatation);
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $response->{status}     = 1;
+        $response->{error_code} = 400;
     }
 
     $self->return_response( $c, $response );
