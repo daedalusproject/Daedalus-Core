@@ -363,17 +363,24 @@ sub authorize_and_validate {
                         }
                     }
                 }
-                elsif ( $data_properties->{type} eq "phone_number" ) {
+                elsif ( $data_properties->{type} eq "phone" ) {
                     if ($value) {
-                        my $phone = Number::Phone->new($value);
+                        my $phone       = Number::Phone->new($value);
+                        my $valid_phone = 1;
                         if ( defined $phone ) {
                             if ( $phone->is_valid != 1 ) {
-                                $response->{status}     = 0;
-                                $response->{error_code} = 400;
-                                $response->{message} =
-                                  "Invalid $required_data_name.";
+                                $valid_phone = 0;
                             }
 
+                        }
+                        else {
+                            $valid_phone = 0;
+                        }
+                        if ( $valid_phone == 0 ) {
+                            $response->{status}     = 0;
+                            $response->{error_code} = 400;
+                            $response->{message} =
+                              "Invalid $required_data_name.";
                         }
                     }
                 }

@@ -495,35 +495,51 @@ sub user_data_PUT {
     my $response;
     my $user_data;
 
+    my $data_to_update = {};
+
+    my $required_data = {
+        name => {
+            type     => 'string',
+            required => 0,
+        },
+        surname => {
+            type     => "string",
+            required => 0,
+        },
+        phone => {
+            type     => "phone",
+            required => 0,
+        },
+    };
+
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
             auth => {
                 type => 'user',
             },
-            required_data => {
-                neme => {
-                    type     => 'string',
-                    required => 0,
-                },
-                surname => {
-                    type     => "string",
-                    required => 0,
-                },
-                phone_number => {
-                    type     => "phone_number",
-                    required => 0,
-                },
-            }
+            required_data => $required_data,
         }
     );
-
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
     elsif ( $authorization_and_validatation->{status} == 1 ) {
-        die Dumper($authorization_and_validatation);
         $user_data = $authorization_and_validatation->{data}->{user_data};
+        for my $data ( keys %{$required_data} ) {
+            if (
+                defined $authorization_and_validatation->{data}
+                ->{required_data}->{$data} )
+            {
+                $data_to_update->{$data} =
+                  $authorization_and_validatation->{data}->{required_data}
+                  ->{$data};
+            }
+        }
+        if ($data_to_update) {
+            Daedalus::Users::Manager::update_user_data( $c, $user_data,
+                $data_to_update );
+        }
         $response->{status}     = 1;
         $response->{error_code} = 400;
     }

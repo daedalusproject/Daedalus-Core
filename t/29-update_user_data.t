@@ -55,20 +55,20 @@ is( $failed_no_token->code(), 400, );
 
 my $failed_no_token_json = decode_json( $failed_no_token->content );
 
-my $failed_no_data = request(
+my $no_data = request(
     PUT $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_no_data->code(), 400, );
+is( $no_data->code(), 200, );
 
-my $failed_no_data_json = decode_json( $failed_no_data->content );
+my $no_data_json = decode_json( $no_data->content );
 
-is( $failed_no_data_json->{status},  0, );
-is( $failed_no_data_json->{message}, 'Nothing changed.', );
+is( $no_data_json->{status},  1, );
+is( $no_data_json->{message}, undef, );
 
-my $failed_update_wrong_data = request(
+my $update_wrong_data = request(
     PUT $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -80,13 +80,12 @@ my $failed_update_wrong_data = request(
 
 );
 
-is( $failed_update_wrong_data->code(), 400, );
+is( $update_wrong_data->code(), 200, );    #Nothing changes
 
-my $failed_update_wrong_data_json =
-  decode_json( $failed_update_wrong_data->content );
+my $update_wrong_data_json = decode_json( $update_wrong_data->content );
 
-is( $failed_update_wrong_data_json->{status},  0, );
-is( $failed_update_wrong_data_json->{message}, 'Nothing changed.', );
+is( $update_wrong_data_json->{status},  1, );
+is( $update_wrong_data_json->{message}, undef, );
 
 my $update_name = request(
     PUT $endpoint,
@@ -167,7 +166,7 @@ my $update_invalidvalid_number = request(
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
-            phone_number => '+3496352534478',
+            phone => '+3496352534478',
         }
     )
 );
@@ -178,7 +177,7 @@ my $update_invalidvalid_number_json =
   decode_json( $update_invalidvalid_number->content );
 
 is( $update_invalidvalid_number_json->{status},  0, );
-is( $update_invalidvalid_number_json->{message}, 'Invalid phone_number.', );
+is( $update_invalidvalid_number_json->{message}, 'Invalid phone.', );
 
 $check_name_and_surname = request(
     GET $endpoint,
@@ -203,7 +202,7 @@ my $update_valid_number = request(
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
-            phone_number => '+34963525478',
+            phone => '+34963525478',
         }
     )
 );
@@ -213,7 +212,7 @@ is( $update_valid_number->code(), 200, );
 my $update_valid_number_json = decode_json( $update_valid_number->content );
 
 is( $update_valid_number_json->{status},  1, );
-is( $update_valid_number_json->{message}, 'Data updated: phone_number.', );
+is( $update_valid_number_json->{message}, 'Data updated: phone.', );
 
 my $check_name_surname_phone = request(
     GET $endpoint,
@@ -233,8 +232,7 @@ is( $check_name_surname_phone_json->{data}->{user}->{name}, 'Felix', );
 
 is( $check_name_surname_phone_json->{data}->{user}->{surname}, 'Rogriguez', );
 
-is( $check_name_surname_phone_json->{data}->{user}->{phone_number},
-    '+34963525478', );
+is( $check_name_surname_phone_json->{data}->{user}->{phone}, '+34963525478', );
 
 my $update_all_data = request(
     PUT $endpoint,
@@ -242,9 +240,9 @@ my $update_all_data = request(
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
-            name         => 'Curro',
-            surname      => 'Jimenez',
-            phone_number => '+34962525478',
+            name    => 'Curro',
+            surname => 'Jimenez',
+            phone   => '+34962525478',
         }
     )
 );
@@ -253,11 +251,8 @@ is( $update_all_data->code(), 200, );
 
 my $update_all_data_json = decode_json( $update_all_data->content );
 
-is( $update_all_data_json->{status}, 1, );
-is(
-    $update_all_data_json->{message},
-    'Data updated: name, phone_number, surname.',
-);
+is( $update_all_data_json->{status},  1, );
+is( $update_all_data_json->{message}, 'Data updated: name, phone, surname.', );
 
 my $check_all_data = request(
     GET $endpoint,
@@ -276,6 +271,6 @@ is( $check_all_data_json->{data}->{user}->{name}, 'Curro', );
 
 is( $check_all_data_json->{data}->{user}->{surname}, 'Jimenez', );
 
-is( $check_all_data_json->{data}->{user}->{phone_number}, '+34962525478', );
+is( $check_all_data_json->{data}->{user}->{phone}, '+34962525478', );
 
 done_testing();
