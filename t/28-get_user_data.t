@@ -12,7 +12,7 @@ use HTTP::Request::Common qw(GET PUT POST DELETE);
 my $endpoint = '/user';
 
 my $failed_because_no_auth_token =
-  request( DELETE $endpoint, Content_Type => 'application/json', );
+  request( GET $endpoint, Content_Type => 'application/json', );
 
 is( $failed_because_no_auth_token->code(), 400, );
 
@@ -163,15 +163,13 @@ my $super_admin_get_data_json = decode_json( $super_admin_get_data->content );
 is( $super_admin_get_data_json->{status},  1, );
 is( $super_admin_get_data_json->{message}, undef, );
 
-is(
-    $super_admin_get_data_json->{data}->{user}->{"e-mail"},
-    'otheradminagain@megashops.com',
-);
+is( $super_admin_get_data_json->{data}->{user}->{"e-mail"},
+    'admin@daedalus-project.io', );
 is( $super_admin_get_data_json->{data}->{user}->{name},    "Admin", );
 is( $super_admin_get_data_json->{data}->{user}->{surname}, "User", );
 is(
     $super_admin_get_data_json->{data}->{user}->{api_key},
-    "1TluauLErCtXhbBdyxfpVHpfifoBaJb",
+    "lTuuauLEKCtXhbBVyxfpVHpdodiBaJb",
 );
 is( $super_admin_get_data_json->{data}->{user}->{is_admin},   1, );
 is( $super_admin_get_data_json->{data}->{user}->{active},     1, );

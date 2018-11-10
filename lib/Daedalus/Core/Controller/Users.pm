@@ -451,6 +451,38 @@ sub remove_user_DELETE {
     $self->return_response( $c, $response );
 }
 
+=head2 show_user_data
+
+Shows user data
+
+=cut
+
+sub show_user_data : Path('/user') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub show_user_data_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $authorization_and_validatation =
+      $self->authorize_and_validate( $c, { auth => { type => "user" } } );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    elsif ( $authorization_and_validatation->{status} == 1 ) {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $response->{status}       = 1;
+        $response->{data}         = $user_data->{data};
+        $response->{_hidden_data} = $user_data->{_hidden_data};
+    }
+
+    $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 AUTHOR
