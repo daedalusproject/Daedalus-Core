@@ -34,20 +34,6 @@ my $admin_login_success_token =
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_login_success_token", '' );
 
-my $failed_no_token =
-  request( PUT $endpoint, Content_Type => 'application/json', );
-
-is( $failed_no_token->code(), 400, );
-
-my $failed_no_token_json = decode_json( $failed_no_token->content );
-
-is( $no_data->code(), 200, );
-
-my $no_data_json = decode_json( $no_data->content );
-
-is( $no_data_json->{status},  1, );
-is( $no_data_json->{message}, undef, );
-
 my $update_short_password = request(
     PUT $endpoint,
     Content_Type  => 'application/json',
@@ -125,8 +111,8 @@ is( $get_data_now_fails->code(), 400, );
 
 my $get_data_now_fails_json = decode_json( $get_data_now_fails->content );
 
-is( $admin_get_data_json->{status},  0, );
-is( $admin_get_data_json->{message}, "Session token invalid.", );
+is( $get_data_now_fails_json->{status},  0, );
+is( $get_data_now_fails_json->{message}, "Session token invalid.", );
 
 my $admin_login_now_fails = request(
     POST '/user/login',
@@ -144,11 +130,35 @@ is( $admin_login_now_fails->code(), 403, );
 my $admin_login_now_fails_json = decode_json( $admin_login_now_fails->content );
 
 is_deeply(
-    $failed_login_password_post_content_json,
+    $admin_login_now_fails_json,
     {
         'status'  => 0,
         'message' => 'Wrong e-mail or password.',
     }
 );
+
+my $admin_new_login_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'otheradminagain@megashops.com',
+            password => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $admin_new_login_success->code(), 200, );
+
+my $admin_new_login_success_json =
+  decode_json( $admin_new_login_success->content );
+
+is( $admin_new_login_success_json->{status}, 1, );
+
+my $admin_new_login_success_token =
+  $admin_new_login_success_json->{data}->{session_token};
+
+my $admin_new_authorization_basic =
+  MIME::Base64::encode( "session_token:$admin_new_login_success_token", '' );
 
 done_testing();
