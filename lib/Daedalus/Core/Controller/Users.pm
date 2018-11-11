@@ -451,17 +451,17 @@ sub remove_user_DELETE {
     $self->return_response( $c, $response );
 }
 
-=head2 show_user_data
+=head2 user_data
 
-Shows user data
+Manages user data
 
 =cut
 
-sub show_user_data : Path('/user') : Args(0) : ActionClass('REST') {
+sub user_data : Path('/user') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub show_user_data_GET {
+sub user_data_GET {
     my ( $self, $c ) = @_;
 
     my $response;
@@ -478,6 +478,76 @@ sub show_user_data_GET {
         $response->{status}       = 1;
         $response->{data}         = $user_data->{data};
         $response->{_hidden_data} = $user_data->{_hidden_data};
+    }
+
+    $self->return_response( $c, $response );
+}
+
+=head2 user_data_PUT
+
+Updates user data
+
+=cut
+
+sub user_data_PUT {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $data_to_update       = {};
+    my $data_to_update_names = "";
+
+    my $required_data = {
+        name => {
+            type     => 'string',
+            required => 0,
+        },
+        surname => {
+            type     => "string",
+            required => 0,
+        },
+        phone => {
+            type     => "phone",
+            required => 0,
+        },
+    };
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user',
+            },
+            required_data => $required_data,
+        }
+    );
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    elsif ( $authorization_and_validatation->{status} == 1 ) {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        for my $data ( sort ( keys %{$required_data} ) ) {
+            if (
+                defined $authorization_and_validatation->{data}
+                ->{required_data}->{$data} )
+            {
+                $data_to_update->{$data} =
+                  $authorization_and_validatation->{data}->{required_data}
+                  ->{$data};
+                $data_to_update_names = "$data_to_update_names$data, ";
+            }
+        }
+        if ($data_to_update) {
+            Daedalus::Users::Manager::update_user_data( $c, $user_data,
+                $data_to_update );
+            $data_to_update_names =~ s/^\s+|\s+$//g;
+            $data_to_update_names =~ s/,$//g;
+            $response->{message} = "Data updated: $data_to_update_names."
+              unless ( $data_to_update_names eq "" );
+        }
+        $response->{status}     = 1;
+        $response->{error_code} = 400;
     }
 
     $self->return_response( $c, $response );

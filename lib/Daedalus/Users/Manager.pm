@@ -827,6 +827,25 @@ sub remove_user {
 
 }
 
+=head2 update_user_data
+
+Updates user data
+
+=cut
+
+sub update_user_data {
+    my $c              = shift;
+    my $user_data      = shift;
+    my $data_to_update = shift;
+
+    $c->model('CoreRealms::User')->find(
+        {
+            id => $user_data->{_hidden_data}->{user}->{id},
+        }
+    )->update($data_to_update);
+
+}
+
 =encoding utf8
 
 =head1 AUTHOR
