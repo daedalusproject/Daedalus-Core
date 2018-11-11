@@ -539,7 +539,6 @@ sub user_data_PUT {
             }
         }
 
-        #if ($data_to_update) {
         Daedalus::Users::Manager::update_user_data( $c, $user_data,
             $data_to_update );
         $data_to_update_names =~ s/^\s+|\s+$//g;
@@ -547,7 +546,6 @@ sub user_data_PUT {
         $response->{message} = "Data updated: $data_to_update_names."
           unless ( $data_to_update_names eq "" );
 
-        #}
         $response->{status}     = 1;
         $response->{error_code} = 400;
     }
