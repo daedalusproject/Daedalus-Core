@@ -562,3 +562,28 @@ $schema->resultset('RegisteredUser')->create(
     }
 );
 
+$name     = 'Orphan';
+$surname  = 'Boos';
+$email    = 'orphanboos@bugstech.com';
+$password = '__:bUgs:_ULTR:A__1234';
+$api_key  = '0uIRKa8kWN9TJJU3mA3Jawer1ETbEina';
+$auth_token =
+  'vhPMp1BPMSdsiHokuJcgEYDWEunQxgDo4AV1HR0om4Jb6TdBWrSZTW5YsPc3iTzW';
+$salt =
+'y2TlG6VXTHhbpLRNFCcwNJCg23p9fjBtJrnFlKQjnjBFHeZc1Gq49rXnhAIWHuZ5n7jWKdmzkOvkOdG1VEVHUuX5aVfTLW3blJU1wo5tfroRaSy8ZkSVTIRbHh8JpUOufR1VlUXgutcJPGvbxQo6qse0J6vftuyz69zBJ7yPUrF59r6KfKCWiZjHK2hY2a7oUmdgkRJFLHGEX6dwKPx99QtUYzDkV4A9pSpURyvYvoKQT05Bxq3yOdT6kw03tl6';
+$password = sha512_base64("$salt$password");
+
+$schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 1,
+        auth_token => $auth_token,
+    }
+);
+
