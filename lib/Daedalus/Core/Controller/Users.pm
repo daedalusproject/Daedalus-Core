@@ -538,14 +538,16 @@ sub user_data_PUT {
                 $data_to_update_names = "$data_to_update_names$data, ";
             }
         }
-        if ($data_to_update) {
-            Daedalus::Users::Manager::update_user_data( $c, $user_data,
-                $data_to_update );
-            $data_to_update_names =~ s/^\s+|\s+$//g;
-            $data_to_update_names =~ s/,$//g;
-            $response->{message} = "Data updated: $data_to_update_names."
-              unless ( $data_to_update_names eq "" );
-        }
+
+        #if ($data_to_update) {
+        Daedalus::Users::Manager::update_user_data( $c, $user_data,
+            $data_to_update );
+        $data_to_update_names =~ s/^\s+|\s+$//g;
+        $data_to_update_names =~ s/,$//g;
+        $response->{message} = "Data updated: $data_to_update_names."
+          unless ( $data_to_update_names eq "" );
+
+        #}
         $response->{status}     = 1;
         $response->{error_code} = 400;
     }
