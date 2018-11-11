@@ -367,13 +367,17 @@ sub authorize_and_validate {
                     if ($value) {
                         my $phone       = Number::Phone->new($value);
                         my $valid_phone = 1;
-                        if ( defined $phone ) {
-                            if ( $phone->is_valid != 1 ) {
-                                $valid_phone = 0;
-                            }
 
-                        }
-                        else {
+                        #if ( defined $phone ) {
+                        #    if ( $phone->is_valid != 1 ) {
+                        #        $valid_phone = 0;
+                        #    }
+
+                        #}
+                        #else {
+                        #    $valid_phone = 0;
+                        #}
+                        if ( !( defined $phone ) ) {
                             $valid_phone = 0;
                         }
                         if ( $valid_phone == 0 ) {

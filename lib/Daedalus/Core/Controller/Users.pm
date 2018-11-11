@@ -495,7 +495,8 @@ sub user_data_PUT {
     my $response;
     my $user_data;
 
-    my $data_to_update = {};
+    my $data_to_update       = {};
+    my $data_to_update_names = "";
 
     my $required_data = {
         name => {
@@ -526,7 +527,7 @@ sub user_data_PUT {
     }
     elsif ( $authorization_and_validatation->{status} == 1 ) {
         $user_data = $authorization_and_validatation->{data}->{user_data};
-        for my $data ( keys %{$required_data} ) {
+        for my $data ( sort ( keys %{$required_data} ) ) {
             if (
                 defined $authorization_and_validatation->{data}
                 ->{required_data}->{$data} )
@@ -534,11 +535,16 @@ sub user_data_PUT {
                 $data_to_update->{$data} =
                   $authorization_and_validatation->{data}->{required_data}
                   ->{$data};
+                $data_to_update_names = "$data_to_update_names$data, ";
             }
         }
         if ($data_to_update) {
             Daedalus::Users::Manager::update_user_data( $c, $user_data,
                 $data_to_update );
+            $data_to_update_names =~ s/^\s+|\s+$//g;
+            $data_to_update_names =~ s/,$//g;
+            $response->{message} = "Data updated: $data_to_update_names."
+              unless ( $data_to_update_names eq "" );
         }
         $response->{status}     = 1;
         $response->{error_code} = 400;

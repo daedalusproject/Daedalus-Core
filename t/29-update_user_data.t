@@ -158,7 +158,7 @@ is( $check_name_and_surname_json->{message}, undef, );
 
 is( $check_name_and_surname_json->{data}->{user}->{name}, 'Felix', );
 
-is( $check_name_and_surname_json->{data}->{user}->{surname}, 'Rogriguez', );
+is( $check_name_and_surname_json->{data}->{user}->{surname}, 'Rodriguez', );
 
 my $update_invalidvalid_number = request(
     PUT $endpoint,
@@ -194,7 +194,7 @@ is( $check_name_and_surname_json->{message}, undef, );
 
 is( $check_name_and_surname_json->{data}->{user}->{name}, 'Felix', );
 
-is( $check_name_and_surname_json->{data}->{user}->{surname}, 'Rogriguez', );
+is( $check_name_and_surname_json->{data}->{user}->{surname}, 'Rodriguez', );
 
 my $update_valid_number = request(
     PUT $endpoint,
@@ -230,7 +230,7 @@ is( $check_name_surname_phone_json->{message}, undef, );
 
 is( $check_name_surname_phone_json->{data}->{user}->{name}, 'Felix', );
 
-is( $check_name_surname_phone_json->{data}->{user}->{surname}, 'Rogriguez', );
+is( $check_name_surname_phone_json->{data}->{user}->{surname}, 'Rodriguez', );
 
 is( $check_name_surname_phone_json->{data}->{user}->{phone}, '+34963525478', );
 
