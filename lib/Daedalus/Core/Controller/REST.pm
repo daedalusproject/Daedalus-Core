@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Moose;
 use namespace::autoclean;
-use JSON;
+use JSON::XS;
 use Number::Phone;
 use Data::Dumper;
 
