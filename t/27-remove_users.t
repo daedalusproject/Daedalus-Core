@@ -327,10 +327,9 @@ is(
 
 my $superadmin_removes_marvin = request(
     DELETE $endpoint,
-    Content_Type => 'application/json',
-    Authorization =>
-      "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
             user_email => 'marvin@megashops.com',
         }
@@ -350,10 +349,9 @@ is(
 
 my $already_removed_fail = request(
     DELETE $endpoint,
-    Content_Type => 'application/json',
-    Authorization =>
-      "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
         {
             user_email => 'noadmin@megashops.com',
         }
@@ -421,5 +419,27 @@ is(
 );
 
 is( $remove_myslef_fail_superadmin_json->{_hidden_data}, undef, );
+
+my $superadmin_removes_superboss = request(
+    DELETE $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            user_email => 'superboos@bugstech.com',
+        }
+    ),
+);
+
+is( $superadmin_removes_superboss->code(), 200, );
+
+my $superadmin_removes_superboss_json =
+  decode_json( $superadmin_removes_superboss->content );
+
+is( $superadmin_removes_superboss_json->{status}, 1, );
+is(
+    $superadmin_removes_superboss_json->{message},
+    'Selected user has been removed from organization.',
+);
 
 done_testing();
