@@ -442,4 +442,26 @@ is(
     'Selected user has been removed from organization.',
 );
 
+my $superadmin_removes_shiro = request(
+    DELETE $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            user_email => 'shirorobot@megashops.com',
+        }
+    ),
+);
+
+is( $superadmin_removes_shiro->code(), 200, );
+
+my $superadmin_removes_shiro_json =
+  decode_json( $superadmin_removes_shiro->content );
+
+is( $superadmin_removes_shiro_json->{status}, 1, );
+is(
+    $superadmin_removes_shiro_json->{message},
+    'Selected user has been removed from organization.',
+);
+
 done_testing();

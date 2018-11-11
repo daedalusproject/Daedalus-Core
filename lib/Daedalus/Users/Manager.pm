@@ -792,13 +792,13 @@ sub remove_user {
 
     $user_group->delete() if ($user_group);
 
-    my $role_group = $c->model('CoreRealms::UserOrganization')->find(
+    my $user_organization = $c->model('CoreRealms::UserOrganization')->find(
         {
             user_id => $user_id
         }
     );
 
-    $role_group->delete() if ($role_group);
+    $user_organization->delete() if ($user_organization);
 
     my $registrator_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
