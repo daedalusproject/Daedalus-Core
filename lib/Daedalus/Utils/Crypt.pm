@@ -30,13 +30,13 @@ Daedalus Passwords and cryptography utils.
 
 =cut
 
-=head2 checkPassword
+=head2 check_password
 
 Checks if password is valid
 
 =cut
 
-sub checkPassword {
+sub check_password {
     my $password = shift;
 
     my $response;
@@ -65,13 +65,13 @@ sub checkPassword {
     return $response;
 }
 
-=head2 generateRandomString
+=head2 generate_random_string
 
 Generate Random String, lenght is provided.
 
 =cut
 
-sub generateRandomString {
+sub generate_random_string {
     my $lenght = shift;
 
     # Generate random strings without dots
@@ -85,13 +85,13 @@ sub generateRandomString {
     return $generator->randpattern($string);
 }
 
-=head2 hashPassword
+=head2 hash_password
 
 Returns SHA512 checksum from concatenation of salt + password
 
 =cut
 
-sub hashPassword {
+sub hash_password {
     my $password = shift;
     my $salt     = shift;
 
@@ -128,10 +128,13 @@ Retrieves user data from  JSON Web Token
 =cut
 
 sub retrieve_token_data {
+    my $c                    = shift;
     my $session_token_config = shift;
     my $session_token        = shift;
 
     my $retreived_data = { status => 0, };
+
+    my $cached_relative_exp = 0;
 
     my $public_key =
       Crypt::PK::RSA->new( $session_token_config->{rsa_public_key} );
@@ -145,6 +148,16 @@ sub retrieve_token_data {
         $retreived_data->{status}  = 0;
         $retreived_data->{message} = $_;
     };
+    if ( $retreived_data->{status} == 1 ) {
+        $cached_relative_exp = $c->cache->get( $retreived_data->{data}->{id} );
+        if ($cached_relative_exp) {
+            if ( $retreived_data->{data}->{exp} - $cached_relative_exp <= 0 ) {
+
+                $retreived_data->{status}  = 0;
+                $retreived_data->{message} = 'Session token inavlid.';
+            }
+        }
+    }
     return $retreived_data;
 }
 

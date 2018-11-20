@@ -66,7 +66,7 @@ is(
 my $expired_admin_authorization_basic_failed =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
-sleep 30;
+sleep 10;
 
 my $not_admin_expired_session_token = request( GET '/user/imadmin',
     Authorization => "Basic $expired_admin_authorization_basic_failed", );

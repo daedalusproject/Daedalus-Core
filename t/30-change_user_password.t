@@ -98,8 +98,8 @@ is( $update_password_success->code(), 200, );
 my $update_password_success_json =
   decode_json( $update_password_success->content );
 
-is( $update_password_success_json->{status},  0, );
-is( $update_password_success_json->{message}, undef, );
+is( $update_password_success_json->{status},  1, );
+is( $update_password_success_json->{message}, 'Data updated: password.', );
 
 my $get_data_now_fails = request(
     GET $endpoint,
@@ -112,7 +112,7 @@ is( $get_data_now_fails->code(), 400, );
 my $get_data_now_fails_json = decode_json( $get_data_now_fails->content );
 
 is( $get_data_now_fails_json->{status},  0, );
-is( $get_data_now_fails_json->{message}, "Session token invalid.", );
+is( $get_data_now_fails_json->{message}, "Session token expired.", );
 
 my $admin_login_now_fails = request(
     POST '/user/login',
