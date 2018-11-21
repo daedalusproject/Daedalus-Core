@@ -143,12 +143,6 @@ sub retrieve_token_data {
         $retreived_data->{status} = 1;
         $retreived_data->{data} =
           decode_jwt( token => $session_token, key => $public_key );
-    }
-    catch {
-        $retreived_data->{status}  = 0;
-        $retreived_data->{message} = $_;
-    };
-    if ( $retreived_data->{status} == 1 ) {
         $cached_relative_exp = $c->cache->get( $retreived_data->{data}->{id} );
         if ($cached_relative_exp) {
             if ( $retreived_data->{data}->{exp} - $cached_relative_exp <= 0 ) {
@@ -157,7 +151,12 @@ sub retrieve_token_data {
                 $retreived_data->{message} = 'Session token inavlid.';
             }
         }
+
     }
+    catch {
+        $retreived_data->{status}  = 0;
+        $retreived_data->{message} = $_;
+    };
     return $retreived_data;
 }
 

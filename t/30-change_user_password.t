@@ -161,4 +161,12 @@ my $admin_new_login_success_token =
 my $admin_new_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_new_login_success_token", '' );
 
+my $get_data_now_fails = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_new_authorization_basic",
+);
+
+is( $get_data_now_fails->code(), 200, );
+
 done_testing();
