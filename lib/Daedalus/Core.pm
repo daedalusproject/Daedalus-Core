@@ -1,13 +1,14 @@
 package Daedalus::Core;
 use Moose;
 use namespace::autoclean;
-
+use Cache::Redis;
 use Catalyst::Runtime 5.80;
 
 use Catalyst qw/
   -Debug
   ConfigLoader::Multi
   Static::Simple
+  Cache
   /;
 
 extends 'Catalyst';
@@ -29,6 +30,14 @@ if ( $ENV{APP_TEST} ) {
     );
     __PACKAGE__->config( 'Plugin::ConfigLoader' =>
           { file => __PACKAGE__->path_to('t/lib/conf') } );
+
+    # Cache
+    __PACKAGE__->config->{'Plugin::Cache'}{backend} = {
+        class     => "Cache::Redis",
+        server    => "127.0.0.1:6379",
+        namespace => "cache:",
+    };
+
 }
 else {
     __PACKAGE__->config(

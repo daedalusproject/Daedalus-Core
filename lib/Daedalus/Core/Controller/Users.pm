@@ -5,6 +5,7 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON::XS;
+use DateTime;
 use Data::Dumper;
 
 use base qw(Daedalus::Core::Controller::REST);
@@ -495,8 +496,12 @@ sub user_data_PUT {
     my $response;
     my $user_data;
 
+    my $relative_exp         = $c->config->{authTokenConfig}->{relative_exp};
     my $data_to_update       = {};
     my $data_to_update_names = "";
+
+    my $password_check;
+    my $valid_update = 1;
 
     my $required_data = {
         name => {
@@ -511,6 +516,10 @@ sub user_data_PUT {
             type     => "phone",
             required => 0,
         },
+        password => {
+            type     => "password",
+            required => 0,
+        },
     };
 
     my $authorization_and_validatation = $self->authorize_and_validate(
@@ -522,6 +531,7 @@ sub user_data_PUT {
             required_data => $required_data,
         }
     );
+
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
@@ -539,15 +549,40 @@ sub user_data_PUT {
             }
         }
 
-        Daedalus::Users::Manager::update_user_data( $c, $user_data,
-            $data_to_update );
-        $data_to_update_names =~ s/^\s+|\s+$//g;
-        $data_to_update_names =~ s/,$//g;
-        $response->{message} = "Data updated: $data_to_update_names."
-          unless ( $data_to_update_names eq "" );
-
-        $response->{status}     = 1;
         $response->{error_code} = 400;
+        $response->{status}     = 1;
+
+        if ( exists $data_to_update->{password} ) {
+            $password_check = Daedalus::Utils::Crypt::check_password(
+                $data_to_update->{password} );
+            if ( !$password_check->{status} ) {
+                $response->{status}  = 0;
+                $response->{message} = 'Password is invalid.';
+                $valid_update        = 0;
+            }
+            else {    #Invalidate tokens
+                $c->cache->set(
+                    $user_data->{_hidden_data}->{user}->{id},
+                    DateTime->now->epoch + $relative_exp,
+                    $relative_exp
+                );
+                $data_to_update->{salt} =
+                  Daedalus::Utils::Crypt::generate_random_string(256);
+                $data_to_update->{password} =
+                  Daedalus::Utils::Crypt::hash_password(
+                    $data_to_update->{password},
+                    $data_to_update->{salt} );
+            }
+        }
+        if ($valid_update) {
+            Daedalus::Users::Manager::update_user_data( $c, $user_data,
+                $data_to_update );
+            $data_to_update_names =~ s/^\s+|\s+$//g;
+            $data_to_update_names =~ s/,$//g;
+            $response->{message} = "Data updated: $data_to_update_names."
+              unless ( $data_to_update_names eq "" );
+
+        }
     }
 
     $self->return_response( $c, $response );
