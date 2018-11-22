@@ -135,6 +135,7 @@ sub retrieve_token_data {
     my $retreived_data = { status => 0, };
 
     my $cached_relative_exp = 0;
+    my $relative_exp        = $c->config->{authTokenConfig}->{relative_exp};
 
     my $public_key =
       Crypt::PK::RSA->new( $session_token_config->{rsa_public_key} );
@@ -143,6 +144,7 @@ sub retrieve_token_data {
         $retreived_data->{status} = 1;
         $retreived_data->{data} =
           decode_jwt( token => $session_token, key => $public_key );
+
     }
     catch {
         $retreived_data->{status}  = 0;
@@ -151,13 +153,16 @@ sub retrieve_token_data {
     if ( $retreived_data->{status} == 1 ) {
         $cached_relative_exp = $c->cache->get( $retreived_data->{data}->{id} );
         if ($cached_relative_exp) {
-            if ( $retreived_data->{data}->{exp} - $cached_relative_exp <= 0 ) {
+            if ( $retreived_data->{data}->{exp} - $relative_exp <=
+                $cached_relative_exp )
+            {
 
                 $retreived_data->{status}  = 0;
                 $retreived_data->{message} = 'Session token inavlid.';
             }
         }
     }
+
     return $retreived_data;
 }
 
