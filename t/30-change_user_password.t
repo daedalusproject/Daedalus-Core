@@ -137,6 +137,10 @@ is_deeply(
     }
 );
 
+# Session tokens uses seconds so it requests are done at the same second, token is invalid.
+
+sleep 1;
+
 my $admin_new_login_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
@@ -161,12 +165,12 @@ my $admin_new_login_success_token =
 my $admin_new_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_new_login_success_token", '' );
 
-my $get_data_now_fails = request(
+my $get_data_no_more_fails = request(
     GET $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_new_authorization_basic",
 );
 
-is( $get_data_now_fails->code(), 200, );
+is( $get_data_no_more_fails->code(), 200, );
 
 done_testing();

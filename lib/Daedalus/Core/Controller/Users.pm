@@ -561,11 +561,8 @@ sub user_data_PUT {
                 $valid_update        = 0;
             }
             else {    #Invalidate tokens
-                $c->cache->set(
-                    $user_data->{_hidden_data}->{user}->{id},
-                    DateTime->now->epoch + $relative_exp,
-                    $relative_exp
-                );
+                $c->cache->set( $user_data->{_hidden_data}->{user}->{id},
+                    DateTime->now->epoch, $relative_exp );
                 $data_to_update->{salt} =
                   Daedalus::Utils::Crypt::generate_random_string(256);
                 $data_to_update->{password} =
