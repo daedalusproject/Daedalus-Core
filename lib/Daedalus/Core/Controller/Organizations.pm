@@ -540,7 +540,7 @@ sub remove_role_group : Path('/organization/removerolegroup') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub remove_role_group_DELETE {
+sub remove_role_group_POST {
 
     my ( $self, $c ) = @_;
 
@@ -761,7 +761,7 @@ sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
-sub remove_user_group_DELETE {
+sub remove_user_group_POST {
 
     my ( $self, $c ) = @_;
 
@@ -884,7 +884,7 @@ sub remove_organization_group : Path('/organization/removeorganizationgroup') :
     my ( $self, $c ) = @_;
 }
 
-sub remove_organization_group_DELETE {
+sub remove_organization_group_POST {
 
     my ( $self, $c ) = @_;
 
