@@ -273,7 +273,6 @@ sub show_inactive_users_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
@@ -316,7 +315,6 @@ sub show_active_users_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
@@ -359,7 +357,6 @@ sub show_orphan_users_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
