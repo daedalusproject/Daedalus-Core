@@ -9,7 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
 
-my $endpoint = "organization/showoallgroups";
+my $endpoint = "organization/showallgroups";
 
 my $failed_because_no_auth = request(
     GET "$endpoint/sometoken",
