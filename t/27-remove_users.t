@@ -253,7 +253,7 @@ is(
 is( $add_user_to_group_success_json->{_hidden_data}, undef, );
 
 my $get_noadmin_is_sysadmin = request(
-    GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+    GET '/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
@@ -309,7 +309,7 @@ is( keys %{ $list_users_again_json->{data}->{registered_users} },
     3, 'noadmin@megashops.com has been deleted' );
 
 my $get_sysadmins = request(
-    GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+    GET '/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );

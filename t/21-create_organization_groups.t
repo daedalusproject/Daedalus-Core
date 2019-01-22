@@ -226,7 +226,7 @@ is( $failed_already_created_json->{message}, 'Duplicated group name.', );
 # Check group
 
 my $admin_user_mega_shop_groups = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -361,7 +361,7 @@ isnt( $superadmin_create_group_other_organization_success_json->{_hidden_data},
     undef, );
 
 my $admin_user_mega_shop_three_groups = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",

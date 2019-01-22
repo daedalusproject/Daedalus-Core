@@ -343,7 +343,7 @@ is(
 # Check group
 
 my $admin_user_mega_shop_groups = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -554,7 +554,7 @@ isnt( $superadmin_add_user_other_organization_success_json->{_hidden_data},
     undef, );
 
 my $admin_user_mega_shop_two_roles = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",

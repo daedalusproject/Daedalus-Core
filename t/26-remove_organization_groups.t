@@ -263,7 +263,7 @@ is( $failed_already_removed_json->{message},
     'Required group does not exist.', );
 
 my $admin_user_mega_shop_groups = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -389,7 +389,7 @@ isnt( $superadmin_remove_group_other_organization_success_json->{_hidden_data},
     undef, );
 
 my $check_supersysadmins_does_not_exists = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
