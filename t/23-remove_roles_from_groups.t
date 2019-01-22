@@ -305,7 +305,7 @@ is(
 # Check group
 
 my $admin_user_mega_shop_groups = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -434,7 +434,7 @@ isnt( $superadmin_remove_role_other_organization_success_json->{_hidden_data},
     undef, );
 
 my $admin_user_mega_shop_one_role = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -486,7 +486,7 @@ isnt( $superadmin_remove_role_health_watcher_success_json->{_hidden_data},
     undef, );
 
 my $admin_user_mega_shop_zero_roles = request(
-    GET "/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",

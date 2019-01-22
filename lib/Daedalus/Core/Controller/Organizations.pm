@@ -309,7 +309,7 @@ sub show_organization_groups_GET {
     $self->return_response( $c, $response );
 }
 
-sub show_all_organization_groups : Path('/organization/showoallgroups')
+sub show_all_organization_groups : Path('/organization/showallgroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
