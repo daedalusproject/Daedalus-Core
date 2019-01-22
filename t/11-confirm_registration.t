@@ -159,11 +159,11 @@ my $failed_valid_auth_token_password_no_diverse_json =
   decode_json( $failed_valid_auth_token_password_no_diverse->content );
 
 is( $failed_valid_auth_token_password_no_diverse_json->{status},
-    0, 'Status failed, no password supplied' );
+    0, 'Status failed, Password has no diverse characters.' );
 is(
     $failed_valid_auth_token_password_no_diverse_json->{message},
     'Password is invalid.',
-    'Password is has no diverse characters.'
+    'Password has no diverse characters.'
 );
 
 my $success_valid_auth_token_and_password = request(

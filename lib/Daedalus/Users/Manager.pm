@@ -60,7 +60,7 @@ sub check_user_passwrd {
     my $user_password      = shift;
 
     my $password =
-      Daedalus::Utils::Crypt::hashPassword( $submitted_password, $user_salt );
+      Daedalus::Utils::Crypt::hash_password( $submitted_password, $user_salt );
 
     return $password eq $user_password;
 }
@@ -151,7 +151,8 @@ sub get_user_from_session_token {
             $response->{message} = "No session token provided.";
         }
         else {
-            $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
+            $token_data =
+              Daedalus::Utils::Crypt::retrieve_token_data( $c,
                 $c->config->{authTokenConfig},
                 $session_token );
             if ( $token_data->{status} != 1 ) {
@@ -403,11 +404,11 @@ sub register_new_user {
     else {
         #
         # Create a user
-        my $api_key    = Daedalus::Utils::Crypt::generateRandomString(32);
-        my $auth_token = Daedalus::Utils::Crypt::generateRandomString(63);
-        my $salt       = Daedalus::Utils::Crypt::generateRandomString(256);
-        my $password   = Daedalus::Utils::Crypt::generateRandomString(256);
-        $password = Daedalus::Utils::Crypt::hashPassword( $password, $salt );
+        my $api_key    = Daedalus::Utils::Crypt::generate_random_string(32);
+        my $auth_token = Daedalus::Utils::Crypt::generate_random_string(63);
+        my $salt       = Daedalus::Utils::Crypt::generate_random_string(256);
+        my $password   = Daedalus::Utils::Crypt::generate_random_string(256);
+        $password = Daedalus::Utils::Crypt::hash_password( $password, $salt );
 
         my $registered_user = $user_model->create(
             {
@@ -556,18 +557,18 @@ sub confirm_registration {
             else {
                 my $password = $required_data->{password};
                 my $password_strenght =
-                  Daedalus::Utils::Crypt::checkPassword($password);
+                  Daedalus::Utils::Crypt::check_password($password);
                 if ( !$password_strenght->{status} ) {
                     $response->{message} = 'Password is invalid.';
                 }
                 else {
                     # Password is valid
                     my $new_auth_token =
-                      Daedalus::Utils::Crypt::generateRandomString(64);
+                      Daedalus::Utils::Crypt::generate_random_string(64);
                     my $new_salt =
-                      Daedalus::Utils::Crypt::generateRandomString(256);
+                      Daedalus::Utils::Crypt::generate_random_string(256);
                     $password =
-                      Daedalus::Utils::Crypt::hashPassword( $password,
+                      Daedalus::Utils::Crypt::hash_password( $password,
                         $new_salt );
 
                     $response->{status}  = 1;
@@ -792,13 +793,13 @@ sub remove_user {
 
     $user_group->delete() if ($user_group);
 
-    my $role_group = $c->model('CoreRealms::UserOrganization')->find(
+    my $user_organization = $c->model('CoreRealms::UserOrganization')->find(
         {
             user_id => $user_id
         }
     );
 
-    $role_group->delete() if ($role_group);
+    $user_organization->delete() if ($user_organization);
 
     my $registrator_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
@@ -824,6 +825,25 @@ sub remove_user {
             id => $user_id
         }
     )->delete();
+
+}
+
+=head2 update_user_data
+
+Updates user data
+
+=cut
+
+sub update_user_data {
+    my $c              = shift;
+    my $user_data      = shift;
+    my $data_to_update = shift;
+
+    $c->model('CoreRealms::User')->find(
+        {
+            id => $user_data->{_hidden_data}->{user}->{id},
+        }
+    )->update($data_to_update);
 
 }
 

@@ -16,7 +16,7 @@ my $endpoint = "/user/showorphan";
 my $failed_because_no_auth =
   request( GET $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );

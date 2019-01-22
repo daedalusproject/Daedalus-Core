@@ -19,7 +19,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );

@@ -78,7 +78,7 @@ sub create_organization {
         # Create Organization
 
         my $organization_token =
-          Daedalus::Utils::Crypt::generateRandomString(32);
+          Daedalus::Utils::Crypt::generate_random_string(32);
         my $organization = $c->model('CoreRealms::Organization')->create(
             {
                 name  => $request_organization_name,

@@ -4,7 +4,8 @@ use strict;
 use warnings;
 use Moose;
 use namespace::autoclean;
-use JSON;
+use JSON::XS;
+use Number::Phone;
 use Data::Dumper;
 
 use base qw(Catalyst::Controller::REST);
@@ -274,11 +275,6 @@ sub authorize_and_validate {
         for my $required_data_name ( sort ( keys %{$required_data} ) ) {
             my $data_properties = $required_data->{$required_data_name};
 
-            #if ( $data_properties->{given} == 1 ) {
-            # For the time being there is not given data
-            #$value = $data_properties->{value};
-            #}
-            #else {
             $value = $c->{request}->{data}->{$required_data_name};
             if ( $data_properties->{required} == 1 ) {
                 if ( !( defined $value ) ) {
@@ -289,7 +285,6 @@ sub authorize_and_validate {
                 }
             }
 
-            #}
             if ( $response->{status} == 1 ) {
 
                 #Check Type
@@ -365,6 +360,31 @@ sub authorize_and_validate {
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+                elsif ( $data_properties->{type} eq "phone" ) {
+                    if ($value) {
+                        my $phone       = Number::Phone->new($value);
+                        my $valid_phone = 1;
+
+                        #if ( defined $phone ) {
+                        #    if ( $phone->is_valid != 1 ) {
+                        #        $valid_phone = 0;
+                        #    }
+
+                        #}
+                        #else {
+                        #    $valid_phone = 0;
+                        #}
+                        if ( !( defined $phone ) ) {
+                            $valid_phone = 0;
+                        }
+                        if ( $valid_phone == 0 ) {
+                            $response->{status}     = 0;
+                            $response->{error_code} = 400;
+                            $response->{message} =
+                              "Invalid $required_data_name.";
                         }
                     }
                 }

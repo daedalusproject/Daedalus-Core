@@ -4,7 +4,8 @@ use strict;
 use warnings;
 use Moose;
 use namespace::autoclean;
-use JSON;
+use JSON::XS;
+use DateTime;
 use Data::Dumper;
 
 use base qw(Daedalus::Core::Controller::REST);
@@ -272,7 +273,6 @@ sub show_inactive_users_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
@@ -315,7 +315,6 @@ sub show_active_users_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
@@ -358,7 +357,6 @@ sub show_orphan_users_GET {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
-        $response->{error_code} = 403;
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
@@ -445,6 +443,139 @@ sub remove_user_POST {
                 $response->{message} =
                   "Selected user has been removed from organization.";
             }
+        }
+    }
+
+    $self->return_response( $c, $response );
+}
+
+=head2 user_data
+
+Manages user data
+
+=cut
+
+sub user_data : Path('/user') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+}
+
+sub user_data_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $authorization_and_validatation =
+      $self->authorize_and_validate( $c, { auth => { type => "user" } } );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    elsif ( $authorization_and_validatation->{status} == 1 ) {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        $response->{status}       = 1;
+        $response->{data}         = $user_data->{data};
+        $response->{_hidden_data} = $user_data->{_hidden_data};
+    }
+
+    $self->return_response( $c, $response );
+}
+
+=head2 user_data_PUT
+
+Updates user data
+
+=cut
+
+sub user_data_PUT {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $user_data;
+
+    my $relative_exp         = $c->config->{authTokenConfig}->{relative_exp};
+    my $data_to_update       = {};
+    my $data_to_update_names = "";
+
+    my $password_check;
+    my $valid_update = 1;
+
+    my $required_data = {
+        name => {
+            type     => 'string',
+            required => 0,
+        },
+        surname => {
+            type     => "string",
+            required => 0,
+        },
+        phone => {
+            type     => "phone",
+            required => 0,
+        },
+        password => {
+            type     => "password",
+            required => 0,
+        },
+    };
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user',
+            },
+            required_data => $required_data,
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    elsif ( $authorization_and_validatation->{status} == 1 ) {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+        for my $data ( sort ( keys %{$required_data} ) ) {
+            if (
+                defined $authorization_and_validatation->{data}
+                ->{required_data}->{$data} )
+            {
+                $data_to_update->{$data} =
+                  $authorization_and_validatation->{data}->{required_data}
+                  ->{$data};
+                $data_to_update_names = "$data_to_update_names$data, ";
+            }
+        }
+
+        $response->{error_code} = 400;
+        $response->{status}     = 1;
+
+        if ( exists $data_to_update->{password} ) {
+            $password_check = Daedalus::Utils::Crypt::check_password(
+                $data_to_update->{password} );
+            if ( !$password_check->{status} ) {
+                $response->{status}  = 0;
+                $response->{message} = 'Password is invalid.';
+                $valid_update        = 0;
+            }
+            else {    #Invalidate tokens
+                $c->cache->set( $user_data->{_hidden_data}->{user}->{id},
+                    DateTime->now->epoch, $relative_exp );
+                $data_to_update->{salt} =
+                  Daedalus::Utils::Crypt::generate_random_string(256);
+                $data_to_update->{password} =
+                  Daedalus::Utils::Crypt::hash_password(
+                    $data_to_update->{password},
+                    $data_to_update->{salt} );
+            }
+        }
+        if ($valid_update) {
+            Daedalus::Users::Manager::update_user_data( $c, $user_data,
+                $data_to_update );
+            $data_to_update_names =~ s/^\s+|\s+$//g;
+            $data_to_update_names =~ s/,$//g;
+            $response->{message} = "Data updated: $data_to_update_names."
+              unless ( $data_to_update_names eq "" );
+
         }
     }
 

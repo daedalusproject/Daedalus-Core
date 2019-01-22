@@ -401,3 +401,189 @@ $schema->resultset('RegisteredUser')->create(
     }
 );
 
+###############
+
+$name       = 'Super';
+$surname    = 'Boos';
+$email      = 'superboos@bugstech.com';
+$password   = '__:bugs:___Password_1234';
+$api_key    = 'uWeG8EgjuOr7KF1iF1r0rMkXnbr7s7h';
+$auth_token = '05oKMasl0GOo2TDu7eNhSpThUAKednH0GdVOsJWGWPjoT4vkLUYmE';
+$salt =
+'3TX0jLY5guUpFij2p8CXKjSufn3pWBIVNxzB7q3eqUuHw20pEY0RStUBbmFE6NNsSiL9BrKXhhokAIpI7ImBBqMMjEVi4yTCrZXpXBEA0grRLMTkql2qyi1Dz6G1ya2TDug6EUmNPeGFEIgKhTJmmnQ6g5lReWIn0Mz1uZPl1blgX6y89O9qUtXPKO9xGWzcYRVxnwPntO796g3W8wr49hrF0gqP0noWx9nOPFMlUyYBGLfxwsnowq4877aaXKR';
+$password = sha512_base64("$salt$password");
+
+my $superboss = $schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 1,
+        auth_token => $auth_token,
+    }
+);
+
+$name     = 'Mini';
+$surname  = 'Boos';
+$email    = 'miniboos@bugstech.com';
+$password = '__:bUgs:___1234';
+$api_key  = 'Nv9iLAlTmiXmBjfNR0Dr42Hnmg707Dnx';
+$auth_token =
+  'XJLwWEPti8uuuzHSRvMjAzav46VhQtjRFXnalmBgS8kKcLMAGJVCAr7fPwQ30dth';
+$salt =
+'ztbXWmgipKc8GYvCoC2mxYNswAmqT9dRJxJMpCPsLjwsdso9qUTchKvjSxZUjrZuGzx532i13StGHL8UgWYfBChrSBEjTLg70pwcznqEMe30cIyC6fp2wdWmRJcQYtoWPnBN0h2PSggIhKz8rsikPQAJAEakLKaubgDq1r7xoiKQLg85xqKeCi1BKYZXR4HuQ31LljORIHsVYW0ElqwfvN5gt6xsBJtJDJGVl0fligdjPjNAAo2wnW3Gll1sZVM';
+$password = sha512_base64("$salt$password");
+
+my $miniboss = $schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 1,
+        auth_token => $auth_token,
+    }
+);
+
+$name     = 'Ultra';
+$surname  = 'Boos';
+$email    = 'ultraboos@bugstech.com';
+$password = '__:bUgs:_ULTR:A__1234';
+$api_key  = '0uIRKa8kWN9TJJU3mA3Jawer1ETbEina';
+$auth_token =
+  'vhPMp1BPMSdsiHokuJcgEYDWEunQxgDo4AV1HR0om4Jb6TdBWrSZTW5YsPc3iTzW';
+$salt =
+'y2TlG6VXTHhbpLRNFCcwNJCg23p9fjBtJrnFlKQjnjBFHeZc1Gq49rXnhAIWHuZ5n7jWKdmzkOvkOdG1VEVHUuX5aVfTLW3blJU1wo5tfroRaSy8ZkSVTIRbHh8JpUOufR1VlUXgutcJPGvbxQo6qse0J6vftuyz69zBJ7yPUrF59r6KfKCWiZjHK2hY2a7oUmdgkRJFLHGEX6dwKPx99QtUYzDkV4A9pSpURyvYvoKQT05Bxq3yOdT6kw03tl6';
+$password = sha512_base64("$salt$password");
+
+my $ultraboss = $schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 1,
+        auth_token => $auth_token,
+    }
+);
+
+my $bugstech_organization = $schema->resultset('Organization')->create(
+    {
+        name  => "Bugs Tech",
+        token => "cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW"
+    }
+);
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $bugstech_organization->id,
+        user_id         => $superboss->id,
+    }
+);
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $bugstech_organization->id,
+        user_id         => $miniboss->id,
+    }
+);
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $bugstech_organization->id,
+        user_id         => $ultraboss->id,
+    }
+);
+
+my $bugstech_administrators_group =
+  $schema->resultset('OrganizationGroup')->create(
+    {
+        organization_id => $bugstech_organization->id,
+        group_name      => "Bugs Tech Administrators",
+    }
+  );
+
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $bugstech_administrators_group->id,
+        role_id  => $fireman->id,
+    }
+);
+
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $bugstech_administrators_group->id,
+        role_id  => $organization_master_role->id,
+    }
+);
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $bugstech_administrators_group->id,
+        user_id  => $superboss->id,
+    }
+);
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $bugstech_administrators_group->id,
+        user_id  => $ultraboss->id,
+    }
+);
+
+$schema->resultset('OrgaizationUsersGroup')->create(
+    {
+        group_id => $bugstech_administrators_group->id,
+        user_id  => $miniboss->id,
+    }
+);
+
+$schema->resultset('RegisteredUser')->create(
+    {
+        registered_user  => $miniboss->id,
+        registrator_user => $superboss->id,
+    }
+);
+
+$schema->resultset('RegisteredUser')->create(
+    {
+        registered_user  => $superboss->id,
+        registrator_user => $ultraboss->id,
+    }
+);
+
+$name     = 'Orphan';
+$surname  = 'Boos';
+$email    = 'orphanboos@bugstech.com';
+$password = '__:bUgs:_ULTR:A__1234';
+$api_key  = '0uIRKa8kWN9TJJU3mA3Jawer1ETbEina';
+$auth_token =
+  'vhPMp1BPMSdsiHokuJcgEYDWEunQxgDo4AV1HR0om4Jb6TdBWrSZTW5YsPc3iTzW';
+$salt =
+'y2TlG6VXTHhbpLRNFCcwNJCg23p9fjBtJrnFlKQjnjBFHeZc1Gq49rXnhAIWHuZ5n7jWKdmzkOvkOdG1VEVHUuX5aVfTLW3blJU1wo5tfroRaSy8ZkSVTIRbHh8JpUOufR1VlUXgutcJPGvbxQo6qse0J6vftuyz69zBJ7yPUrF59r6KfKCWiZjHK2hY2a7oUmdgkRJFLHGEX6dwKPx99QtUYzDkV4A9pSpURyvYvoKQT05Bxq3yOdT6kw03tl6';
+$password = sha512_base64("$salt$password");
+
+$schema->resultset('User')->create(
+    {
+        name       => $name,
+        surname    => $surname,
+        email      => $email,
+        api_key    => $api_key,
+        password   => $password,
+        salt       => $salt,
+        expires    => "3000-01-01",
+        active     => 1,
+        auth_token => $auth_token,
+    }
+);
+
