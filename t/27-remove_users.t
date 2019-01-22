@@ -423,7 +423,7 @@ is(
 is( $remove_myslef_fail_superadmin_json->{_hidden_data}, undef, );
 
 my $superadmin_removes_superboss = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
@@ -445,7 +445,7 @@ is(
 );
 
 my $superadmin_removes_shiro = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
@@ -467,7 +467,7 @@ is(
 );
 
 my $superadmin_removes_orphan = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
