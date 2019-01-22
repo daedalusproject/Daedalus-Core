@@ -7,12 +7,12 @@ use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use MIME::Base64;
-use HTTP::Request::Common qw(GET PUT POST DELETE);
+use HTTP::Request::Common qw(GET PUT POST);
 
 my $endpoint = '/organization/removerolegroup';
 
 my $failed_because_no_auth_token =
-  request( DELETE $endpoint, Content_Type => 'application/json', );
+  request( POST $endpoint, Content_Type => 'application/json', );
 
 is( $failed_because_no_auth_token->code(), 400, );
 
@@ -48,7 +48,7 @@ my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
 my $failed_no_token = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
 );
@@ -61,7 +61,7 @@ is( $failed_no_token_json->{status},  0, );
 is( $failed_no_token_json->{message}, 'No organization_token provided.', );
 
 my $failed_no_admin = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
     Content       => encode_json(
@@ -107,7 +107,7 @@ my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
 my $failed_no_data = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json( {} )
@@ -121,7 +121,7 @@ is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'No organization_token provided.', );
 
 my $failed_no_group_data_no_role = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
@@ -141,7 +141,7 @@ is(
 );
 
 my $failed_no_organization_data_no_role_data = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
@@ -164,7 +164,7 @@ is(
 );
 
 my $failed_invalid_organization_data = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
@@ -188,7 +188,7 @@ is(
 );
 
 my $failed_invalid_group_data = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
@@ -210,7 +210,7 @@ is( $failed_invalid_group_data_json->{message},
     'Invalid organization token.', );
 
 my $failed_group_not_found = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
@@ -232,7 +232,7 @@ is( $failed_group_not_found_json->{message},
     'Required group does not exist.', );
 
 my $failed_role_not_found = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
@@ -252,7 +252,7 @@ is( $failed_role_not_found_json->{status},  0, );
 is( $failed_role_not_found_json->{message}, 'Required role does not exist.', );
 
 my $remove_role_from_group_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
@@ -279,7 +279,7 @@ is(
 is( $remove_role_from_group_success_json->{_hidden_data}, undef, );
 
 my $failed_already_removed = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
     Content       => encode_json(
@@ -330,7 +330,7 @@ is(
 );
 
 my $failed_not_your_organization = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
     Content       => encode_json(
@@ -378,7 +378,7 @@ my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
 my $superadmin_remove_role_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -405,7 +405,7 @@ is(
 isnt( $superadmin_remove_role_success_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_role_other_organization_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -457,7 +457,7 @@ is(
 );
 
 my $superadmin_remove_role_health_watcher_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -563,7 +563,7 @@ is(
 is( $add_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
 
 my $remove_other_admin_role_to_group_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
@@ -590,7 +590,7 @@ is(
 is( $remove_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_role_organization_master_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -622,7 +622,7 @@ isnt( $superadmin_remove_role_organization_master_success_json->{_hidden_data},
 # It can't be removed because Mega Shops won't have any admin users
 
 my $remove_admin_role_from_group_failed = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
@@ -649,7 +649,7 @@ is(
 is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_admin_role_from_group_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -678,7 +678,7 @@ isnt( $superadmin_remove_admin_role_from_group_success_json->{_hidden_data},
     undef, );
 
 my $remove_failed_no_admin = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token

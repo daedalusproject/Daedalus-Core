@@ -7,12 +7,12 @@ use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use MIME::Base64;
-use HTTP::Request::Common qw(GET PUT POST DELETE);
+use HTTP::Request::Common qw(GET PUT POST);
 
 my $endpoint = '/user/remove';
 
 my $failed_because_no_auth_token =
-  request( DELETE $endpoint, Content_Type => 'application/json', );
+  request( POST $endpoint, Content_Type => 'application/json', );
 
 is( $failed_because_no_auth_token->code(), 400, );
 
@@ -48,7 +48,7 @@ my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
 my $failed_no_token =
-  request( DELETE $endpoint, Content_Type => 'application/json', );
+  request( POST $endpoint, Content_Type => 'application/json', );
 
 is( $failed_no_token->code(), 400, );
 
@@ -58,7 +58,7 @@ is( $failed_no_token_json->{status},  0, );
 is( $failed_no_token_json->{message}, 'No session token provided.', );
 
 my $failed_no_admin = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
     Content       => encode_json(
@@ -135,7 +135,7 @@ is( keys %{ $list_users_json->{data}->{registered_users} },
     4, 'This user has registered 4 users for the tiem being.' );
 
 my $failed_no_data = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json( {} )
@@ -149,7 +149,7 @@ is( $failed_no_data_json->{status},  0, );
 is( $failed_no_data_json->{message}, 'No user_email provided.', );
 
 my $failed_invalid_email = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content => encode_json( { user_email => 'ofcourseinvalid@emails_fail' } ),
@@ -163,7 +163,7 @@ is( $failed_invalid_email_json->{status},  0, );
 is( $failed_invalid_email_json->{message}, 'user_email is invalid.', );
 
 my $failed_non_existent_user = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json( { user_email => 'nonrobot@megashops.com' } ),
@@ -181,7 +181,7 @@ is(
 );
 
 my $failed_not_my_registered_user = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content =>
@@ -271,7 +271,7 @@ isnt(
 );
 
 my $remove_user_success = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
@@ -326,10 +326,11 @@ is(
 );
 
 my $superadmin_removes_marvin = request(
-    DELETE $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $superadmin_authorization_basic",
-    Content       => encode_json(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
         {
             user_email => 'marvin@megashops.com',
         }
@@ -348,10 +349,11 @@ is(
 );
 
 my $already_removed_fail = request(
-    DELETE $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
         {
             user_email => 'noadmin@megashops.com',
         }
@@ -371,7 +373,7 @@ is(
 is( $already_removed_fail_json->{_hidden_data}, undef, );
 
 my $already_removed_fail_superadmin = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -396,7 +398,7 @@ is(
 is( $already_removed_fail_superadmin_json->{_hidden_data}, undef, );
 
 my $remove_myslef_fail_superadmin = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
@@ -421,7 +423,7 @@ is(
 is( $remove_myslef_fail_superadmin_json->{_hidden_data}, undef, );
 
 my $superadmin_removes_superboss = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
@@ -443,7 +445,7 @@ is(
 );
 
 my $superadmin_removes_shiro = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(
@@ -465,7 +467,7 @@ is(
 );
 
 my $superadmin_removes_orphan = request(
-    DELETE $endpoint,
+    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
     Content       => encode_json(

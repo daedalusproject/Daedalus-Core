@@ -374,7 +374,7 @@ sub remove_user : Path('/user/remove') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub remove_user_DELETE {
+sub remove_user_POST {
 
     my ( $self, $c ) = @_;
 
