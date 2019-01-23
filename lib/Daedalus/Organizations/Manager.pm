@@ -96,12 +96,15 @@ sub create_organization {
           );
 
         # Create an organization admin group
+        my $organization_admin_group_token =
+          Daedalus::Utils::Crypt::generate_random_string(32);
 
         my $organization_group =
           $c->model('CoreRealms::OrganizationGroup')->create(
             {
                 organization_id => $organization->id,
                 group_name => "$request_organization_name" . " Administrators",
+                token      => $organization_admin_group_token,
             }
           );
 
@@ -469,10 +472,14 @@ sub create_organization_group {
     my $response;
     my $organization_group;
 
+    my $organization_group_token =
+      Daedalus::Utils::Crypt::generate_random_string(32);
+
     $organization_group = $c->model('CoreRealms::OrganizationGroup')->create(
         {
             organization_id => $organization_id,
-            group_name      => $group_name
+            group_name      => $group_name,
+            token           => $organization_group_token,
         }
     );
 
