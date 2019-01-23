@@ -67,8 +67,9 @@ my $failed_no_admin = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            role_name          => 'fireman'
+            group_token =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',    #Mega Shops Administrators
+            role_name => 'fireman'
         }
     ),
 );
@@ -137,14 +138,15 @@ my $failed_no_group_data_no_role_json =
 is( $failed_no_group_data_no_role_json->{status}, 0, );
 is(
     $failed_no_group_data_no_role_json->{message},
-    'No group_name provided. No role_name provided.',
+    'No group_token provided. No role_name provided.',
 );
 
 my $failed_no_organization_data_no_role = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( { group_name => 'Some Group Name' } ),
+    Content =>
+      encode_json( { group_token => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF' } ),
 );
 
 is( $failed_no_organization_data_no_role->code(), 400, );
@@ -196,7 +198,7 @@ my $failed_no_organization_data_no_role_data_json =
 is( $failed_no_organization_data_no_role_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_role_data_json->{message},
-    'No group_name provided.',
+    'No group_token provided.',
 );
 
 my $failed_invalid_organization_data = request(
@@ -206,7 +208,7 @@ my $failed_invalid_organization_data = request(
     Content       => encode_json(
         {
             organization_token => 'ivalidorganizationtoken',
-            group_name         => 'non existen group',
+            group_token        => 'non existent token',
             role_name          => 'clowns'                  # There is no clowns
         }
     ),
@@ -230,7 +232,7 @@ my $failed_invalid_group_data = request(
     Content       => encode_json(
         {
             organization_token => 'ivalidorganizationtoken',
-            group_name         => 'non existen group',
+            group_token        => 'non existent token',
             role_name          => 'clowns'                  # There is no clowns
         }
     ),
@@ -252,7 +254,7 @@ my $failed_group_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Clowns',
+            group_name         => 'invalidtoken',
             role_name          => 'clown'
         }
     ),
@@ -274,7 +276,7 @@ my $failed_role_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_name         => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
             role_name          => 'clown'
         }
     ),
@@ -295,7 +297,7 @@ my $add_role_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_name         => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
             role_name          => 'fireman'
         }
     ),
@@ -321,7 +323,7 @@ my $failed_already_added = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_name         => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
             role_name          => 'fireman'
         }
     ),
@@ -373,31 +375,6 @@ is(
     'For the time being Mega Shop Sysadmins has only fireman as role'
 );
 
-my $failed_not_your_organization = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",    #Megashops token
-    Content       => encode_json(
-        {
-            organization_token =>
-              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
-            group_name => 'Daedalus Project Sysadmins',
-            role_name  => 'fireman'
-        }
-    ),
-);
-
-is( $failed_not_your_organization->code(), 400, );
-
-my $failed_not_your_organization_json =
-  decode_json( $failed_not_your_organization->content );
-
-is( $failed_not_your_organization_json->{status}, 0, );
-is(
-    $failed_not_your_organization_json->{message},
-    'Invalid organization token.',
-);
-
 my $superadmin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
@@ -421,6 +398,50 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $superadminadmin_get_daedalus_core_groups = request(
+    GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadminadmin_get_daedalus_core_groups->code(), 200, );
+
+my $superadminadmin_get_daedalus_core_groups_json =
+  decode_json( $superadminadmin_get_daedalus_core_groups->content );
+
+is( $superadminadmin_get_daedalus_core_groups_json->{status},
+    1, 'Status success.' );
+
+my $daedalus_project_sysadmins_group_token =
+  $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+  ->{'Daedalus Project Sysadmins'}->{token};
+
+my $failed_not_your_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token =>
+              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
+            token     => $daedalus_project_sysadmins_group_token,
+            role_name => 'fireman'
+        }
+    ),
+);
+
+is( $failed_not_your_organization->code(), 400, );
+
+my $failed_not_your_organization_json =
+  decode_json( $failed_not_your_organization->content );
+
+is( $failed_not_your_organization_json->{status}, 0, );
+is(
+    $failed_not_your_organization_json->{message},
+    'Invalid organization token.',
+);
+
 my $superadmin_add_role_success = request(
     POST $endpoint,
     Content_Type => 'application/json',
@@ -429,7 +450,7 @@ my $superadmin_add_role_success = request(
     Content => encode_json(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
-            group_name         => 'Daedalus Core Sysadmins',
+            token              => $daedalus_project_sysadmins_group_token,
             role_name          => 'fireman'
         }
     ),
@@ -448,6 +469,25 @@ is(
 
 isnt( $superadmin_add_role_success_json->{_hidden_data}, undef, );
 
+my $superadminadmin_get_megashops_groups = request(
+    GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadminadmin_get_megashops_groups->code(), 200, );
+
+my $superadminadmin_get_megashops_groups_json =
+  decode_json( $superadminadmin_get_megashops_groups->content );
+
+is( $superadminadmin_get_megashops_groups_json->{status}, 1,
+    'Status success.' );
+
+my $megashops_sysadmins_group_token =
+  $superadminadmin_get_megashops_groups_json->{data}->{groups}
+  ->{'Mega Shop Sysadmins'}->{token};
+
 my $superadmin_add_role_other_organization_success = request(
     POST $endpoint,
     Content_Type => 'application/json',
@@ -457,8 +497,8 @@ my $superadmin_add_role_other_organization_success = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            role_name  => 'health_watcher'
+            token     => $megashops_sysadmins_group_token,
+            role_name => 'health_watcher'
         }
     ),
 );
