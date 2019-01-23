@@ -96,12 +96,15 @@ sub create_organization {
           );
 
         # Create an organization admin group
+        my $organization_admin_group_token =
+          Daedalus::Utils::Crypt::generate_random_string(32);
 
         my $organization_group =
           $c->model('CoreRealms::OrganizationGroup')->create(
             {
                 organization_id => $organization->id,
                 group_name => "$request_organization_name" . " Administrators",
+                token      => $organization_admin_group_token,
             }
           );
 
@@ -351,6 +354,8 @@ sub get_organization_groups {
         my $users = get_organization_group_users( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name }->{users} =
           $users->{data};
+        $response->{data}->{ $organization_group->group_name }->{token} =
+          $organization_group->token;
         $response->{_hidden_data}->{ $organization_group->group_name }->{users}
           = $users->{_hidden_data};
     }
@@ -469,17 +474,23 @@ sub create_organization_group {
     my $response;
     my $organization_group;
 
+    my $organization_group_token =
+      Daedalus::Utils::Crypt::generate_random_string(32);
+
     $organization_group = $c->model('CoreRealms::OrganizationGroup')->create(
         {
             organization_id => $organization_id,
-            group_name      => $group_name
+            group_name      => $group_name,
+            token           => $organization_group_token,
         }
     );
 
-    $response->{status}     = 1;
-    $response->{error_code} = 400;
-    $response->{data}->{organization_groups} =
-      { "group_name" => $organization_group->group_name };
+    $response->{status}                      = 1;
+    $response->{error_code}                  = 400;
+    $response->{data}->{organization_groups} = {
+        "group_name"  => $organization_group->group_name,
+        "group_token" => $organization_group->token
+    };
     $response->{_hidden_data}->{organization_groups} =
       { "id" => $organization_group->id };
     $response->{message} = "Organization group has been created.";

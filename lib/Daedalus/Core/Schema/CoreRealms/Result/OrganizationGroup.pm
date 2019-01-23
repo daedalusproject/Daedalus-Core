@@ -68,6 +68,13 @@ __PACKAGE__->table("organization_groups");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 token
+
+  data_type: 'varchar'
+  default_value: (empty string)
+  is_nullable: 0
+  size: 33
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -98,6 +105,13 @@ __PACKAGE__->add_columns(
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
+    "token",
+    {
+        data_type     => "varchar",
+        default_value => "",
+        is_nullable   => 0,
+        size          => 33
+    },
 );
 
 =head1 PRIMARY KEY
@@ -111,6 +125,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_token>
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "unique_token", ["token"] );
 
 =head1 RELATIONS
 
@@ -174,8 +202,8 @@ __PACKAGE__->has_many(
     { cascade_copy                              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-10-07 09:52:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Zo0anNNTAZckz3RinifnUg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-23 05:09:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kAECYvenaOXq8hTO4+M11g
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
