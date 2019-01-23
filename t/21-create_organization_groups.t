@@ -203,6 +203,10 @@ is(
 
 is( $create_group_success_json->{_hidden_data}, undef, );
 
+isnt( $create_group_success_json->{data}, undef, );
+is( $create_group_success_json->{data}->{group_name}, 'Mega Shop Sysadmins', );
+isnt( $create_group_success_json->{data}->{group_token}, undef, );
+
 my $failed_already_created = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -248,6 +252,12 @@ isnt(
     $admin_user_mega_shop_groups_json->{data}->{groups}
       ->{'Mega Shop Sysadmins'},
     undef, 'Now, Mega Shop Sysadmins exists'
+);
+
+isnt(
+    $admin_user_mega_shop_groups_json->{data}->{groups}
+      ->{'Mega Shop Sysadmins'}->{token},
+    undef, 'Mega Shop Sysadmins has a token'
 );
 
 is(
@@ -332,6 +342,13 @@ is(
 
 isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
 
+isnt( $superadmin_create_group_success_json->{data}, undef, );
+is(
+    $superadmin_create_group_success_json->{data}->{group_name},
+    'Daedalus Core Sysadmins',
+);
+isnt( $superadmin_create_group_success_json->{data}->{group_token}, undef, );
+
 my $superadmin_create_group_other_organization_success = request(
     POST $endpoint,
     Content_Type => 'application/json',
@@ -360,6 +377,19 @@ is(
 isnt( $superadmin_create_group_other_organization_success_json->{_hidden_data},
     undef, );
 
+isnt( $superadmin_create_group_other_organization_success_json->{data}, undef,
+);
+is(
+    $superadmin_create_group_other_organization_success_json->{data}
+      ->{group_name},
+    'Mega Shop SuperSysadmins',
+);
+isnt(
+    $superadmin_create_group_other_organization_success_json->{data}
+      ->{group_token},
+    undef,
+);
+
 my $admin_user_mega_shop_three_groups = request(
     GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
@@ -383,6 +413,12 @@ isnt(
     $admin_user_mega_shop_three_groups_json->{data}->{groups}
       ->{'Mega Shop SuperSysadmins'},
     undef, 'Now, Mega Shop SuperSysadmins exists'
+);
+
+isnt(
+    $admin_user_mega_shop_three_groups_json->{data}->{groups}
+      ->{'Mega Shop SuperSysadmins'}->{token},
+    undef, 'Mega Shop SuperSysadmins has a token'
 );
 
 is(

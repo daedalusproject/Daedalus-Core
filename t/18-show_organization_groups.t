@@ -93,6 +93,12 @@ isnt(
 'For the time being there is only a group in this organization, Supershops Administrators'
 );
 
+isnt(
+    $admin_user_mega_shop_groups_json->{data}->{organizations}->{'Supershops'}
+      ->{groups}->{'Supershops Administrators'}->{'token'},
+    undef, 'Supershops Administrators has an organization group token'
+);
+
 is(
     scalar @{
         $admin_user_mega_shop_groups_json->{data}->{organizations}
@@ -172,6 +178,12 @@ isnt(
       ->{'Ultrashops'}->{groups}->{'Ultrashops Administrators'},
     undef,
 'For the time being there is only a group in this organization, Ultrashops Administrators'
+);
+
+isnt(
+    $admin_user_ultra_shop_groups_json->{data}->{organizations}->{'Ultrashops'}
+      ->{groups}->{'Ultrashops Administrators'}->{'token'},
+    undef, 'Ultrashops Administrators has an organization group token'
 );
 
 is(
