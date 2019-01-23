@@ -181,8 +181,8 @@ isnt(
 );
 
 isnt(
-    $admin_user_ultra_shop_groups_json->{data}->{organizations}->{'Ultrashops'}
-      ->{groups}->{'Ultrashops Administrators'}->{'token'},
+    $superadmin_user_ultra_shop_groups_json->{data}->{organizations}
+      ->{'Ultrashops'}->{groups}->{'Ultrashops Administrators'}->{'token'},
     undef, 'Ultrashops Administrators has an organization group token'
 );
 

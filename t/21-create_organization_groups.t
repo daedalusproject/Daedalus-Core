@@ -204,8 +204,12 @@ is(
 is( $create_group_success_json->{_hidden_data}, undef, );
 
 isnt( $create_group_success_json->{data}, undef, );
-is( $create_group_success_json->{data}->{group_name}, 'Mega Shop Sysadmins', );
-isnt( $create_group_success_json->{data}->{group_token}, undef, );
+is(
+    $create_group_success_json->{data}->{organization_groups}->{group_name},
+    'Mega Shop Sysadmins',
+);
+isnt( $create_group_success_json->{data}->{organization_groups}->{group_token},
+    undef, );
 
 my $failed_already_created = request(
     POST $endpoint,
@@ -344,10 +348,15 @@ isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
 
 isnt( $superadmin_create_group_success_json->{data}, undef, );
 is(
-    $superadmin_create_group_success_json->{data}->{group_name},
+    $superadmin_create_group_success_json->{data}->{organization_groups}
+      ->{group_name},
     'Daedalus Core Sysadmins',
 );
-isnt( $superadmin_create_group_success_json->{data}->{group_token}, undef, );
+isnt(
+    $superadmin_create_group_success_json->{data}->{organization_groups}
+      ->{group_token},
+    undef,
+);
 
 my $superadmin_create_group_other_organization_success = request(
     POST $endpoint,
@@ -381,12 +390,12 @@ isnt( $superadmin_create_group_other_organization_success_json->{data}, undef,
 );
 is(
     $superadmin_create_group_other_organization_success_json->{data}
-      ->{group_name},
+      ->{organization_groups}->{group_name},
     'Mega Shop SuperSysadmins',
 );
 isnt(
     $superadmin_create_group_other_organization_success_json->{data}
-      ->{group_token},
+      ->{organization_groups}->{group_token},
     undef,
 );
 

@@ -229,7 +229,7 @@ isnt(
 );
 
 isnt(
-    $admin_user_mega_shop_groups_json->{data}->{groups}
+    $superadmin_user_ultra_shop_groups_json->{data}->{groups}
       ->{'Ultrashops Administrators'}->{'token'},
     undef, 'Ultrashops Administrators has an organization group token'
 );

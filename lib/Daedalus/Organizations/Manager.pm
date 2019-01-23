@@ -354,6 +354,8 @@ sub get_organization_groups {
         my $users = get_organization_group_users( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name }->{users} =
           $users->{data};
+        $response->{data}->{ $organization_group->group_name }->{token} =
+          $organization_group->token;
         $response->{_hidden_data}->{ $organization_group->group_name }->{users}
           = $users->{_hidden_data};
     }
@@ -483,10 +485,12 @@ sub create_organization_group {
         }
     );
 
-    $response->{status}     = 1;
-    $response->{error_code} = 400;
-    $response->{data}->{organization_groups} =
-      { "group_name" => $organization_group->group_name };
+    $response->{status}                      = 1;
+    $response->{error_code}                  = 400;
+    $response->{data}->{organization_groups} = {
+        "group_name"  => $organization_group->group_name,
+        "group_token" => $organization_group->token
+    };
     $response->{_hidden_data}->{organization_groups} =
       { "id" => $organization_group->id };
     $response->{message} = "Organization group has been created.";
