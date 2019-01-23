@@ -104,6 +104,7 @@ my $organization_group = $schema->resultset('OrganizationGroup')->create(
     {
         organization_id => $organization->id,
         group_name      => "Daedalus Super Administrators",
+        token           => "8B8hl0RNItqemTqYmv4mJgYo6GssPzG8g",
     }
 );
 
@@ -191,6 +192,7 @@ my $admin_organization_group = $schema->resultset('OrganizationGroup')->create(
     {
         organization_id => $organization->id,
         group_name      => "Daedalus Administrators",
+        token           => "Vqt0h0C2j6Z7q0jISTOC67qVSHTtXCGaM",
     }
 );
 
@@ -308,6 +310,7 @@ my $yet_other_organization_group =
     {
         organization_id => $yet_other_organization->id,
         group_name      => "Mega Shops Administrators",
+        token           => "EC78R91DADJowsNogz16pHnAcEBiQHWBF",
     }
   );
 
@@ -400,8 +403,6 @@ $schema->resultset('RegisteredUser')->create(
         registrator_user => $yet_other_user->id,
     }
 );
-
-###############
 
 $name       = 'Super';
 $surname    = 'Boos';
@@ -510,6 +511,7 @@ my $bugstech_administrators_group =
     {
         organization_id => $bugstech_organization->id,
         group_name      => "Bugs Tech Administrators",
+        token           => "8JgKXXonBTSkxKRutW1ewC4FbmV0s6FGc",
     }
   );
 
