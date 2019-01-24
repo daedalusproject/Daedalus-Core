@@ -406,16 +406,59 @@ is(
     'Invalid organization token.',
 );
 
-Falta el de usar otro toke de rol
+my $superadminadmin_get_daedalus_core_groups = request(
+    GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    ,    # Daedalus Core Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
 
-  # Check group
+is( $superadminadmin_get_daedalus_core_groups->code(), 200, );
 
-  my $admin_user_mega_shop_groups = request(
+my $superadminadmin_get_daedalus_core_groups_json =
+  decode_json( $superadminadmin_get_daedalus_core_groups->content );
+
+is( $superadminadmin_get_daedalus_core_groups_json->{status},
+    1, 'Status success.' );
+
+my $daedalus_project_sysadmins_group_token =
+  $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+  ->{'Daedalus Core Sysadmins'}->{token};
+
+my $failed_not_your_organization_group = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',           # Megashops Token
+            group_token => $daedalus_project_sysadmins_group_token,
+            role_name   => 'fireman'
+        }
+    ),
+);
+
+is( $failed_not_your_organization_group->code(), 400, );
+
+my $failed_not_your_organization_group_json =
+  decode_json( $failed_not_your_organization_group->content );
+
+is( $failed_not_your_organization_group_json->{status}, 0, );
+is(
+    $failed_not_your_organization_group_json->{message},
+    'Required group does not exist.',
+    "It exists but it does not belong to your organization."
+);
+
+# Check group
+
+my $admin_user_mega_shop_groups = request(
     GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-  );
+);
 
 is( $admin_user_mega_shop_groups->code(), 200, );
 
@@ -443,25 +486,6 @@ is(
     1,
     'For the time being Mega Shop Sysadmins has only fireman as role'
 );
-
-my $superadminadmin_get_daedalus_core_groups = request(
-    GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
-    ,    # Daedalus Core Token
-    Content_Type  => 'application/json',
-    Authorization => "Basic $superadmin_authorization_basic",
-);
-
-is( $superadminadmin_get_daedalus_core_groups->code(), 200, );
-
-my $superadminadmin_get_daedalus_core_groups_json =
-  decode_json( $superadminadmin_get_daedalus_core_groups->content );
-
-is( $superadminadmin_get_daedalus_core_groups_json->{status},
-    1, 'Status success.' );
-
-my $daedalus_project_sysadmins_group_token =
-  $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
-  ->{'Daedalus Core Sysadmins'}->{token};
 
 my $failed_not_your_organization = request(
     POST $endpoint,
