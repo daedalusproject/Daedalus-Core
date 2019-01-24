@@ -686,8 +686,8 @@ sub add_user_to_group_POST {
 
     my $organization;
 
-    my $groups;
-    my $group_name;
+    my $group;
+    my $group_token;
 
     my $required_user;
     my $required_user_data;
@@ -707,7 +707,7 @@ sub add_user_to_group_POST {
                     type     => 'organization',
                     required => 1,
                 },
-                group_name => {
+                group_token => {
                     type     => "string",
                     required => 1,
                 },
@@ -727,37 +727,49 @@ sub add_user_to_group_POST {
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
           $authorization_and_validatation->{data}->{'registered_user_e-mail'};
-        $group_name = $authorization_and_validatation->{data}->{required_data}
-          ->{group_name};
+        $group_token = $authorization_and_validatation->{data}->{required_data}
+          ->{group_token};
 
         $user_email = $target_user->{data}->{user}->{'e-mail'};
-        $groups =
-          Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization->{_hidden_data}->{organization}->{id} );
 
-        if ( !exists $groups->{data}->{$group_name} ) {
+        $group =
+          Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+            $c, $group_token );
+
+        if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
             $response->{error_code} = 400;
         }
         else {
-            if (
-                grep( /^$user_email$/,
-                    @{ $groups->{data}->{$group_name}->{users} } )
-              )
+            if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
+                    $organization->{_hidden_data}->{organization}->{id}
+                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
             {
-                $response->{status} = 0;
-                $response->{message} =
-                  "Required user is already assigned to this group.";
+                $response->{status}     = 0;
+                $response->{message}    = "Required group does not exist.";
                 $response->{error_code} = 400;
             }
             else {
-                $response =
-                  Daedalus::Organizations::Manager::add_user_to_organization_group(
-                    $c,
-                    $groups->{_hidden_data}->{$group_name}->{id},
-                    $target_user->{_hidden_data}->{user}->{id}
-                  );
+
+                if (
+                    grep( /^$user_email$/,
+                        @{ $group->{data}->{$group_token}->{users} } )
+                  )
+                {
+                    $response->{status} = 0;
+                    $response->{message} =
+                      "Required user is already assigned to this group.";
+                    $response->{error_code} = 400;
+                }
+                else {
+                    $response =
+                      Daedalus::Organizations::Manager::add_user_to_organization_group(
+                        $c,
+                        $group->{_hidden_data}->{$group_token}->{id},
+                        $target_user->{_hidden_data}->{user}->{id}
+                      );
+                }
             }
         }
 

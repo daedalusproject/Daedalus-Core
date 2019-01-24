@@ -257,7 +257,7 @@ is( $get_megashops_sysadmins_group_token->code(), 200, );
 my $get_megashops_sysadmins_group_token_json =
   decode_json( $get_megashops_sysadmins_group_token->content );
 
-is( $get_megashops_sysadmins_group_tokenjson->{status}, 1, 'Status success.' );
+is( $get_megashops_sysadmins_group_token_json->{status}, 1, 'Status success.' );
 
 my $megashops_sysadmins_group_token =
   $get_megashops_sysadmins_group_token_json->{data}->{groups}
@@ -270,8 +270,8 @@ my $failed_user_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => $megashops_sysadmins_group_token user_email =>
-              'nonexistenuser@megashops.com'
+            group_token        => $megashops_sysadmins_group_token,
+            user_email         => 'nonexistenuser@megashops.com'
         }
     ),
 );
@@ -379,8 +379,8 @@ my $failed_not_organization_user = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => $megashops_sysadmins_group_token user_email =>
-              'admin@daedalus-project.io'
+            group_token        => $megashops_sysadmins_group_token,
+            user_email         => 'admin@daedalus-project.io'
         }
     ),
 );
@@ -392,6 +392,29 @@ my $failed_not_organization_user_json =
 
 is( $failed_not_organization_user_json->{status},  0, );
 is( $failed_not_organization_user_json->{message}, 'Invalid user.', );
+
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
 my $superadminadmin_get_daedalus_core_groups = request(
     GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
