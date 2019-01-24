@@ -67,7 +67,7 @@ my $failed_no_admin = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_token        => 'anytoken',
             user_email         => 'marvin@megashops.com'
         }
     ),
@@ -137,7 +137,7 @@ my $failed_no_group_data_no_user_json =
 is( $failed_no_group_data_no_user_json->{status}, 0, );
 is(
     $failed_no_group_data_no_user_json->{message},
-    'No group_name provided. No user_email provided.',
+    'No group_token provided. No user_email provided.',
 );
 
 my $failed_no_organization_data_no_user = request(
@@ -196,7 +196,7 @@ my $failed_no_organization_data_no_role_data_json =
 is( $failed_no_organization_data_no_role_data_json->{status}, 0, );
 is(
     $failed_no_organization_data_no_role_data_json->{message},
-    'No group_name provided.',
+    'No group_token provided.',
 );
 
 my $failed_invalid_organization_data = request(
@@ -206,7 +206,7 @@ my $failed_invalid_organization_data = request(
     Content       => encode_json(
         {
             organization_token => 'ivalidorganizationtoken',
-            group_name         => 'non existen group',
+            group_token        => 'nonexistentoken',
             user_email         => 'nonexistentuser@megashops.com'
         }
     ),
@@ -223,28 +223,6 @@ is(
     'Invalid organization token.',
 );
 
-my $failed_invalid_group_data = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ivalidorganizationtoken',
-            group_name         => 'non existen group',
-            user_email => 'nonexistentuser@megashops.com'   # There is no clowns
-        }
-    ),
-);
-
-is( $failed_invalid_group_data->code(), 400, );
-
-my $failed_invalid_group_data_json =
-  decode_json( $failed_invalid_group_data->content );
-
-is( $failed_invalid_group_data_json->{status}, 0, );
-is( $failed_invalid_group_data_json->{message},
-    'Invalid organization token.', );
-
 my $failed_group_not_found = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -252,7 +230,7 @@ my $failed_group_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Clowns',
+            group_token        => 'nonesitenttoken',
             user_email         => 'marvin@megashops.com'
         }
     ),
@@ -267,6 +245,24 @@ is( $failed_group_not_found_json->{status}, 0, );
 is( $failed_group_not_found_json->{message},
     'Required group does not exist.', );
 
+my $get_megashops_sysadmins_group_token = request(
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $get_megashops_sysadmins_group_token->code(), 200, );
+
+my $get_megashops_sysadmins_group_token_json =
+  decode_json( $get_megashops_sysadmins_group_token->content );
+
+is( $get_megashops_sysadmins_group_tokenjson->{status}, 1, 'Status success.' );
+
+my $megashops_sysadmins_group_token =
+  $get_megashops_sysadmins_group_token_json->{data}->{groups}
+  ->{'Mega Shop Sysadmins'}->{token};
+
 my $failed_user_not_found = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -274,8 +270,8 @@ my $failed_user_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            user_email         => 'nonexistenuser@megashops.com'
+            group_name         => $megashops_sysadmins_group_token user_email =>
+              'nonexistenuser@megashops.com'
         }
     ),
 );
@@ -298,7 +294,7 @@ my $add_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_token        => $megashops_sysadmins_group_token,
             user_email         => 'marvin@megashops.com'
         }
     ),
@@ -324,7 +320,7 @@ my $failed_already_added = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_token        => $megashops_sysadmins_group_token,
             user_email         => 'marvin@megashops.com'
         }
     ),
@@ -383,8 +379,8 @@ my $failed_not_organization_user = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            user_email         => 'admin@daedalus-project.io'
+            group_name         => $megashops_sysadmins_group_token user_email =>
+              'admin@daedalus-project.io'
         }
     ),
 );
@@ -397,6 +393,25 @@ my $failed_not_organization_user_json =
 is( $failed_not_organization_user_json->{status},  0, );
 is( $failed_not_organization_user_json->{message}, 'Invalid user.', );
 
+my $superadminadmin_get_daedalus_core_groups = request(
+    GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    ,    # Daedalus Core Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadminadmin_get_daedalus_core_groups->code(), 200, );
+
+my $superadminadmin_get_daedalus_core_groups_json =
+  decode_json( $superadminadmin_get_daedalus_core_groups->content );
+
+is( $superadminadmin_get_daedalus_core_groups_json->{status},
+    1, 'Status success.' );
+
+my $daedalus_project_sysadmins_group_token =
+  $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+  ->{'Daedalus Core Sysadmins'}->{token};
+
 my $failed_not_your_organization = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -405,8 +420,8 @@ my $failed_not_your_organization = request(
         {
             organization_token =>
               'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
-            group_name => 'Daedalus Project Sysadmins',
-            user_email => 'marvin@megashops.com'
+            group_token => $daedalus_project_sysadmins_group_token,
+            user_email  => 'marvin@megashops.com'
         }
     ),
 );
@@ -453,7 +468,7 @@ my $superadmin_add_user_success = request(
     Content => encode_json(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
-            group_name         => 'Daedalus Core Sysadmins',
+            group_token        => $daedalus_project_sysadmins_group_token,
             user_email         => 'notanadmin@daedalus-project.io'
         }
     ),
@@ -481,8 +496,8 @@ my $superadmin_add_inactive_user = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            user_email => 'shirorobot@megashops.com'
+            group_token => $megashops_sysadmins_group_token,
+            user_email  => 'shirorobot@megashops.com'
         }
     ),
 );
@@ -507,8 +522,8 @@ my $superadmin_add_user_from_other_organization = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            user_email => 'othernotanadmin@daedalus-project.io'
+            group_token => $megashops_sysadmins_group_token,
+            user_email  => 'othernotanadmin@daedalus-project.io'
         }
     ),
 );
@@ -533,8 +548,8 @@ my $superadmin_add_user_other_organization_success = request(
         {
             organization_token =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            user_email => 'noadmin@megashops.com'
+            group_token => $megashops_sysadmins_group_token,
+            user_email  => 'noadmin@megashops.com'
         }
     ),
 );
