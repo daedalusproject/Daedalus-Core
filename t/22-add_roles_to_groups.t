@@ -9,8 +9,6 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
 
-use Data::Dumper;
-
 my $endpoint = '/organization/addroletogroup';
 
 my $failed_because_no_auth_token =

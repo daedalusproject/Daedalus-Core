@@ -9,6 +9,8 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST);
 
+use Data::Dumper;
+
 my $endpoint = '/organization/removerolegroup';
 
 my $failed_because_no_auth_token =
@@ -508,15 +510,19 @@ is(
     'Mega Shop Sysadmins has no roles'
 );
 
+my $megashops_sysadmins_group_token =
+  $admin_user_mega_shop_zero_roles_json->{data}->{groups}
+  ->{'Mega Shop Sysadmins'}->{token};
+
 my $add_role_to_group_success = request(
-    POST '/organization/addrolegroup',
+    POST '/organization/addroletogroup',
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_token        => $megashops_sysadmins_group_token,
             role_name          => 'organization_master'
         }
     ),
@@ -535,15 +541,19 @@ is(
 
 is( $add_role_to_group_success_json->{_hidden_data}, undef, );
 
+my $megashops_supersysadmins_group_token =
+  $admin_user_mega_shop_zero_roles_json->{data}->{groups}
+  ->{'Mega Shop SuperSysadmins'}->{token};
+
 my $add_other_admin_role_to_group_success = request(
-    POST '/organization/addrolegroup',
+    POST '/organization/addroletogroup',
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop SuperSysadmins',
+            group_token        => $megashops_supersysadmins_group_token,
             role_name          => 'organization_master'
         }
     ),
@@ -704,15 +714,19 @@ is(
 
 is( $remove_failed_no_admin_json->{_hidden_data}, undef, );
 
+my $megashops_administrators_group_token =
+  $admin_user_mega_shop_zero_roles_json->{data}->{groups}
+  ->{'Mega Shops Administrators'}->{token};
+
 my $make_admin_again = request(
-    POST '/organization/addrolegroup',
+    POST '/organization/addroletogroup',
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
+            group_token        => $megashops_administrators_group_token,
             role_name          => 'organization_master'
         }
     ),
