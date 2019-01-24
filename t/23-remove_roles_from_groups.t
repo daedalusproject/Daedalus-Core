@@ -9,8 +9,6 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST);
 
-use Data::Dumper;
-
 my $endpoint = '/organization/removerolegroup';
 
 my $failed_because_no_auth_token =
