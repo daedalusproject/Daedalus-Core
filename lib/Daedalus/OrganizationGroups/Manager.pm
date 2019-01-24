@@ -205,6 +205,59 @@ sub remove_organization_group {
     return $response;
 }
 
+=head2 get_organization_group_from_token
+
+For a given organization group token, return organization group data
+
+=cut
+
+sub get_organization_group_from_token {
+
+    my $c                        = shift;
+    my $organization_group_token = shift;
+
+    my $response;
+    $response->{status}     = 0;
+    $response->{error_code} = 400;
+    $response->{message}    = 'Invalid organization group token.';
+
+    my $organization_group = $c->model('CoreRealms::OrganizationGroup')
+      ->find( { token => $organization_group_token } );
+
+    if ($organization_group) {
+        my $roles =
+          Daedalus::Organizations::Manager::get_organization_group_roles( $c,
+            $organization_group->id );
+        my $users =
+          Daedalus::Organizations::Manager::get_organization_group_users( $c,
+            $organization_group->id );
+        $response->{status}  = 1;
+        $response->{message} = 'Organization group token is valid.';
+        $response->{data}    = {
+            $organization_group->token => {
+                token      => $organization_group->token,
+                group_name => $organization_group->group_name,
+            },
+        };
+        $response->{_hidden_data} = {
+            $organization_group->token => {
+                id              => $organization_group->id,
+                organization_id => $organization_group->organization_id
+            }
+        };
+        $response->{data}->{ $organization_group->token }->{roles} =
+          $roles->{data};
+        $response->{_hidden_data}->{ $organization_group->token }->{roles} =
+          $roles->{_hidden_data};
+        $response->{data}->{ $organization_group->token }->{users} =
+          $users->{data};
+        $response->{_hidden_data}->{ $organization_group->token }->{users} =
+          $users->{_hidden_data};
+    }
+
+    return $response;
+}
+
 =head1 AUTHOR
 
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,

@@ -433,12 +433,12 @@ sub create_organization_group_POST {
 
 }
 
-sub add_role_group : Path('/organization/addrolegroup') : Args(0) :
+sub add_role_to_group : Path('/organization/addroletogroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub add_role_group_POST {
+sub add_role_to_group_POST {
 
     my ( $self, $c ) = @_;
 
@@ -447,8 +447,8 @@ sub add_role_group_POST {
 
     my $organization;
 
-    my $groups;
-    my $group_name;
+    my $group;
+    my $group_token;
 
     my $role_name;
     my $available_roles;
@@ -465,7 +465,7 @@ sub add_role_group_POST {
                     type     => "organization",
                     required => 1,
                 },
-                group_name => {
+                group_token => {
                     type     => "string",
                     required => 1,
                 },
@@ -483,53 +483,65 @@ sub add_role_group_POST {
     else {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
-        $group_name   = $authorization_and_validatation->{data}->{required_data}
-          ->{group_name};
+        $group_token  = $authorization_and_validatation->{data}->{required_data}
+          ->{group_token};
         $role_name =
           $authorization_and_validatation->{data}->{required_data}->{role_name};
 
-        $groups =
-          Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization->{_hidden_data}->{organization}->{id} );
+        $group =
+          Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+            $c, $group_token );
 
-        if ( !exists $groups->{data}->{$group_name} ) {
+        if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
             $response->{error_code} = 400;
         }
+
         else {
-            if (
-                grep( /^$role_name$/,
-                    @{ $groups->{data}->{$group_name}->{roles} } )
-              )
+            if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
+                    $organization->{_hidden_data}->{organization}->{id}
+                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
             {
-                $response->{status} = 0;
-                $response->{message} =
-                  "Required role is already assigned to this group.";
+                $response->{status}     = 0;
+                $response->{message}    = "Required group does not exist.";
                 $response->{error_code} = 400;
             }
             else {
-                # Check role, name
-                $available_roles =
-                  Daedalus::Organizations::Manager::list_roles($c);
-                if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
-                    $response->{status}     = 0;
-                    $response->{message}    = "Required role does not exist.";
+                if (
+                    grep( /^$role_name$/,
+                        @{ $group->{data}->{$group_token}->{roles} } )
+                  )
+                {
+                    $response->{status} = 0;
+                    $response->{message} =
+                      "Required role is already assigned to this group.";
                     $response->{error_code} = 400;
                 }
                 else {
-                    $response =
-                      Daedalus::Organizations::Manager::add_role_to_organization_group(
-                        $c,
-                        $groups->{_hidden_data}->{$group_name}->{id},
-                        $available_roles->{_hidden_data}->{$role_name}->{id}
-                      );
+                    # Check role, name
+                    $available_roles =
+                      Daedalus::Organizations::Manager::list_roles($c);
+                    if (
+                        !exists $available_roles->{_hidden_data}->{$role_name} )
+                    {
+                        $response->{status}  = 0;
+                        $response->{message} = "Required role does not exist.";
+                        $response->{error_code} = 400;
+                    }
+                    else {
+                        $response =
+                          Daedalus::Organizations::Manager::add_role_to_organization_group(
+                            $c,
+                            $group->{_hidden_data}->{$group_token}->{id},
+                            $available_roles->{_hidden_data}->{$role_name}->{id}
+                          );
+                    }
                 }
             }
         }
 
     }
-
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     $self->return_response( $c, $response );
 
