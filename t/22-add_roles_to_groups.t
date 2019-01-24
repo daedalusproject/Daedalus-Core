@@ -365,7 +365,7 @@ my $failed_already_added = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_token        => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
+            group_token        => $megashops_sysadmins_group_token,
             role_name          => 'fireman'
         }
     ),
@@ -381,14 +381,41 @@ is(
     'Required role is already assigned to this group.',
 );
 
-# Check group
+my $failed_not_your_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token =>
+              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',           # Daedalus Token
+            group_token => $megashops_sysadmins_group_token,
+            role_name   => 'fireman'
+        }
+    ),
+);
 
-my $admin_user_mega_shop_groups = request(
+is( $failed_not_your_organization->code(), 400, );
+
+my $failed_not_your_organization_json =
+  decode_json( $failed_not_your_organization->content );
+
+is( $failed_not_your_organization_json->{status}, 0, );
+is(
+    $failed_not_your_organization_json->{message},
+    'Invalid organization token.',
+);
+
+Falta el de usar otro toke de rol
+
+  # Check group
+
+  my $admin_user_mega_shop_groups = request(
     GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-);
+  );
 
 is( $admin_user_mega_shop_groups->code(), 200, );
 
