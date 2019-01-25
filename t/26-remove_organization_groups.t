@@ -550,7 +550,7 @@ my $add_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Admins',
+            group_token        => $megashops_admins_group_token,
             user_email         => 'otheradminagain@megashops.com'
         }
     ),
@@ -575,7 +575,7 @@ my $add_other_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Admins',
+            group_token        => $megashops_admins_group_token,
             user_email         => 'marvin@megashops.com'
         }
     ),
@@ -654,7 +654,7 @@ my $add_original_admin_user_to_original_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
+            group_token        => $megashops_administrators_group_token,
             user_email         => 'otheradminagain@megashops.com'
         }
     ),

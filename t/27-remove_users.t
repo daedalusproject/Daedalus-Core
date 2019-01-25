@@ -225,6 +225,9 @@ is(
 
 is( $create_group_success_json->{_hidden_data}, undef, );
 
+my $megashops_sysadmins_group_token =
+  $create_group_success_json->{data}->{organization_groups}->{group_token};
+
 my $add_user_to_group_success = request(
     POST '/organization/addusertogroup',
     Content_Type => 'application/json',
@@ -233,7 +236,7 @@ my $add_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
+            group_token        => $megashops_sysadmins_group_token,
             user_email         => 'noadmin@megashops.com'
         }
     ),
