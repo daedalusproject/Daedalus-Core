@@ -512,15 +512,18 @@ is(
     'Organization group has been created.',
 );
 
+my $megashops_admins_group_token =
+  $add_new_admin_group_json->{data}->{organization_groups}->{group_token};
+
 my $add_role_to_group_success = request(
-    POST '/organization/addrolegroup',
+    POST '/organization/addroletogroup',
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Admins',
+            group_token        => $megashops_admins_group_token,
             role_name          => 'organization_master'
         }
     ),
@@ -547,7 +550,7 @@ my $add_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Admins',
+            group_token        => $megashops_admins_group_token,
             user_email         => 'otheradminagain@megashops.com'
         }
     ),
@@ -572,7 +575,7 @@ my $add_other_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Admins',
+            group_token        => $megashops_admins_group_token,
             user_email         => 'marvin@megashops.com'
         }
     ),
@@ -612,15 +615,19 @@ is(
     'Organization group has been created.',
 );
 
+my $megashops_administrators_group_token =
+  $recreate_original_admin_group_json->{data}->{organization_groups}
+  ->{group_token};
+
 my $add_role_to_original_group_success = request(
-    POST '/organization/addrolegroup',
+    POST '/organization/addroletogroup',
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
+            group_token        => $megashops_administrators_group_token,
             role_name          => 'organization_master'
         }
     ),
@@ -647,7 +654,7 @@ my $add_original_admin_user_to_original_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
+            group_token        => $megashops_administrators_group_token,
             user_email         => 'otheradminagain@megashops.com'
         }
     ),

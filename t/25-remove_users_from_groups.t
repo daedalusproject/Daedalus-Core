@@ -562,8 +562,9 @@ my $add_new_admin = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            user_email         => 'marvin@megashops.com'
+            group_token =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF', # 'Mega Shops Administrators'
+            user_email => 'marvin@megashops.com'
         }
     ),
 );
@@ -638,8 +639,9 @@ my $failed_no_admin_users_left = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            user_email         => 'marvin@megashops.com'
+            group_token =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF', # 'Mega Shops Administrators'
+            user_email => 'marvin@megashops.com'
         }
     ),
 );
@@ -662,8 +664,9 @@ my $add_new_admin_again = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            user_email         => 'otheradminagain@megashops.com'
+            group_token =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF', # 'Mega Shops Administrators'
+            user_email => 'otheradminagain@megashops.com'
         }
     ),
 );
