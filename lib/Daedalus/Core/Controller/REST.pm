@@ -275,7 +275,12 @@ sub authorize_and_validate {
         for my $required_data_name ( sort ( keys %{$required_data} ) ) {
             my $data_properties = $required_data->{$required_data_name};
 
-            $value = $c->{request}->{data}->{$required_data_name};
+            if ( $data_properties->{given} == 1 ) {
+                $value = $data_properties->{value};
+            }
+            else {
+                $value = $c->{request}->{data}->{$required_data_name};
+            }
             if ( $data_properties->{required} == 1 ) {
                 if ( !( defined $value ) ) {
                     $response->{status}     = 0;

@@ -9,21 +9,14 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST DELETE);
 
+use Data::Dumper;
+
 my $endpoint = '/organization/removerolefromgroup';
 
 my $failed_because_no_auth_token =
   request( DELETE $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth_token->code(), 400, );
-
-my $failed_because_no_auth_token_json =
-  decode_json( $failed_because_no_auth_token->content );
-
-is( $failed_because_no_auth_token_json->{status}, 0, );
-is(
-    $failed_because_no_auth_token_json->{message},
-    "No session token provided.",
-);
+is( $failed_because_no_auth_token->code(), 404, );
 
 my $non_admin_success = request(
     POST '/user/login',
@@ -53,12 +46,7 @@ my $failed_no_token = request(
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_token->code(), 400, );
-
-my $failed_no_token_json = decode_json( $failed_no_token->content );
-
-is( $failed_no_token_json->{status},  0, );
-is( $failed_no_token_json->{message}, 'No organization_token provided.', );
+is( $failed_no_token->code(), 404, );
 
 my $failed_no_admin = request(
     DELETE "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalidtoken/clown",
@@ -105,29 +93,16 @@ my $failed_no_data = request(
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_no_data->code(), 400, );
+is( $failed_no_data->code(), 404, );
 #
-my $failed_no_data_json = decode_json( $failed_no_data->content );
-
-is( $failed_no_data_json->{status},  0, );
-is( $failed_no_data_json->{message}, 'No organization_token provided.', );
-
 my $failed_no_group_data_no_role = request(
     DELETE "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_no_group_data_no_role->code(), 400, );
+is( $failed_no_group_data_no_role->code(), 404, );
 #
-my $failed_no_group_data_no_role_json =
-  decode_json( $failed_no_group_data_no_role->content );
-
-is( $failed_no_group_data_no_role_json->{status}, 0, );
-is(
-    $failed_no_group_data_no_role_json->{message},
-    'No group_name provided. No role_name provided.',
-);
 
 my $failed_no_organization_data_no_role_data = request(
     DELETE "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/fireman",
@@ -135,16 +110,7 @@ my $failed_no_organization_data_no_role_data = request(
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_no_organization_data_no_role_data->code(), 400, );
-
-my $failed_no_organization_data_no_role_data_json =
-  decode_json( $failed_no_organization_data_no_role_data->content );
-
-is( $failed_no_organization_data_no_role_data_json->{status}, 0, );
-is(
-    $failed_no_organization_data_no_role_data_json->{message},
-    'No group_name provided.',
-);
+is( $failed_no_organization_data_no_role_data->code(), 404, );
 
 my $failed_invalid_organization_data = request(
     DELETE "$endpoint/ivalidorganizationtoken/non_existen_group/clowns",
@@ -534,18 +500,19 @@ my $remove_other_admin_role_to_group_success = request(
 is( $remove_other_admin_role_to_group_success->code(), 200, );
 
 my $remove_other_admin_role_to_group_success_json =
-  decode_json( $add_other_admin_role_to_group_success->content );
+  decode_json( $remove_other_admin_role_to_group_success->content );
 
 is( $remove_other_admin_role_to_group_success_json->{status}, 1, );
 is(
     $remove_other_admin_role_to_group_success_json->{message},
-    'Selected role has been removed to organization group.',
+    'Selected role has been removed from organization group.',
 );
 
 is( $remove_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_role_organization_master_success = request(
-    DELETE $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_sysadmins_group_token/organization_master",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
