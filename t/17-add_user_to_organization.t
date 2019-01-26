@@ -184,7 +184,7 @@ my $failed_user_token_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_token         => '03QimYFYtn2O2c0WvkOhUuN4c8gJKOktw'
+            user_token         => '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt'
         }
     ),
 );
@@ -246,7 +246,7 @@ my $failed_non_existent_organization = request(
         {
             organization_token => 'nonexistentorganization',
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',       # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',        # marvin@megashops.com
         }
     ),
 );
@@ -270,7 +270,7 @@ my $failed_not_my_organization = request(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',       # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',        # marvin@megashops.com
         }
     ),
 );
@@ -295,7 +295,7 @@ my $add_user_success = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );
@@ -317,7 +317,7 @@ my $failed_already_registered = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );
@@ -382,7 +382,7 @@ my $superadmin_failed_non_existent_organization = request(
         {
             organization_token => 'nonexistentorganization',
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );

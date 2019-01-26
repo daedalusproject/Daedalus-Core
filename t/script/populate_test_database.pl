@@ -49,7 +49,7 @@ my $auth_token =
 my $salt =
 'lec6bQeaUiJoFQ3zPZiNzfz7D2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password = sha512_base64("$salt$password");
-my $user_token = 'gDoGxCkNI0DrItDrOzWKjS5tzCHjJTVOg';
+my $user_token = 'gDoGxCkNI0DrItDrOzWKjS5tzCHjJTVO';
 
 my $user = $schema->resultset('User')->create(
     {
@@ -145,7 +145,7 @@ $auth_token = 'gqYyhZWMfPFm9WK6q/XYUVcqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
 $salt =
 '1ec6bQeaUiJoFQ3zPZiNzfz7D2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password   = sha512_base64("$salt$password");
-$user_token = 'IXI1VoS8BiIuRrOGS4HEAOBleJVMflfGW';
+$user_token = 'IXI1VoS8BiIuRrOGS4HEAOBleJVMflfG';
 
 my $notanadmin = $schema->resultset('User')->create(
     {
@@ -226,7 +226,7 @@ $auth_token = 'gqYyhZWMffFm9WK6q/XYUVcqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
 $salt =
 '1ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSLJ4O3EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password   = sha512_base64("$salt$password");
-$user_token = 's8YxNnLdXJfyThrf5TTI7Uw8aeN9mQXOv';
+$user_token = 's8YxNnLdXJfyThrf5TTI7Uw8aeN9mQXO';
 
 my $yet_another_admin = $schema->resultset('User')->create(
     {
@@ -261,7 +261,7 @@ $auth_token = 'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l';
 $salt =
 '1ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSL3497EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password   = sha512_base64("$salt$password");
-$user_token = 'h9jVrmdNsjWgKF6nhuzWkQiQwdalQSjFw';
+$user_token = 'h9jVrmdNsjWgKF6nhuzWkQiQwdalQSjF';
 
 $schema->resultset('User')->create(
     {
@@ -287,7 +287,7 @@ $auth_token = '1qYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
 $salt =
 '13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSL1297EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password   = sha512_base64("$salt$password");
-$user_token = 'RjZEmVuvbUn9SGc26QQogs9ZaYyQwI9s2';
+$user_token = 'RjZEmVuvbUn9SGc26QQogs9ZaYyQwI9s';
 
 my $yet_other_user = $schema->resultset('User')->create(
     {
@@ -357,7 +357,7 @@ $auth_token = '1qYyhZWMffFm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
 $salt =
 '13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuVkErT11QSJUkcndeGSmCVDNSL2347EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password   = sha512_base64("$salt$password");
-$user_token = '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkti';
+$user_token = '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt';
 
 my $yet_other_no_admin_user = $schema->resultset('User')->create(
     {
@@ -397,7 +397,7 @@ $auth_token = '1qYyhZWMikdm9WK6q/2376cqSoRxO2222UBrQnPpUnMC0/Fb/3t1cQXPfIr.X5l';
 $salt =
 '13ec6bQeaUiJoFQ3zPZiNzfz7F2LDuWkErT11QSJUkcndeGSmCVDNSL2347EK4ISumABtLoqN3aQz9NKX/J3dBORC3tUKTIkM1zIwYSIUBjn9/fjkdeU2IXnoepKIQ0LucMty4IfrVqbKVtQtaHxqdjnZotPG77W1MvikCSYrmCwTPxSAH5l.6tf9vu9ep9BAZGnbROlMAoGDV5cel.vsOZ9y8z9OUIdZnx.2wRfp0H6MGQlKINdx9FMZ.9NSbxy';
 $password   = sha512_base64("$salt$password");
-$user_token = 'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh';
+$user_token = 'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC';
 
 my $marvin_megashops = $schema->resultset('User')->create(
     {
@@ -430,7 +430,7 @@ $auth_token = '05oKMasl0GOo2TDu7eNhSpThUAKednH0GdVOsJWGWPjoT4vkLUYmE';
 $salt =
 '3TX0jLY5guUpFij2p8CXKjSufn3pWBIVNxzB7q3eqUuHw20pEY0RStUBbmFE6NNsSiL9BrKXhhokAIpI7ImBBqMMjEVi4yTCrZXpXBEA0grRLMTkql2qyi1Dz6G1ya2TDug6EUmNPeGFEIgKhTJmmnQ6g5lReWIn0Mz1uZPl1blgX6y89O9qUtXPKO9xGWzcYRVxnwPntO796g3W8wr49hrF0gqP0noWx9nOPFMlUyYBGLfxwsnowq4877aaXKR';
 $password   = sha512_base64("$salt$password");
-$user_token = 'tqqZW1Xrjw6BAUJo6Y5WqQzBJenxOY9XY';
+$user_token = 'tqqZW1Xrjw6BAUJo6Y5WqQzBJenxOY9X';
 
 my $superboss = $schema->resultset('User')->create(
     {
@@ -457,7 +457,7 @@ $auth_token =
 $salt =
 'ztbXWmgipKc8GYvCoC2mxYNswAmqT9dRJxJMpCPsLjwsdso9qUTchKvjSxZUjrZuGzx532i13StGHL8UgWYfBChrSBEjTLg70pwcznqEMe30cIyC6fp2wdWmRJcQYtoWPnBN0h2PSggIhKz8rsikPQAJAEakLKaubgDq1r7xoiKQLg85xqKeCi1BKYZXR4HuQ31LljORIHsVYW0ElqwfvN5gt6xsBJtJDJGVl0fligdjPjNAAo2wnW3Gll1sZVM';
 $password   = sha512_base64("$salt$password");
-$user_token = 'ctDKugSeUxg8mqPAJ0uFfl5jzksk1IiPG';
+$user_token = 'ctDKugSeUxg8mqPAJ0uFfl5jzksk1IiP';
 
 my $miniboss = $schema->resultset('User')->create(
     {
@@ -484,7 +484,7 @@ $auth_token =
 $salt =
 'y2TlG6VXTHhbpLRNFCcwNJCg23p9fjBtJrnFlKQjnjBFHeZc1Gq49rXnhAIWHuZ5n7jWKdmzkOvkOdG1VEVHUuX5aVfTLW3blJU1wo5tfroRaSy8ZkSVTIRbHh8JpUOufR1VlUXgutcJPGvbxQo6qse0J6vftuyz69zBJ7yPUrF59r6KfKCWiZjHK2hY2a7oUmdgkRJFLHGEX6dwKPx99QtUYzDkV4A9pSpURyvYvoKQT05Bxq3yOdT6kw03tl6';
 $password   = sha512_base64("$salt$password");
-$user_token = '2yu2CRQadSjFBf3R2E57X86Yh10XX9whX';
+$user_token = '2yu2CRQadSjFBf3R2E57X86Yh10XX9wh';
 
 my $ultraboss = $schema->resultset('User')->create(
     {
@@ -597,7 +597,7 @@ $auth_token =
 $salt =
 'y2TlG6VXTHhbpLRNFCcwNJCg23p9fjBtJrnFlKQjnjBFHeZc1Gq49rXnhAIWHuZ5n7jWKdmzkOvkOdG1VEVHUuX5aVfTLW3blJU1wo5tfroRaSy8ZkSVTIRbHh8JpUOufR1VlUXgutcJPGvbxQo6qse0J6vftuyz69zBJ7yPUrF59r6KfKCWiZjHK2hY2a7oUmdgkRJFLHGEX6dwKPx99QtUYzDkV4A9pSpURyvYvoKQT05Bxq3yOdT6kw03tl6';
 $password   = sha512_base64("$salt$password");
-$user_token = 'qQGzQ4X3BBNiSFvEwBhsQZF47FS0v5APL';
+$user_token = 'qQGzQ4X3BBNiSFvEwBhsQZF47FS0v5AP';
 
 $schema->resultset('User')->create(
     {

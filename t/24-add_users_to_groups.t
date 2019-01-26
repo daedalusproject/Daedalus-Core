@@ -232,7 +232,7 @@ my $failed_group_not_found = request(
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => 'nonexistentoken',
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    #marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    #marvin@megashops.com
         }
     ),
 );
@@ -297,7 +297,7 @@ my $add_user_to_group_success = request(
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_sysadmins_group_token,
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );
@@ -324,7 +324,7 @@ my $failed_already_added = request(
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_sysadmins_group_token,
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );
@@ -384,7 +384,7 @@ my $failed_not_organization_user = request(
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_sysadmins_group_token,
             user_token =>
-              'gDoGxCkNI0DrItDrOzWKjS5tzCHjJTVOg',   # admin@daedalus-project.io
+              'gDoGxCkNI0DrItDrOzWKjS5tzCHjJTVO',    # admin@daedalus-project.io
         }
     ),
 );
@@ -449,7 +449,7 @@ my $failed_not_your_organization = request(
               'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
             group_token => $daedalus_project_sysadmins_group_token,
             user_token =>
-              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );
@@ -474,7 +474,7 @@ my $superadmin_add_user_success = request(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
             group_token        => $daedalus_project_sysadmins_group_token,
-            user_token         => 'IXI1VoS8BiIuRrOGS4HEAOBleJVMflfGW'
+            user_token         => 'IXI1VoS8BiIuRrOGS4HEAOBleJVMflfG'
             ,    # notanadmin@daedalus-project.io
         }
     ),
@@ -579,7 +579,7 @@ my $superadmin_add_user_other_organization_success = request(
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
             group_token => $megashops_sysadmins_group_token,
             user_token =>
-              '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkti',    # noadmin@megashops.com
+              '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt',    # noadmin@megashops.com
         }
     ),
 );

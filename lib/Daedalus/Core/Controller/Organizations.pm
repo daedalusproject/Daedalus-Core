@@ -198,8 +198,8 @@ sub add_user_to_organization_POST {
                 organization_roles => ['organization_master'],
             },
             required_data => {
-                user_email => {
-                    type     => "active_user_e-mail",
+                user_token => {
+                    type     => "active_user_token",
                     required => 1,
                 },
                 organization_token => {
@@ -217,7 +217,7 @@ sub add_user_to_organization_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
-          $authorization_and_validatation->{data}->{'registered_user_e-mail'};
+          $authorization_and_validatation->{data}->{'registered_user_token'};
 
         $response =
           Daedalus::Organizations::Manager::add_user_to_organization( $c,
