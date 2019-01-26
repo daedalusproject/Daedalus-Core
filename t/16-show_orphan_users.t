@@ -181,4 +181,10 @@ is( keys %{ $magashops_admin_one_new_user_json->{data}->{orphan_users} },
 is( $magashops_admin_one_new_user_json->{_hidden_data},
     undef, "Non Superadmin users do not see hidden_data" );
 
+isnt(
+    $yet_other_admin_one_user_json->{data}->{orphan_users}
+      ->{'marvin@megashops.com'}->{token},
+    undef
+);
+
 done_testing();

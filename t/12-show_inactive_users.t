@@ -101,6 +101,12 @@ is( $admin_two_user_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_two_user_json->{data}->{inactive_users} },
     2, 'There are 2 inactive users' );
 
+isnt(
+    $admin_two_user_json->{data}->{inactive_users}
+      ->{'othernotanadmin@daedalus-project.io'}->{token},
+    undef
+);
+
 my $other_admin_success = request(
     POST '/user/login',
     Content_Type  => 'application/json',
