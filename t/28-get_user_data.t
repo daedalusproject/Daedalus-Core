@@ -74,7 +74,8 @@ is( $not_admin_get_data_json->{data}->{user}->{is_admin},   0, );
 is( $not_admin_get_data_json->{data}->{user}->{active},     1, );
 is( $not_admin_get_data_json->{data}->{user}->{phone},      "", );
 is( $not_admin_get_data_json->{data}->{user}->{auth_token}, undef, );
-is( $not_admin_get_data_json->{_hidden_data},               undef, );
+isnt( $not_admin_get_data_json->{data}->{user}->{token}, undef, );
+is( $not_admin_get_data_json->{_hidden_data}, undef, );
 
 my $admin_success = request(
     POST '/user/login',
@@ -125,7 +126,8 @@ is( $admin_get_data_json->{data}->{user}->{is_admin},   1, );
 is( $admin_get_data_json->{data}->{user}->{active},     1, );
 is( $admin_get_data_json->{data}->{user}->{phone},      "", );
 is( $admin_get_data_json->{data}->{user}->{auth_token}, undef, );
-is( $admin_get_data_json->{_hidden_data},               undef, );
+isnt( $admin_get_data_json->{data}->{user}->{token}, undef, );
+is( $admin_get_data_json->{_hidden_data}, undef, );
 
 my $super_admin_success = request(
     POST '/user/login',
@@ -175,7 +177,8 @@ is( $super_admin_get_data_json->{data}->{user}->{is_admin},   1, );
 is( $super_admin_get_data_json->{data}->{user}->{active},     1, );
 is( $super_admin_get_data_json->{data}->{user}->{phone},      "", );
 is( $super_admin_get_data_json->{data}->{user}->{auth_token}, undef, );
-isnt( $super_admin_get_data_json->{_hidden_data}, undef, );
+isnt( $super_admin_get_data_json->{data}->{user}->{token}, undef, );
+isnt( $super_admin_get_data_json->{_hidden_data},          undef, );
 is( $super_admin_get_data_json->{_hidden_data}->{user}->{id},             1, );
 is( $super_admin_get_data_json->{_hidden_data}->{user}->{is_super_admin}, 1, );
 

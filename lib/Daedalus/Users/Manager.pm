@@ -109,6 +109,7 @@ sub get_user_data {
             phone    => $user->phone,
             api_key  => $user->api_key,
             active   => $user->active,
+            token    => $user->token,
         },
     };
 
@@ -448,6 +449,12 @@ sub register_new_user {
             },
         };
 
+        $response->{data} = {
+            new_user => {
+                token => $registered_user->token,
+            },
+        };
+
         # Send notification to new user
         notify_new_user(
             $c,
@@ -501,6 +508,7 @@ sub show_registered_users {
                     is_admin => is_admin_of_any_organization(
                         $c, $registered_user->registered_user->id
                     ),
+                    token => $registered_user->registered_user->token,
                 },
             },
             _hidden_data => {
