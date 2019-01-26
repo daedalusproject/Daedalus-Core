@@ -80,6 +80,21 @@ sub get_user_from_email {
     return $user;
 }
 
+=head2 get_user_from_token
+
+Retrieve user data from model using its token
+
+=cut
+
+sub get_user_from_token {
+    my $c     = shift;
+    my $token = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { 'token' => $token } );
+
+    return $user;
+}
+
 =head2 get_user_from_id
 
 Retrieve user data from model using user id
