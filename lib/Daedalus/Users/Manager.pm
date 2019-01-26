@@ -408,6 +408,7 @@ sub register_new_user {
         my $auth_token = Daedalus::Utils::Crypt::generate_random_string(63);
         my $salt       = Daedalus::Utils::Crypt::generate_random_string(256);
         my $password   = Daedalus::Utils::Crypt::generate_random_string(256);
+        my $user_token = Daedalus::Utils::Crypt::generate_random_string(32);
         $password = Daedalus::Utils::Crypt::hash_password( $password, $salt );
 
         my $registered_user = $user_model->create(
@@ -421,6 +422,7 @@ sub register_new_user {
                 expires    => "3000-01-01",                        #Change it
                 active     => 0,
                 auth_token => $auth_token,
+                token      => $user_token,
             }
         );
 
