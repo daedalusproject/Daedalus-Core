@@ -532,15 +532,15 @@ is(
 isnt( $superadmin_remove_role_organization_master_success_json->{_hidden_data},
     undef, );
 
-# At this point there is only one group with organization_master
+# At this point there is only one group with organization_master role
 # It can't be removed because Mega Shops won't have any admin users
 
 my $remove_admin_role_from_group_failed = request(
     DELETE
-"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_sysadmins_group_token/organization_master",
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/organization_master",
     Content_Type => 'application/json',
     Authorization =>
-      "Basic $admin_authorization_basic",    #Megashops Project token
+      "Basic $admin_authorization_basic",    #Megashops Administrators token
 );
 
 is( $remove_admin_role_from_group_failed->code(), 400, );
