@@ -733,7 +733,7 @@ sub add_user_to_group_POST {
                     type     => "string",
                     required => 1,
                 },
-                user_email => {
+                user_token => {
                     type     => "organization_user",
                     required => 1,
                 },

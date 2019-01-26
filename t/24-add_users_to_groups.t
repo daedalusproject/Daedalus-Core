@@ -540,7 +540,7 @@ is( $superadmin_get_active_users->{status}, 1, );
 
 my $othernotanadmin_user_token =
   $superadmin_get_active_users->{data}->{active_users}
-  ->{'shirorobot@megashops.com'}->{token};
+  ->{'othernotanadmin@daedalus-project.io'}->{token};
 
 my $superadmin_add_user_from_other_organization = request(
     POST $endpoint,

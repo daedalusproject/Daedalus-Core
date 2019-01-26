@@ -54,7 +54,7 @@ my $failed_no_admin = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'invalide@mail.com'
+            user_token         => 'invalidusertoken'
         }
     ),
 );
@@ -103,6 +103,9 @@ my $success_register_megashops_user = request(
 
 is( $success_register_megashops_user->code(), 200, );
 
+my $shirorobot_user_token =
+  $success_register_megashops_user->{data}->{new_user}->{token};
+
 my $failed_no_data = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -131,13 +134,13 @@ is( $failed_no_user_data->code(), 400, );
 my $failed_no_user_data_json = decode_json( $failed_no_user_data->content );
 
 is( $failed_no_user_data_json->{status},  0, );
-is( $failed_no_user_data_json->{message}, 'No user_email provided.', );
+is( $failed_no_user_data_json->{message}, 'No user_token provided.', );
 
 my $failed_no_organization_data = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( { user_email => 'someemail' } ),
+    Content       => encode_json( { user_token => 'sometoken' } ),
 );
 
 is( $failed_no_organization_data->code(), 400, );
@@ -158,7 +161,7 @@ my $failed_invalid_data = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'invalidemail'
+            user_token         => 'invalidtoken'
         }
     ),
 );
@@ -170,51 +173,51 @@ my $failed_invalid_data_json = decode_json( $failed_invalid_data->content );
 is( $failed_invalid_data_json->{status}, 0, );
 is(
     $failed_invalid_data_json->{message},
-    'user_email is invalid.',
-    "e-mail is checked first"
+    'user_token is invalid.',
+    "token is checked first"
 );
 
-my $failed_email_not_found = request(
+my $failed_user_token_not_found = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'notexistent@user.com'
+            user_token         => '03QimYFYtn2O2c0WvkOhUuN4c8gJKOktw'
         }
     ),
 );
 
-is( $failed_email_not_found->code(), 400, );
-#
-my $failed_email_not_found_json =
-  decode_json( $failed_email_not_found->content );
+is( $failed_user_token_not_found->code(), 400, );
 
-is( $failed_email_not_found_json->{status}, 0, );
+my $failed_user_token_not_found_json =
+  decode_json( $failed_user_token_not_found->content );
+
+is( $failed_user_token_not_found_json->{status}, 0, );
 is(
-    $failed_email_not_found_json->{message},
-    'There is no registered user with that e-mail address.',
+    $failed_user_token_not_found_json->{message},
+    'There is no registered user with that token.',
 );
 
-my $failed_invalid_email = request(
+my $failed_invalid_token = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'invalidemail.com'
+            user_token         => 'tooshort'
         }
     ),
 );
 
-is( $failed_invalid_email->code(), 400, );
-#
-my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
+is( $failed_invalid_token->code(), 400, );
 
-is( $failed_invalid_email_json->{status},  0, );
-is( $failed_invalid_email_json->{message}, 'user_email is invalid.', );
+my $failed_invalid_token_json = decode_json( $failed_invalid_token->content );
+
+is( $failed_invalid_token_json->{status},  0, );
+is( $failed_invalid_token_json->{message}, 'user_email is invalid.', );
 
 my $failed_inactive_user = request(
     POST $endpoint,
@@ -223,13 +226,13 @@ my $failed_inactive_user = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'shirorobot@megashops.com'
+            user_token         => $shirorobot_user_token,
         }
     ),
 );
 
 is( $failed_inactive_user->code(), 400, );
-#
+
 my $failed_inactive_user_json = decode_json( $failed_inactive_user->content );
 
 is( $failed_inactive_user_json->{status},  0, );
@@ -242,7 +245,8 @@ my $failed_non_existent_organization = request(
     Content       => encode_json(
         {
             organization_token => 'nonexistentorganization',
-            user_email         => 'marvin@megashops.com'
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',       # marvin@megashops.com
         }
     ),
 );
@@ -265,7 +269,8 @@ my $failed_not_my_organization = request(
     Content       => encode_json(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
-            user_email         => 'marvin@megashops.com'
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',       # marvin@megashops.com
         }
     ),
 );
@@ -289,7 +294,8 @@ my $add_user_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'marvin@megashops.com'
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
         }
     ),
 );
@@ -310,7 +316,8 @@ my $failed_already_registered = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_email         => 'marvin@megashops.com'
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
         }
     ),
 );
@@ -374,7 +381,8 @@ my $superadmin_failed_non_existent_organization = request(
     Content => encode_json(
         {
             organization_token => 'nonexistentorganization',
-            user_email         => 'marvin@megashops.com'
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pCh',    # marvin@megashops.com
         }
     ),
 );
@@ -390,6 +398,18 @@ is(
     'Invalid organization token.',
 );
 
+my $superadmin_get_active_users = request(
+    GET "user/showactive",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_get_active_users->{status}, 1, );
+
+my $othernotanadmin2_user_token =
+  $superadmin_get_active_users->{data}->{active_users}
+  ->{'othernotanadmin2@daedalus-project.io'}->{token};
+
 my $add_user_success_superuser = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -397,7 +417,7 @@ my $add_user_success_superuser = request(
     Content       => encode_json(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
-            user_email         => 'othernotanadmin2@daedalus-project.io',
+            user_token         => $othernotanadmin2_user_token,
         }
     ),
 );
