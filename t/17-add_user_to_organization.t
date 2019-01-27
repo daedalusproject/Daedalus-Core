@@ -103,8 +103,11 @@ my $success_register_megashops_user = request(
 
 is( $success_register_megashops_user->code(), 200, );
 
+my $success_register_megashops_user_json =
+  decode_json( $success_register_megashops_user->content );
+
 my $shirorobot_user_token =
-  $success_register_megashops_user->{data}->{new_user}->{token};
+  $success_register_megashops_user_json->{data}->{new_user}->{token};
 
 my $failed_no_data = request(
     POST $endpoint,
@@ -184,7 +187,7 @@ my $failed_user_token_not_found = request(
     Content       => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            user_token         => '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt'
+            user_token         => '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkv'
         }
     ),
 );
@@ -217,7 +220,7 @@ is( $failed_invalid_token->code(), 400, );
 my $failed_invalid_token_json = decode_json( $failed_invalid_token->content );
 
 is( $failed_invalid_token_json->{status},  0, );
-is( $failed_invalid_token_json->{message}, 'user_email is invalid.', );
+is( $failed_invalid_token_json->{message}, 'user_token is invalid.', );
 
 my $failed_inactive_user = request(
     POST $endpoint,
@@ -404,10 +407,13 @@ my $superadmin_get_active_users = request(
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
-is( $superadmin_get_active_users->{status}, 1, );
+my $superadmin_get_active_users_json =
+  decode_json( $superadmin_get_active_users->content );
+
+is( $superadmin_get_active_users_json->{status}, 1, );
 
 my $othernotanadmin2_user_token =
-  $superadmin_get_active_users->{data}->{active_users}
+  $superadmin_get_active_users_json->{data}->{active_users}
   ->{'othernotanadmin2@daedalus-project.io'}->{token};
 
 my $add_user_success_superuser = request(
