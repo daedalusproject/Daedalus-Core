@@ -748,7 +748,7 @@ sub add_user_to_group_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
-          $authorization_and_validatation->{data}->{'registered_user_e-mail'};
+          $authorization_and_validatation->{data}->{'registered_user_token'};
         $group_token = $authorization_and_validatation->{data}->{required_data}
           ->{group_token};
 

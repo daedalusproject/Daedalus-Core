@@ -13,10 +13,10 @@ use Data::Dumper;
 
 my $endpoint = '/organization/removerolefromgroup';
 
-my $failed_because_no_auth_token =
+my $failed_because_no_auth_token_neither_data =
   request( DELETE $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth_token->code(), 404, );
+is( $failed_because_no_auth_token_neither_data->code(), 404, );
 
 my $non_admin_success = request(
     POST '/user/login',
@@ -58,12 +58,8 @@ is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status}, 0, );
-is(
-    $failed_no_admin_json->{message},
-    'Invalid organization token.',
-    'iBecause you are not an admin user.',
-);
+is( $failed_no_admin_json->{status},  0, );
+is( $failed_no_admin_json->{message}, 'Invalid organization token.', );
 
 my $admin_success = request(
     POST '/user/login',

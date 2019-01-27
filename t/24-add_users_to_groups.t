@@ -272,7 +272,7 @@ my $failed_user_not_found = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_sysadmins_group_token,
-            user_token         => 'nonexistenusertoken'
+            user_token         => 'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pV'
         }
     ),
 );
@@ -499,9 +499,13 @@ my $admin_get_inactive_users = request(
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $admin_get_inactive_users->{status}, 1, );
+my $admin_get_inactive_users_json =
+  decode_json( $admin_get_inactive_users->content );
 
-my $shirorobot_user_token = $admin_get_inactive_users->{data}->{inactive_users}
+is( $admin_get_inactive_users_json->{status}, 1, );
+
+my $shirorobot_user_token =
+  $admin_get_inactive_users_json->{data}->{inactive_users}
   ->{'shirorobot@megashops.com'}->{token};
 
 my $superadmin_add_inactive_user = request(
@@ -536,10 +540,13 @@ my $superadmin_get_active_users = request(
     Authorization => "Basic $superadmin_authorization_basic",
 );
 
-is( $superadmin_get_active_users->{status}, 1, );
+my $superadmin_get_active_users_json =
+  decode_json( $superadmin_get_active_users->content );
+
+is( $superadmin_get_active_users_json->{status}, 1, );
 
 my $othernotanadmin_user_token =
-  $superadmin_get_active_users->{data}->{active_users}
+  $superadmin_get_active_users_json->{data}->{active_users}
   ->{'othernotanadmin@daedalus-project.io'}->{token};
 
 my $superadmin_add_user_from_other_organization = request(
