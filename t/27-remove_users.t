@@ -237,7 +237,8 @@ my $add_user_to_group_success = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_sysadmins_group_token,
-            user_email         => 'noadmin@megashops.com'
+            user_token =>
+              '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt',    # noadmin@megashops.com
         }
     ),
 );
