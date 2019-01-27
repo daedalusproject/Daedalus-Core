@@ -347,6 +347,7 @@ is(
 isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
 
 isnt( $superadmin_create_group_success_json->{data}, undef, );
+
 is(
     $superadmin_create_group_success_json->{data}->{organization_groups}
       ->{group_name},

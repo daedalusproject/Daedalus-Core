@@ -802,12 +802,12 @@ sub add_user_to_group_POST {
 
 }
 
-sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(0) :
+sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(3) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub remove_user_group_POST {
+sub remove_user_group_DELETE {
 
     my ( $self, $c ) = @_;
 
@@ -816,8 +816,9 @@ sub remove_user_group_POST {
 
     my $organization;
 
+    my $group;
     my $groups;
-    my $group_name;
+    my $group_token;
 
     my $user_email;
 
@@ -835,16 +836,19 @@ sub remove_user_group_POST {
             },
             required_data => {
                 organization_token => {
-                    type     => 'organization',
-                    required => 1,
+                    type  => 'organization',
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
                 },
-                group_name => {
-                    type     => "string",
-                    required => 1,
+                group_token => {
+                    type  => "string",
+                    given => 1,
+                    value => $c->{request}->{arguments}[1],
                 },
-                user_email => {
-                    type     => "organization_user",
-                    required => 1,
+                user_token => {
+                    type  => "organization_user",
+                    given => 1,
+                    value => $c->{request}->{arguments}[2],
                 },
             }
         }
@@ -857,15 +861,16 @@ sub remove_user_group_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
-          $authorization_and_validatation->{data}->{'registered_user_e-mail'};
-        $group_name = $authorization_and_validatation->{data}->{required_data}
-          ->{group_name};
+          $authorization_and_validatation->{data}->{'registered_user_token'};
+        $group_token = $authorization_and_validatation->{data}->{required_data}
+          ->{group_token};
         $user_email = $target_user->{data}->{user}->{'e-mail'};
 
-        $groups =
-          Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization->{_hidden_data}->{organization}->{id} );
-        if ( !exists $groups->{data}->{$group_name} ) {
+        $group =
+          Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+            $c, $group_token );
+
+        if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
             $response->{error_code} = 400;
@@ -874,14 +879,18 @@ sub remove_user_group_POST {
             if (
 
                 grep( /^$user_email$/,
-                    @{ $groups->{data}->{$group_name}->{users} } )
+                    @{ $group->{data}->{$group_token}->{users} } )
               )
             {
                 if (
                     grep ( /^organization_master$/,
-                        @{ $groups->{data}->{$group_name}->{roles} } )
+                        @{ $group->{data}->{$group_token}->{roles} } )
                   )
                 {
+                    $groups =
+                      Daedalus::Organizations::Manager::get_organization_groups(
+                        $c,
+                        $organization->{_hidden_data}->{organization}->{id} );
                     $count_organization_admins =
                       Daedalus::OrganizationGroups::Manager::count_organization_admins(
                         $c, $groups->{data}, 'organization_master' );
@@ -897,7 +906,7 @@ sub remove_user_group_POST {
                     $response =
                       Daedalus::OrganizationGroups::Manager::remove_user_from_organization_group(
                         $c,
-                        $groups->{_hidden_data}->{$group_name}->{id},
+                        $group->{_hidden_data}->{$group_token}->{id},
                         $target_user->{_hidden_data}->{user}->{id}
                       );
                     $response->{error_code} = 400;

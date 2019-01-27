@@ -9,6 +9,8 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST DELETE);
 
+use Data::Dumper;
+
 my $endpoint = '/organization/removeuserfromgroup';
 
 my $failed_because_no_auth_token =
@@ -147,8 +149,11 @@ is( $failed_invalid_group_data->code(), 400, );
 my $failed_invalid_group_data_json =
   decode_json( $failed_invalid_group_data->content );
 
-is( $failed_invalid_group_data_json->{status},  0, );
-is( $failed_invalid_group_data_json->{message}, 'Invalid group token.', );
+is( $failed_invalid_group_data_json->{status}, 0, );
+is(
+    $failed_invalid_group_data_json->{message},
+    'There is no registered user with that token.',
+);
 
 # User is marvin@megashops.com
 
@@ -322,10 +327,10 @@ is( $superadminadmin_get_daedalus_core_groups_json->{status},
 
 my $daedalus_project_sysadmins_group_token =
   $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
-  ->{'Daedalus Project Sysadmins'}->{token};
+  ->{'Daedalus Core Sysadmins'}->{token};
 
 # organization -> Daedalus Project
-# group -> Daedalus Project Sysadmins
+# group -> Daedalus Core Sysadmins
 # user -> marvin@megashops.com
 
 my $failed_not_your_organization = request(
@@ -493,7 +498,6 @@ is(
 my $remove_user_from_admin_group_success = request(
     DELETE
 "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC",
-    POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -519,7 +523,7 @@ is( $remove_user_from_admin_group_success_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_unique_admin = request(
     DELETE
-"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC",
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/RjZEmVuvbUn9SGc26QQogs9ZaYyQwI9s",
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
@@ -570,7 +574,7 @@ my $add_new_admin_again = request(
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token =>
               'EC78R91DADJowsNogz16pHnAcEBiQHWBF', # 'Mega Shops Administrators'
-            user_token => 'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC'
+            user_token => 'RjZEmVuvbUn9SGc26QQogs9ZaYyQwI9s'
             ,    # otheradminagain@megashops.com
         }
     ),
