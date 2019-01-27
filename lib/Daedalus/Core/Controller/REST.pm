@@ -293,82 +293,13 @@ sub authorize_and_validate {
             if ( $response->{status} == 1 ) {
 
                 #Check Type
-                if (
-                       $data_properties->{type} eq "e-mail"
-                    or $data_properties->{type} eq "registered_user_e-mail"
-                    or $data_properties->{type} eq "active_user_e-mail"
-
-                    #    or $data_properties->{type} eq "organization_user"
-                  )
-                {
+                if ( $data_properties->{type} eq "e-mail" ) {
                     if ( !Daedalus::Users::Manager::check_email_valid($value) )
                     {
                         $response->{status}     = 0;
                         $response->{error_code} = 400;
                         $response->{message}    = $response->{message}
                           . " $required_data_name is invalid.";
-                    }
-                    else {
-                        if ( $data_properties->{type} eq
-                               "registered_user_e-mail"
-                            or $data_properties->{type} eq "active_user_e-mail"
-                            or $data_properties->{type} eq "organization_user" )
-                        {
-                            my $registered_user =
-                              Daedalus::Users::Manager::get_user_from_email( $c,
-                                $value );
-                            if ( !$registered_user ) {
-                                $response->{status}     = 0;
-                                $response->{error_code} = 400;
-                                $response->{message}    = $response->{message}
-                                  . "There is no registered user with that e-mail address.";
-                            }
-                            else {
-                                if (
-                                    (
-                                        $data_properties->{type} eq
-                                        "active_user_e-mail"
-                                        or $data_properties->{type} eq
-                                        "organization_user"
-                                    )
-                                    and $registered_user->active == 0
-                                  )
-                                {
-                                    $response->{status}     = 0;
-                                    $response->{error_code} = 400;
-                                    $response->{message} =
-                                      $response->{message}
-                                      . "Required user is not active.";
-                                }
-                                $data->{'registered_user_e-mail'} =
-                                  Daedalus::Users::Manager::get_user_data( $c,
-                                    $registered_user );
-                                if (
-                                    (
-                                        $data_properties->{type} eq
-                                        "organization_user"
-                                    )
-                                    and ( $response->{status} == 1 )
-                                  )
-                                {
-                                    my $is_organization_member =
-                                      Daedalus::Users::Manager::is_organization_member(
-                                        $c,
-                                        $data->{'registered_user_e-mail'}
-                                          ->{_hidden_data}->{user}->{id},
-                                        $data->{organization}->{_hidden_data}
-                                          ->{organization}->{id}
-                                      );
-                                    if (
-                                        $is_organization_member->{status} == 0 )
-                                    {
-                                        $response->{status}     = 0;
-                                        $response->{error_code} = 400;
-                                        $response->{message} = "Invalid user.";
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
 
