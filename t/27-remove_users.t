@@ -11,7 +11,7 @@ use HTTP::Request::Common qw(GET PUT POST DELETE);
 
 my $endpoint = '/user/remove';
 
-my $failed_because_no_auth_token =
+my $failed_because_no_user_token =
   request( DELETE $endpoint, Content_Type => 'application/json', );
 
 is( $failed_because_no_user_token->code(), 404, );
@@ -116,7 +116,7 @@ is( keys %{ $list_users_json->{data}->{registered_users} },
     4, 'This user has registered 4 users for the tiem being.' );
 
 my $failed_non_existent_user = request(
-    DELETE "$endpoint/invalidtoken",
+    DELETE "$endpoint/invalidtoken_adddddoiuhjhgjhagds",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -130,6 +130,12 @@ is( $failed_non_existent_user_json->{status}, 0, );
 is(
     $failed_non_existent_user_json->{message},
     'Requested user does not exists or it has not been registered by you.',
+);
+
+my $superadmin_get_active_users = request(
+    GET "user/showactive",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 my $superadmin_get_active_users_json =

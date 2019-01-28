@@ -808,7 +808,7 @@ sub remove_user {
     my $c         = shift;
     my $user_data = shift;
 
-    my $user_id = $user_data->id;
+    my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
         {
