@@ -268,6 +268,8 @@ is(
     'othernotanadmin@daedalus-project.io',
 );
 
+isnt( $success_superadmin_json->{data}->{new_user}->{token}, undef, );
+
 my $success_superadmin_other_user = request(
     POST '/user/register',
     Authorization => "Basic $superadmin_authorization_basic",
@@ -297,6 +299,9 @@ is(
     $success_superadmin_other_user_json->{_hidden_data}->{new_user}->{'e-mail'},
     'othernotanadmin2@daedalus-project.io',
 );
+
+isnt( $success_superadmin_other_user_json->{data}->{new_user}->{token},
+    undef, );
 
 my $admin_success = request(
     POST '/user/login',
@@ -347,6 +352,8 @@ is(
 
 is( $success_no_superadmin_user_json->{_hidden_data},
     undef, 'User is not superadmin.' );
+
+isnt( $success_no_superadmin_user_json->{data}->{new_user}->{token}, undef, );
 
 my $inactive_user_cant_login = request(
     POST '/user/login',

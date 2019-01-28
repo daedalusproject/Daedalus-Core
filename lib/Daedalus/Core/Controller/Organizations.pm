@@ -198,8 +198,8 @@ sub add_user_to_organization_POST {
                 organization_roles => ['organization_master'],
             },
             required_data => {
-                user_email => {
-                    type     => "active_user_e-mail",
+                user_token => {
+                    type     => "active_user_token",
                     required => 1,
                 },
                 organization_token => {
@@ -217,7 +217,7 @@ sub add_user_to_organization_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
-          $authorization_and_validatation->{data}->{'registered_user_e-mail'};
+          $authorization_and_validatation->{data}->{'registered_user_token'};
 
         $response =
           Daedalus::Organizations::Manager::add_user_to_organization( $c,
@@ -547,12 +547,12 @@ sub add_role_to_group_POST {
 
 }
 
-sub remove_role_group : Path('/organization/removerolegroup') : Args(0) :
+sub remove_role_group : Path('/organization/removerolefromgroup') : Args(3) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub remove_role_group_POST {
+sub remove_role_group_DELETE {
 
     my ( $self, $c ) = @_;
 
@@ -561,8 +561,9 @@ sub remove_role_group_POST {
 
     my $organization;
 
+    my $group;
     my $groups;
-    my $group_name;
+    my $group_token;
 
     my $role_name;
     my $available_roles;
@@ -579,16 +580,19 @@ sub remove_role_group_POST {
             },
             required_data => {
                 organization_token => {
-                    type     => 'organization',
-                    required => 1,
+                    type  => 'organization',
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
                 },
-                group_name => {
-                    type     => "string",
-                    required => 1,
+                group_token => {
+                    type  => "string",
+                    given => 1,
+                    value => $c->{request}->{arguments}[1],
                 },
                 role_name => {
-                    type     => "string",
-                    required => 1,
+                    type  => "string",
+                    given => 1,
+                    value => $c->{request}->{arguments}[2],
                 },
             }
         }
@@ -601,70 +605,88 @@ sub remove_role_group_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
 
-        $group_name = $authorization_and_validatation->{data}->{required_data}
-          ->{group_name};
+        $group_token = $authorization_and_validatation->{data}->{required_data}
+          ->{group_token};
         $role_name =
           $authorization_and_validatation->{data}->{required_data}->{role_name};
 
-        $groups =
-          Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization->{_hidden_data}->{organization}->{id} );
-        if ( !exists $groups->{data}->{$group_name} ) {
+        $group =
+          Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+            $c, $group_token );
+        if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
             $response->{error_code} = 400;
         }
         else {
-            $available_roles = Daedalus::Organizations::Manager::list_roles($c);
-
-            if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
+            if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
+                    $organization->{_hidden_data}->{organization}->{id}
+                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+            {
                 $response->{status}     = 0;
-                $response->{message}    = "Required role does not exist.";
+                $response->{message}    = "Required group does not exist.";
                 $response->{error_code} = 400;
             }
-
             else {
-                if (
-                    grep( /^$role_name$/,
-                        @{ $groups->{data}->{$group_name}->{roles} } )
-                  )
-                {
+                $available_roles =
+                  Daedalus::Organizations::Manager::list_roles($c);
 
-                    if (   $role_name eq 'organization_master'
-                        && $user_data->{_hidden_data}->{user}->{is_super_admin}
-                        == 0 )
+                if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
+                    $response->{status}     = 0;
+                    $response->{message}    = "Required role does not exist.";
+                    $response->{error_code} = 400;
+                }
+
+                else {
+                    if (
+                        grep( /^$role_name$/,
+                            @{ $group->{data}->{$group_token}->{roles} } )
+                      )
                     {
-                        $count_roles =
-                          Daedalus::OrganizationGroups::Manager::count_roles(
-                            $c, $groups->{data}, 'organization_master' );
-                        if ( $count_roles lt 2 ) {
-                            $removal_allowed        = 0;
-                            $response->{status}     = 0;
-                            $response->{error_code} = 400;
-                            $response->{message} =
+
+                        if (   $role_name eq 'organization_master'
+                            && $user_data->{_hidden_data}->{user}
+                            ->{is_super_admin} == 0 )
+                        {
+                            $groups =
+                              Daedalus::Organizations::Manager::get_organization_groups(
+                                $c,
+                                $organization->{_hidden_data}->{organization}
+                                  ->{id}
+                              );
+
+                            $count_roles =
+                              Daedalus::OrganizationGroups::Manager::count_roles(
+                                $c, $groups->{data}, 'organization_master' );
+                            if ( $count_roles lt 2 ) {
+                                $removal_allowed        = 0;
+                                $response->{status}     = 0;
+                                $response->{error_code} = 400;
+                                $response->{message} =
 'Cannot remove this role, no more admin roles will left in this organization.';
+                            }
+                        }
+                        if ($removal_allowed) {
+                            $response =
+                              Daedalus::Organizations::Manager::remove_role_from_organization_group(
+                                $c,
+                                $group->{_hidden_data}->{$group_token}->{id},
+                                $available_roles->{_hidden_data}->{$role_name}
+                                  ->{id}
+                              );
+                            $response->{error_code} = 400;
                         }
                     }
-                    if ($removal_allowed) {
-                        $response =
-                          Daedalus::Organizations::Manager::remove_role_from_organization_group(
-                            $c,
-                            $groups->{_hidden_data}->{$group_name}->{id},
-                            $available_roles->{_hidden_data}->{$role_name}->{id}
-                          );
+                    else {
+                        $response->{status} = 0;
+                        $response->{message} =
+                          "Required role is not assigned to this group.";
                         $response->{error_code} = 400;
 
                     }
                 }
-                else {
-                    $response->{status} = 0;
-                    $response->{message} =
-                      "Required role is not assigned to this group.";
-                    $response->{error_code} = 400;
 
-                }
             }
-
         }
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
@@ -711,7 +733,7 @@ sub add_user_to_group_POST {
                     type     => "string",
                     required => 1,
                 },
-                user_email => {
+                user_token => {
                     type     => "organization_user",
                     required => 1,
                 },
@@ -726,7 +748,7 @@ sub add_user_to_group_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
-          $authorization_and_validatation->{data}->{'registered_user_e-mail'};
+          $authorization_and_validatation->{data}->{'registered_user_token'};
         $group_token = $authorization_and_validatation->{data}->{required_data}
           ->{group_token};
 
@@ -780,12 +802,12 @@ sub add_user_to_group_POST {
 
 }
 
-sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(0) :
+sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(3) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub remove_user_group_POST {
+sub remove_user_group_DELETE {
 
     my ( $self, $c ) = @_;
 
@@ -794,8 +816,9 @@ sub remove_user_group_POST {
 
     my $organization;
 
+    my $group;
     my $groups;
-    my $group_name;
+    my $group_token;
 
     my $user_email;
 
@@ -813,16 +836,19 @@ sub remove_user_group_POST {
             },
             required_data => {
                 organization_token => {
-                    type     => 'organization',
-                    required => 1,
+                    type  => 'organization',
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
                 },
-                group_name => {
-                    type     => "string",
-                    required => 1,
+                group_token => {
+                    type  => "string",
+                    given => 1,
+                    value => $c->{request}->{arguments}[1],
                 },
-                user_email => {
-                    type     => "organization_user",
-                    required => 1,
+                user_token => {
+                    type  => "organization_user",
+                    given => 1,
+                    value => $c->{request}->{arguments}[2],
                 },
             }
         }
@@ -835,15 +861,16 @@ sub remove_user_group_POST {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
-          $authorization_and_validatation->{data}->{'registered_user_e-mail'};
-        $group_name = $authorization_and_validatation->{data}->{required_data}
-          ->{group_name};
+          $authorization_and_validatation->{data}->{'registered_user_token'};
+        $group_token = $authorization_and_validatation->{data}->{required_data}
+          ->{group_token};
         $user_email = $target_user->{data}->{user}->{'e-mail'};
 
-        $groups =
-          Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization->{_hidden_data}->{organization}->{id} );
-        if ( !exists $groups->{data}->{$group_name} ) {
+        $group =
+          Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+            $c, $group_token );
+
+        if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
             $response->{error_code} = 400;
@@ -852,14 +879,18 @@ sub remove_user_group_POST {
             if (
 
                 grep( /^$user_email$/,
-                    @{ $groups->{data}->{$group_name}->{users} } )
+                    @{ $group->{data}->{$group_token}->{users} } )
               )
             {
                 if (
                     grep ( /^organization_master$/,
-                        @{ $groups->{data}->{$group_name}->{roles} } )
+                        @{ $group->{data}->{$group_token}->{roles} } )
                   )
                 {
+                    $groups =
+                      Daedalus::Organizations::Manager::get_organization_groups(
+                        $c,
+                        $organization->{_hidden_data}->{organization}->{id} );
                     $count_organization_admins =
                       Daedalus::OrganizationGroups::Manager::count_organization_admins(
                         $c, $groups->{data}, 'organization_master' );
@@ -875,7 +906,7 @@ sub remove_user_group_POST {
                     $response =
                       Daedalus::OrganizationGroups::Manager::remove_user_from_organization_group(
                         $c,
-                        $groups->{_hidden_data}->{$group_name}->{id},
+                        $group->{_hidden_data}->{$group_token}->{id},
                         $target_user->{_hidden_data}->{user}->{id}
                       );
                     $response->{error_code} = 400;
@@ -904,11 +935,11 @@ sub remove_user_group_POST {
 }
 
 sub remove_organization_group : Path('/organization/removeorganizationgroup') :
-  Args(0) : ActionClass('REST') {
+  Args(2) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub remove_organization_group_POST {
+sub remove_organization_group_DELETE {
 
     my ( $self, $c ) = @_;
 
@@ -917,8 +948,9 @@ sub remove_organization_group_POST {
 
     my $organization;
 
+    my $group;
     my $groups;
-    my $group_name;
+    my $group_token;
 
     my $removal_allowed = 1;
     my $count_organization_admins;
@@ -934,12 +966,14 @@ sub remove_organization_group_POST {
             },
             required_data => {
                 organization_token => {
-                    type     => 'organization',
-                    required => 1,
+                    type  => 'organization',
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
                 },
-                group_name => {
-                    type     => "string",
-                    required => 1,
+                group_token => {
+                    type  => "string",
+                    given => 1,
+                    value => $c->{request}->{arguments}[1],
                 },
             }
         }
@@ -951,46 +985,62 @@ sub remove_organization_group_POST {
     else {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
-        $group_name   = $authorization_and_validatation->{data}->{required_data}
-          ->{group_name};
+        $group_token  = $authorization_and_validatation->{data}->{required_data}
+          ->{group_token};
 
-        $groups =
-          Daedalus::Organizations::Manager::get_organization_groups( $c,
-            $organization->{_hidden_data}->{organization}->{id} );
-        if ( !exists $groups->{data}->{$group_name} ) {
+        $group =
+          Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+            $c, $group_token );
+
+        if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
             $response->{error_code} = 400;
         }
         else {
-            if (
-                grep ( /^organization_master$/,
-                    @{ $groups->{data}->{$group_name}->{roles} } )
-              )
+            if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
+                    $organization->{_hidden_data}->{organization}->{id}
+                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
             {
-                $count_organization_admins =
-                  Daedalus::OrganizationGroups::Manager::count_organization_admins(
-                    $c, $groups->{data}, 'organization_master' );
-                if (   $count_organization_admins lt 2
-                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
-                    0 )
-                {
-                    $removal_allowed = 0;
-                }
-            }
-            if ($removal_allowed) {
-
-                $response =
-                  Daedalus::OrganizationGroups::Manager::remove_organization_group(
-                    $c, $groups->{_hidden_data}->{$group_name}->{id},
-                  );
+                $response->{status}     = 0;
+                $response->{message}    = "Required group does not exist.";
                 $response->{error_code} = 400;
             }
             else {
-                $response->{status}     = 0;
-                $response->{error_code} = 400;
-                $response->{message} =
+                if (
+                    grep ( /^organization_master$/,
+                        @{ $group->{data}->{$group_token}->{roles} } )
+                  )
+                {
+                    $groups =
+                      Daedalus::Organizations::Manager::get_organization_groups(
+                        $c,
+                        $organization->{_hidden_data}->{organization}->{id} );
+
+                    $count_organization_admins =
+                      Daedalus::OrganizationGroups::Manager::count_organization_admins(
+                        $c, $groups->{data}, 'organization_master' );
+                    if (   $count_organization_admins lt 2
+                        && $user_data->{_hidden_data}->{user}->{is_super_admin}
+                        == 0 )
+                    {
+                        $removal_allowed = 0;
+                    }
+                }
+                if ($removal_allowed) {
+
+                    $response =
+                      Daedalus::OrganizationGroups::Manager::remove_organization_group(
+                        $c, $group->{_hidden_data}->{$group_token}->{id},
+                      );
+                    $response->{error_code} = 400;
+                }
+                else {
+                    $response->{status}     = 0;
+                    $response->{error_code} = 400;
+                    $response->{message} =
 'Cannot remove this group, no more admin users will left in this organization.';
+                }
             }
         }
 

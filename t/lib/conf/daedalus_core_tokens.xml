@@ -1,0 +1,6 @@
+<config>
+    <name>Daedalus::Core</name>
+    <tokens>
+      <user_token_length>32</user_token_length>
+    </tokens>
+</config>

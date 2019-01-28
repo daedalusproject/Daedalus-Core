@@ -7,23 +7,16 @@ use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use MIME::Base64;
-use HTTP::Request::Common qw(GET PUT POST);
+use HTTP::Request::Common qw(GET PUT POST DELETE);
 
-my $endpoint = '/organization/removerolegroup';
+use Data::Dumper;
 
-my $failed_because_no_auth_token =
-  request( POST $endpoint, Content_Type => 'application/json', );
+my $endpoint = '/organization/removerolefromgroup';
 
-is( $failed_because_no_auth_token->code(), 400, );
+my $failed_because_no_auth_token_neither_data =
+  request( DELETE $endpoint, Content_Type => 'application/json', );
 
-my $failed_because_no_auth_token_json =
-  decode_json( $failed_because_no_auth_token->content );
-
-is( $failed_because_no_auth_token_json->{status}, 0, );
-is(
-    $failed_because_no_auth_token_json->{message},
-    "No session token provided.",
-);
+is( $failed_because_no_auth_token_neither_data->code(), 404, );
 
 my $non_admin_success = request(
     POST '/user/login',
@@ -48,41 +41,25 @@ my $not_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$not_admin_session_token", '' );
 
 my $failed_no_token = request(
-    POST $endpoint,
+    DELETE $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
 );
 
-is( $failed_no_token->code(), 400, );
-
-my $failed_no_token_json = decode_json( $failed_no_token->content );
-
-is( $failed_no_token_json->{status},  0, );
-is( $failed_no_token_json->{message}, 'No organization_token provided.', );
+is( $failed_no_token->code(), 404, );
 
 my $failed_no_admin = request(
-    POST $endpoint,
+    DELETE "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalidtoken/clown",
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Clowns',
-            role_name          => 'clown'
-        }
-    ),
 );
 
 is( $failed_no_admin->code(), 400, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
-is( $failed_no_admin_json->{status}, 0, );
-is(
-    $failed_no_admin_json->{message},
-    'Invalid organization token.',
-    'iBecause you are not an admin user.',
-);
+is( $failed_no_admin_json->{status},  0, );
+is( $failed_no_admin_json->{message}, 'Invalid organization token.', );
 
 my $admin_success = request(
     POST '/user/login',
@@ -107,73 +84,34 @@ my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
 
 my $failed_no_data = request(
-    POST $endpoint,
+    DELETE $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( {} )
 );
 
-is( $failed_no_data->code(), 400, );
+is( $failed_no_data->code(), 404, );
 #
-my $failed_no_data_json = decode_json( $failed_no_data->content );
-
-is( $failed_no_data_json->{status},  0, );
-is( $failed_no_data_json->{message}, 'No organization_token provided.', );
-
 my $failed_no_group_data_no_role = request(
-    POST $endpoint,
+    DELETE "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        { organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf' }
-    ),
 );
 
-is( $failed_no_group_data_no_role->code(), 400, );
+is( $failed_no_group_data_no_role->code(), 404, );
 #
-my $failed_no_group_data_no_role_json =
-  decode_json( $failed_no_group_data_no_role->content );
-
-is( $failed_no_group_data_no_role_json->{status}, 0, );
-is(
-    $failed_no_group_data_no_role_json->{message},
-    'No group_name provided. No role_name provided.',
-);
 
 my $failed_no_organization_data_no_role_data = request(
-    POST $endpoint,
+    DELETE "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/fireman",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            role_name          => 'fireman'
-        }
-    ),
 );
 
-is( $failed_no_organization_data_no_role_data->code(), 400, );
-
-my $failed_no_organization_data_no_role_data_json =
-  decode_json( $failed_no_organization_data_no_role_data->content );
-
-is( $failed_no_organization_data_no_role_data_json->{status}, 0, );
-is(
-    $failed_no_organization_data_no_role_data_json->{message},
-    'No group_name provided.',
-);
+is( $failed_no_organization_data_no_role_data->code(), 404, );
 
 my $failed_invalid_organization_data = request(
-    POST $endpoint,
+    DELETE "$endpoint/ivalidorganizationtoken/non_existen_group/clowns",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ivalidorganizationtoken',
-            group_name         => 'non existen group',
-            role_name          => 'clowns'                  # There is no clowns
-        }
-    ),
 );
 
 is( $failed_invalid_organization_data->code(), 400, );
@@ -188,16 +126,9 @@ is(
 );
 
 my $failed_invalid_group_data = request(
-    POST $endpoint,
+    DELETE "$endpoint/ivalidorganizationtoken/non_existen_group/clowns",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ivalidorganizationtoken',
-            group_name         => 'non existen group',
-            role_name          => 'clowns'                  # There is no clowns
-        }
-    ),
 );
 
 is( $failed_invalid_group_data->code(), 400, );
@@ -210,16 +141,10 @@ is( $failed_invalid_group_data_json->{message},
     'Invalid organization token.', );
 
 my $failed_group_not_found = request(
-    POST $endpoint,
+    DELETE
+      "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/non_existen_group/clowns",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Clowns',
-            role_name          => 'clown'
-        }
-    ),
 );
 
 is( $failed_group_not_found->code(), 400, );
@@ -231,17 +156,72 @@ is( $failed_group_not_found_json->{status}, 0, );
 is( $failed_group_not_found_json->{message},
     'Required group does not exist.', );
 
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadminadmin_get_megashops_groups = request(
+    GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+    ,    # Mega Shops Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadminadmin_get_megashops_groups->code(), 200, );
+
+my $superadminadmin_get_megashops_groups_json =
+  decode_json( $superadminadmin_get_megashops_groups->content );
+
+is( $superadminadmin_get_megashops_groups_json->{status}, 1,
+    'Status success.' );
+
+my $megashops_sysadmins_group_token =
+  $superadminadmin_get_megashops_groups_json->{data}->{groups}
+  ->{'Mega Shop Sysadmins'}->{token};
+
+my $superadminadmin_get_daedalus_core_groups = request(
+    GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
+    ,    # Daedalus Core Token
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadminadmin_get_daedalus_core_groups->code(), 200, );
+
+my $superadminadmin_get_daedalus_core_groups_json =
+  decode_json( $superadminadmin_get_daedalus_core_groups->content );
+
+is( $superadminadmin_get_daedalus_core_groups_json->{status},
+    1, 'Status success.' );
+
+my $daedalus_project_sysadmins_group_token =
+  $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+  ->{'Daedalus Core Sysadmins'}->{token};
+
 my $failed_role_not_found = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_sysadmins_group_token/clown",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            role_name          => 'clown'
-        }
-    ),
 );
 
 is( $failed_role_not_found->code(), 400, );
@@ -252,17 +232,12 @@ is( $failed_role_not_found_json->{status},  0, );
 is( $failed_role_not_found_json->{message}, 'Required role does not exist.', );
 
 my $remove_role_from_group_success = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/fireman"
+    ,    #ega Shops Administrators
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            role_name          => 'fireman'
-        }
-    ),
 );
 
 is( $remove_role_from_group_success->code(), 200, );
@@ -279,16 +254,11 @@ is(
 is( $remove_role_from_group_success_json->{_hidden_data}, undef, );
 
 my $failed_already_removed = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/fireman"
+    ,    #ega Shops Administrators
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
-    Content       => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            role_name          => 'fireman'
-        }
-    ),
 );
 
 is( $failed_already_removed->code(), 400, );
@@ -330,17 +300,10 @@ is(
 );
 
 my $failed_not_your_organization = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO/$daedalus_project_sysadmins_group_token/fireman",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
-    Content       => encode_json(
-        {
-            organization_token =>
-              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    #Dadeadlus Project token
-            group_name => 'Daedalus Project Sysadmins',
-            role_name  => 'fireman'
-        }
-    ),
 );
 
 is( $failed_not_your_organization->code(), 400, );
@@ -354,41 +317,11 @@ is(
     'Invalid organization token.',
 );
 
-my $superadmin_success = request(
-    POST '/user/login',
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            'e-mail' => 'admin@daedalus-project.io',
-            password => 'this_is_a_Test_1234',
-        }
-    )
-);
-
-is( $superadmin_success->code(), 200, );
-
-my $superadmin_success_json = decode_json( $superadmin_success->content );
-
-is( $superadmin_success_json->{status}, 1, );
-
-my $superadmin_session_token =
-  $superadmin_success_json->{data}->{session_token};
-
-my $superadmin_authorization_basic =
-  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
-
 my $superadmin_remove_role_success = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Authorization =>
-      "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
-            group_name         => 'Daedalus Core Sysadmins',
-            role_name          => 'fireman'
-        }
-    ),
+    DELETE
+"$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO/$daedalus_project_sysadmins_group_token/fireman",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $superadmin_remove_role_success->code(), 200, );
@@ -405,18 +338,11 @@ is(
 isnt( $superadmin_remove_role_success_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_role_other_organization_success = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_sysadmins_group_token/fireman",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token =>
-              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            role_name  => 'fireman'
-        }
-    ),
 );
 
 is( $superadmin_remove_role_other_organization_success->code(), 200, );
@@ -457,18 +383,11 @@ is(
 );
 
 my $superadmin_remove_role_health_watcher_success = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_sysadmins_group_token/health_watcher",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token =>
-              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            role_name  => 'health_watcher'
-        }
-    ),
 );
 
 is( $superadmin_remove_role_health_watcher_success->code(), 200, );
@@ -507,10 +426,6 @@ is(
     0,
     'Mega Shop Sysadmins has no roles'
 );
-
-my $megashops_sysadmins_group_token =
-  $admin_user_mega_shop_zero_roles_json->{data}->{groups}
-  ->{'Mega Shop Sysadmins'}->{token};
 
 my $add_role_to_group_success = request(
     POST '/organization/addroletogroup',
@@ -571,45 +486,32 @@ is(
 is( $add_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
 
 my $remove_other_admin_role_to_group_success = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_supersysadmins_group_token/organization_master",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop SuperSysadmins',
-            role_name          => 'organization_master'
-        }
-    ),
 );
 
 is( $remove_other_admin_role_to_group_success->code(), 200, );
 
 my $remove_other_admin_role_to_group_success_json =
-  decode_json( $add_other_admin_role_to_group_success->content );
+  decode_json( $remove_other_admin_role_to_group_success->content );
 
 is( $remove_other_admin_role_to_group_success_json->{status}, 1, );
 is(
     $remove_other_admin_role_to_group_success_json->{message},
-    'Selected role has been added to organization group.',
+    'Selected role has been removed from organization group.',
 );
 
 is( $remove_other_admin_role_to_group_success_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_role_organization_master_success = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_sysadmins_group_token/organization_master",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token =>
-              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
-            group_name => 'Mega Shop Sysadmins',
-            role_name  => 'organization_master'
-        }
-    ),
 );
 
 is( $superadmin_remove_role_organization_master_success->code(), 200, );
@@ -626,21 +528,15 @@ is(
 isnt( $superadmin_remove_role_organization_master_success_json->{_hidden_data},
     undef, );
 
-# At this point there is only one group with organization_master
+# At this point there is only one group with organization_master role
 # It can't be removed because Mega Shops won't have any admin users
 
 my $remove_admin_role_from_group_failed = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/organization_master",
     Content_Type => 'application/json',
     Authorization =>
-      "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            role_name          => 'organization_master'
-        }
-    ),
+      "Basic $admin_authorization_basic",    #Megashops Administrators token
 );
 
 is( $remove_admin_role_from_group_failed->code(), 400, );
@@ -657,17 +553,10 @@ is(
 is( $remove_admin_role_from_group_failed_json->{_hidden_data}, undef, );
 
 my $superadmin_remove_admin_role_from_group_success = request(
-    POST $endpoint,
-    Content_Type => 'application/json',
-    Authorization =>
-      "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            role_name          => 'organization_master'
-        }
-    ),
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/organization_master",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
 );
 
 is( $superadmin_remove_admin_role_from_group_success->code(), 200, );
@@ -686,17 +575,11 @@ isnt( $superadmin_remove_admin_role_from_group_success_json->{_hidden_data},
     undef, );
 
 my $remove_failed_no_admin = request(
-    POST $endpoint,
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/EC78R91DADJowsNogz16pHnAcEBiQHWBF/organization_master",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shops Administrators',
-            role_name          => 'organization_master'
-        }
-    ),
 );
 
 is( $remove_failed_no_admin->code(), 403, );

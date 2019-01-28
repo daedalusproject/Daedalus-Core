@@ -275,7 +275,12 @@ sub authorize_and_validate {
         for my $required_data_name ( sort ( keys %{$required_data} ) ) {
             my $data_properties = $required_data->{$required_data_name};
 
-            $value = $c->{request}->{data}->{$required_data_name};
+            if ( $data_properties->{given} == 1 ) {
+                $value = $data_properties->{value};
+            }
+            else {
+                $value = $c->{request}->{data}->{$required_data_name};
+            }
             if ( $data_properties->{required} == 1 ) {
                 if ( !( defined $value ) ) {
                     $response->{status}     = 0;
@@ -288,11 +293,7 @@ sub authorize_and_validate {
             if ( $response->{status} == 1 ) {
 
                 #Check Type
-                if (   $data_properties->{type} eq "e-mail"
-                    or $data_properties->{type} eq "registered_user_e-mail"
-                    or $data_properties->{type} eq "active_user_e-mail"
-                    or $data_properties->{type} eq "organization_user" )
-                {
+                if ( $data_properties->{type} eq "e-mail" ) {
                     if ( !Daedalus::Users::Manager::check_email_valid($value) )
                     {
                         $response->{status}     = 0;
@@ -300,26 +301,41 @@ sub authorize_and_validate {
                         $response->{message}    = $response->{message}
                           . " $required_data_name is invalid.";
                     }
+                }
+
+                elsif ($data_properties->{type} eq "registered_user_token"
+                    or $data_properties->{type} eq "active_user_token"
+                    or $data_properties->{type} eq "organization_user" )
+                {
+                    # Check users token length
+                    if (
+                        length($value) !=
+                        $c->config->{tokens}->{user_token_length} )
+                    {
+                        $response->{status}     = 0;
+                        $response->{error_code} = 400;
+                        $response->{message}    = $response->{message}
+                          . " $required_data_name is invalid.";
+                    }
                     else {
-                        if ( $data_properties->{type} eq
-                               "registered_user_e-mail"
-                            or $data_properties->{type} eq "active_user_e-mail"
+                        if ( $data_properties->{type} eq "registered_user_token"
+                            or $data_properties->{type} eq "active_user_token"
                             or $data_properties->{type} eq "organization_user" )
                         {
                             my $registered_user =
-                              Daedalus::Users::Manager::get_user_from_email( $c,
+                              Daedalus::Users::Manager::get_user_from_token( $c,
                                 $value );
                             if ( !$registered_user ) {
                                 $response->{status}     = 0;
                                 $response->{error_code} = 400;
                                 $response->{message}    = $response->{message}
-                                  . "There is no registered user with that e-mail address.";
+                                  . "There is no registered user with that token.";
                             }
                             else {
                                 if (
                                     (
                                         $data_properties->{type} eq
-                                        "active_user_e-mail"
+                                        "active_user_token"
                                         or $data_properties->{type} eq
                                         "organization_user"
                                     )
@@ -332,7 +348,7 @@ sub authorize_and_validate {
                                       $response->{message}
                                       . "Required user is not active.";
                                 }
-                                $data->{'registered_user_e-mail'} =
+                                $data->{'registered_user_token'} =
                                   Daedalus::Users::Manager::get_user_data( $c,
                                     $registered_user );
                                 if (
@@ -346,7 +362,7 @@ sub authorize_and_validate {
                                     my $is_organization_member =
                                       Daedalus::Users::Manager::is_organization_member(
                                         $c,
-                                        $data->{'registered_user_e-mail'}
+                                        $data->{'registered_user_token'}
                                           ->{_hidden_data}->{user}->{id},
                                         $data->{organization}->{_hidden_data}
                                           ->{organization}->{id}
@@ -363,6 +379,7 @@ sub authorize_and_validate {
                         }
                     }
                 }
+
                 elsif ( $data_properties->{type} eq "phone" ) {
                     if ($value) {
                         my $phone       = Number::Phone->new($value);

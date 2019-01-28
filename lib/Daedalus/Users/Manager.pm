@@ -80,6 +80,21 @@ sub get_user_from_email {
     return $user;
 }
 
+=head2 get_user_from_token
+
+Retrieve user data from model using its token
+
+=cut
+
+sub get_user_from_token {
+    my $c     = shift;
+    my $token = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { 'token' => $token } );
+
+    return $user;
+}
+
 =head2 get_user_from_id
 
 Retrieve user data from model using user id
@@ -109,6 +124,7 @@ sub get_user_data {
             phone    => $user->phone,
             api_key  => $user->api_key,
             active   => $user->active,
+            token    => $user->token,
         },
     };
 
@@ -408,6 +424,7 @@ sub register_new_user {
         my $auth_token = Daedalus::Utils::Crypt::generate_random_string(63);
         my $salt       = Daedalus::Utils::Crypt::generate_random_string(256);
         my $password   = Daedalus::Utils::Crypt::generate_random_string(256);
+        my $user_token = Daedalus::Utils::Crypt::generate_random_string(32);
         $password = Daedalus::Utils::Crypt::hash_password( $password, $salt );
 
         my $registered_user = $user_model->create(
@@ -421,6 +438,7 @@ sub register_new_user {
                 expires    => "3000-01-01",                        #Change it
                 active     => 0,
                 auth_token => $auth_token,
+                token      => $user_token,
             }
         );
 
@@ -443,6 +461,12 @@ sub register_new_user {
                 'e-mail'   => $registered_user->email,
                 auth_token => $registered_user->auth_token,
                 id         => $registered_user->id,
+            },
+        };
+
+        $response->{data} = {
+            new_user => {
+                token => $registered_user->token,
             },
         };
 
@@ -499,6 +523,7 @@ sub show_registered_users {
                     is_admin => is_admin_of_any_organization(
                         $c, $registered_user->registered_user->id
                     ),
+                    token => $registered_user->registered_user->token,
                 },
             },
             _hidden_data => {
@@ -783,7 +808,7 @@ sub remove_user {
     my $c         = shift;
     my $user_data = shift;
 
-    my $user_id = $user_data->id;
+    my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
         {

@@ -370,11 +370,11 @@ sub show_orphan_users_GET {
     $self->return_response( $c, $response );
 }
 
-sub remove_user : Path('/user/remove') : Args(0) : ActionClass('REST') {
+sub remove_user : Path('/user/remove') : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
-sub remove_user_POST {
+sub remove_user_DELETE {
 
     my ( $self, $c ) = @_;
 
@@ -384,7 +384,6 @@ sub remove_user_POST {
     my $organization;
 
     my $target_user;
-    my $target_user_email;
 
     my $able_to_remove = 1;
 
@@ -395,9 +394,10 @@ sub remove_user_POST {
                 type => 'admin',
             },
             required_data => {
-                user_email => {
-                    type     => 'e-mail',
-                    required => 1,
+                user_token => {
+                    type  => 'registered_user_token',
+                    given => 1,
+                    value => $c->{request}->{arguments}[0],
                 },
             }
         }
@@ -405,34 +405,35 @@ sub remove_user_POST {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
+        if ( $response->{message} eq
+            "There is no registered user with that token." )
+        {
+            $response->{message} =
+"Requested user does not exists or it has not been registered by you.";
+        }
     }
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
-        $target_user_email =
-          $authorization_and_validatation->{data}->{required_data}
-          ->{user_email};
-        $target_user = Daedalus::Users::Manager::get_user_from_email( $c,
-            $target_user_email );
-
+        $target_user =
+          $authorization_and_validatation->{data}->{'registered_user_token'};
         $response->{error_code} = 400;
         $response->{status}     = 0;
         $response->{message} =
 "Requested user does not exists or it has not been registered by you.";
-
         if ( defined $target_user ) {
             if ( $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 ) {
                 if (
                     !defined Daedalus::Users::Manager::show_registered_users(
                         $c, $user_data )->{data}->{registered_users}
-                    ->{ $target_user->email }
+                    ->{ $target_user->{data}->{user}->{'e-mail'} }
                   )
                 {
                     $able_to_remove = 0;
                 }
             }
             else {
-                if ( $user_data->{data}->{user}->{"e-mail"} eq
-                    $target_user->email )
+                if ( $user_data->{data}->{user}->{'e-mail'} eq
+                    $target_user->{data}->{user}->{'e-mail'} )
                 {
                     $able_to_remove = 0;
                 }
