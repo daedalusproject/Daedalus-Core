@@ -551,7 +551,8 @@ my $add_user_to_group_success = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_admins_group_token,
-            user_email         => 'otheradminagain@megashops.com'
+            user_token         => 'RjZEmVuvbUn9SGc26QQogs9ZaYyQwI9s'
+            ,    # otheradminagain@megashops.com
         }
     ),
 );
@@ -576,7 +577,8 @@ my $add_other_user_to_group_success = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_admins_group_token,
-            user_email         => 'marvin@megashops.com'
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
         }
     ),
 );
@@ -655,7 +657,8 @@ my $add_original_admin_user_to_original_group_success = request(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             group_token        => $megashops_administrators_group_token,
-            user_email         => 'otheradminagain@megashops.com'
+            user_token         => 'RjZEmVuvbUn9SGc26QQogs9ZaYyQwI9s'
+            ,                                # otheradminagain@megashops.com
         }
     ),
 );

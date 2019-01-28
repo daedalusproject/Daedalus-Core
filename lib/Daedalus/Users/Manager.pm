@@ -80,6 +80,21 @@ sub get_user_from_email {
     return $user;
 }
 
+=head2 get_user_from_token
+
+Retrieve user data from model using its token
+
+=cut
+
+sub get_user_from_token {
+    my $c     = shift;
+    my $token = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { 'token' => $token } );
+
+    return $user;
+}
+
 =head2 get_user_from_id
 
 Retrieve user data from model using user id
@@ -109,6 +124,7 @@ sub get_user_data {
             phone    => $user->phone,
             api_key  => $user->api_key,
             active   => $user->active,
+            token    => $user->token,
         },
     };
 
@@ -448,6 +464,12 @@ sub register_new_user {
             },
         };
 
+        $response->{data} = {
+            new_user => {
+                token => $registered_user->token,
+            },
+        };
+
         # Send notification to new user
         notify_new_user(
             $c,
@@ -501,6 +523,7 @@ sub show_registered_users {
                     is_admin => is_admin_of_any_organization(
                         $c, $registered_user->registered_user->id
                     ),
+                    token => $registered_user->registered_user->token,
                 },
             },
             _hidden_data => {
@@ -785,7 +808,7 @@ sub remove_user {
     my $c         = shift;
     my $user_data = shift;
 
-    my $user_id = $user_data->id;
+    my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
         {
