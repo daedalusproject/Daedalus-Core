@@ -487,7 +487,7 @@ is(
     'For the time being Mega Shop Sysadmins has only fireman as role'
 );
 
-my $failed_not_your_organization = request(
+$failed_not_your_organization = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",    #Megashops token
@@ -503,7 +503,7 @@ my $failed_not_your_organization = request(
 
 is( $failed_not_your_organization->code(), 400, );
 
-my $failed_not_your_organization_json =
+$failed_not_your_organization_json =
   decode_json( $failed_not_your_organization->content );
 
 is( $failed_not_your_organization_json->{status}, 0, );
