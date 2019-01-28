@@ -317,6 +317,42 @@ is(
     'Invalid organization token.',
 );
 
+my $failed_valid_organization_not_your_group = request(
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$daedalus_project_sysadmins_group_token/fireman",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+);
+
+is( $failed_valid_organization_not_your_group->code(), 400, );
+
+my $failed_valid_organization_not_your_group_json =
+  decode_json( $failed_valid_organization_not_your_group->content );
+
+is( $failed_valid_organization_not_your_group_json->{status}, 0, );
+is(
+    $failed_valid_organization_not_your_group_json->{message},
+    'Required group does not exist.',
+);
+
+my $failed_invalid_organization_valid_group = request(
+    DELETE
+"$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO/$megashops_sysadmins_group_token/fireman",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+);
+
+is( $failed_invalid_organization_valid_group->code(), 400, );
+
+my $failed_invalid_organization_valid_group_json =
+  decode_json( $failed_invalid_organization_valid_group->content );
+
+is( $failed_invalid_organization_valid_group_json->{status}, 0, );
+is(
+    $failed_invalid_organization_valid_group_json->{message},
+    'Invalid organization token.',
+);
+
 my $superadmin_remove_role_success = request(
     DELETE
 "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO/$daedalus_project_sysadmins_group_token/fireman",

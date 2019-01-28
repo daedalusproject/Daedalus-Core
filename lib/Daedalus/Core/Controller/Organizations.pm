@@ -500,8 +500,7 @@ sub add_role_to_group_POST {
 
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
@@ -620,8 +619,7 @@ sub remove_role_group_DELETE {
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
@@ -765,8 +763,7 @@ sub add_user_to_group_POST {
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
@@ -999,8 +996,7 @@ sub remove_organization_group_DELETE {
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
