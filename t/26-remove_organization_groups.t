@@ -673,7 +673,6 @@ is( $marvin_removes_group_success_json->{_hidden_data}, undef, );
 my $marvin_is_not_admin = request(
     DELETE
 "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$megashops_admins_group_token",
-    POST $endpoint,
     Content_Type => 'application/json',
     Authorization =>
       "Basic $marvin_authorization_basic",    #Megashops Project token
