@@ -29,13 +29,23 @@ Daedalus::Core REST Controller.
 
 =cut
 
+=head2 begin
+
+Begin function
+
+=cut
+
 sub begin : ActionClass('Deserialize') {
     my ( $self, $c ) = @_;
 }
 
 =head2 create_organization
 
-Create Organization
+Create Organization.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation name
 
 =cut
 
@@ -43,6 +53,12 @@ sub create_organization : Path('/organization/create') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 create_organization_POST
+
+/organization/create is a POST request
+
+=cut
 
 sub create_organization_POST {
     my ( $self, $c ) = @_;
@@ -95,6 +111,12 @@ sub show_organizations : Path('/organization/show') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
+=head2 show_organizations_GET
+
+/organization/show is a GET request
+
+=cut
+
 sub show_organizations_GET {
     my ( $self, $c ) = @_;
 
@@ -124,10 +146,24 @@ sub show_organizations_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 show_organization_users
+
+Admin users are allowed to view its organization users.
+
+Required data:   - Organation token as request argument
+
+=cut
+
 sub show_organization_users : Path('/organization/showusers') : Args(1) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 show_organization_users_GET
+
+/organization/showusers is a GET request
+
+=cut
 
 sub show_organization_users_GET {
 
@@ -173,10 +209,26 @@ sub show_organization_users_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 add_user_to_organization
+
+Adds (registered and active) User Organization.
+
+Admin users are allowed to add its registered users to their organizations.
+
+Required data:   - User Token   - Organation token
+
+=cut
+
 sub add_user_to_organization : Path('/organization/adduser') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 add_user_to_organization_POST
+
+/organization/adduser is a POST request
+
+=cut
 
 sub add_user_to_organization_POST {
 
@@ -229,10 +281,24 @@ sub add_user_to_organization_POST {
 
 }
 
+=head2 show_organizations_groups
+
+Users are allowed to view the organization group they belong.
+
+Data is separated by organization.
+
+=cut
+
 sub show_organizations_groups : Path('/organization/showusergroups') : Args(0)
   : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 show_organizations_groups_GET
+
+/organization/showusergroups is a GET request
+
+=cut
 
 sub show_organizations_groups_GET {
 
@@ -263,10 +329,22 @@ sub show_organizations_groups_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 show_organization_groups
+
+Same behaviour than show_organizations_groups but this function only show groups from required organization.
+
+=cut
+
 sub show_organization_groups : Path('/organization/showorganizationusergroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 show_organization_groups_GET
+
+/organization/showorganizationusergroups/{OrganizationToken} is a GET request
+
+=cut
 
 sub show_organization_groups_GET {
 
@@ -309,10 +387,26 @@ sub show_organization_groups_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 show_all_organization_groups
+
+Admin sers are allowed to view all their organization groups.
+
+For each group, their users and roles are shown.
+
+OrganizationToken is required
+
+=cut
+
 sub show_all_organization_groups : Path('/organization/showallgroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 show_all_organization_groups_GET
+
+/organization/showallgroups/{OrganizationToken} is a GET request
+
+=cut
 
 sub show_all_organization_groups_GET {
 
@@ -365,10 +459,26 @@ sub show_all_organization_groups_GET {
 
 }
 
+=head2 create_organization_group
+
+Create Organization group.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation token   - Unique group name
+
+=cut
+
 sub create_organization_group : Path('/organization/creategroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 create_organization_group_POST
+
+/organization/creategroup is a POST request
+
+=cut
 
 sub create_organization_group_POST {
 
@@ -433,10 +543,26 @@ sub create_organization_group_POST {
 
 }
 
+=head2 add_role_to_group
+
+Adds role to Organization group.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation token   - Group token   - Role name
+
+=cut
+
 sub add_role_to_group : Path('/organization/addroletogroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 add_role_to_group_POST
+
+/organization/addroletogroup is a POST request
+
+=cut
 
 sub add_role_to_group_POST {
 
@@ -500,8 +626,7 @@ sub add_role_to_group_POST {
 
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
@@ -547,10 +672,29 @@ sub add_role_to_group_POST {
 
 }
 
+=head2 remove_role_group
+
+Removes role from Organization group.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation token   - Group token   - Role name
+
+If removing this group causes the absence of admins in this organization, the operation is not allowed, Super Admins
+are still allowed to perform this action.
+
+=cut
+
 sub remove_role_group : Path('/organization/removerolefromgroup') : Args(3) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 remove_role_group_DELETE
+
+/organization/removerolefromgroup/{OrganizationToken}/{GroupToken}/{role_name} is a DELETE request
+
+=cut
 
 sub remove_role_group_DELETE {
 
@@ -620,8 +764,7 @@ sub remove_role_group_DELETE {
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
@@ -636,7 +779,6 @@ sub remove_role_group_DELETE {
                     $response->{message}    = "Required role does not exist.";
                     $response->{error_code} = 400;
                 }
-
                 else {
                     if (
                         grep( /^$role_name$/,
@@ -694,10 +836,26 @@ sub remove_role_group_DELETE {
 
 }
 
+=head2 add_user_to_group
+
+Adds Organization user to Organization group.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation token   - Group token   - User Token
+
+=cut
+
 sub add_user_to_group : Path('/organization/addusertogroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 add_user_to_group_POST
+
+/organization/addusertogroup is a POST request.
+
+=cut
 
 sub add_user_to_group_POST {
 
@@ -765,8 +923,7 @@ sub add_user_to_group_POST {
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
@@ -802,10 +959,29 @@ sub add_user_to_group_POST {
 
 }
 
+=head2 remove_user_group
+
+Removes Organization user from Organization group.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation token   - Group token   - UserToken
+
+If removing this user causes the absence of admins in this organization, the operation is not allowed, Super Admins are
+still allowed to perform this action.
+
+=cut
+
 sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(3) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 remove_user_group_DELETE
+
+/organization/removerolefromgroup/{OrganizationToken}/{UserToken}/{role_name} is a DELETE request
+
+=cut
 
 sub remove_user_group_DELETE {
 
@@ -934,10 +1110,29 @@ sub remove_user_group_DELETE {
     $self->return_response( $c, $response );
 }
 
+=head2 remove_organization_group
+
+Removes Organization group.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organation token   - Group token
+
+If removing this group causes the absence of admins in this organization, the operation is not allowed, Super Admins
+are still allowed to perform this action.
+
+=cut
+
 sub remove_organization_group : Path('/organization/removeorganizationgroup') :
   Args(2) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 remove_organization_group_DELETE
+
+/organization/removerolefromgroup/{OrganizationToken}/{GroupToken} is a DELETE request
+
+=cut
 
 sub remove_organization_group_DELETE {
 
@@ -999,8 +1194,7 @@ sub remove_organization_group_DELETE {
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                    $organization->{_hidden_data}->{organization}->{id}
-                and $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 )
+                $organization->{_hidden_data}->{organization}->{id} )
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";

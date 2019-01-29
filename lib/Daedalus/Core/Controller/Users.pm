@@ -29,19 +29,33 @@ Daedalus::Core REST Controller.
 
 =cut
 
+=head2 begin
+
+Users Controller begin
+
+=cut
+
 sub begin : ActionClass('Deserialize') {
     my ( $self, $c ) = @_;
 }
 
 =head2 login
 
-Login user
+Logins user
 
+Data required:
+  - user e-mail
+  - user password
 =cut
 
-sub login : Path('/user/login') : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-}
+sub login : Path('/user/login') : Args(0) :
+  ActionClass('REST') { my ( $self, $c ) = @_; }
+
+=head2 login_POST
+
+/user/login is a POST request
+
+=cut
 
 sub login_POST {
     my ( $self, $c ) = @_;
@@ -87,6 +101,12 @@ sub im_admin : Path('/user/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
+=head2 im_admin_GET
+
+/user/imadmin is a GET request
+
+=cut
+
 sub im_admin_GET {
     my ( $self, $c ) = @_;
 
@@ -98,7 +118,7 @@ sub im_admin_GET {
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
-    elsif ( $authorization_and_validatation->{status} == 1 ) {
+    else {    #( $authorization_and_validatation->{status} == 1 ) {
         $response->{status}  = 1;
         $response->{message} = "You are an admin user.";
     }
@@ -106,15 +126,23 @@ sub im_admin_GET {
     $self->return_response( $c, $response );
 }
 
-=head2 registerNewUser
+=head2 register_new_user
 
 Admin users are able to create new users.
+
+Required data:   - New user e-mail   - New user Name   - New user Surname
 
 =cut
 
 sub register_new_user : Path('/user/register') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 register_new_user_POST
+
+/user/register is a POST request
+
+=cut
 
 sub register_new_user_POST {
     my ( $self, $c ) = @_;
@@ -175,6 +203,12 @@ sub show_registered_users : Path('/user/showregistered') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
+=head2 show_registered_users_GET
+
+/user/showregistered is a GET request
+
+=cut
+
 sub show_registered_users_GET {
     my ( $self, $c ) = @_;
 
@@ -209,11 +243,19 @@ sub show_registered_users_GET {
 
 Receives Auth token, if that token is owned by inactive user, user is registered.
 
+Password is needed too.
+
 =cut
 
 sub confirm_register : Path('/user/confirm') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 confirm_register_POST
+
+/user/confirm is a POST request
+
+=cut
 
 sub confirm_register_POST {
     my ( $self, $c ) = @_;
@@ -256,6 +298,12 @@ sub show_inactive_users : Path('/user/showinactive') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
+=head2  show_inactive_users_GET
+
+/user/showinactive is a GET request
+
+=cut
+
 sub show_inactive_users_GET {
     my ( $self, $c ) = @_;
 
@@ -296,6 +344,12 @@ sub show_active_users : Path('/user/showactive') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 show_active_users_GET
+
+/user/showactive is a POST request
+
+=cut
 
 sub show_active_users_GET {
 
@@ -339,6 +393,12 @@ sub show_orphan_users : Path('/user/showorphan') : Args(0) :
     my ( $self, $c ) = @_;
 }
 
+=head2 show_orphan_users_GET
+
+/user/showorphan is a GET request
+
+=cut
+
 sub show_orphan_users_GET {
 
     my ( $self, $c ) = @_;
@@ -370,9 +430,23 @@ sub show_orphan_users_GET {
     $self->return_response( $c, $response );
 }
 
+=head2 remove_user
+
+Admin users are allowed to remove their registered users.
+
+Data required:   - Target user token
+
+=cut
+
 sub remove_user : Path('/user/remove') : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
+
+=head2 remove_user_DELETE
+
+/user/remove/{UserToken} is a DELETE request
+
+=cut
 
 sub remove_user_DELETE {
 
@@ -420,30 +494,30 @@ sub remove_user_DELETE {
         $response->{status}     = 0;
         $response->{message} =
 "Requested user does not exists or it has not been registered by you.";
-        if ( defined $target_user ) {
-            if ( $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 ) {
-                if (
-                    !defined Daedalus::Users::Manager::show_registered_users(
-                        $c, $user_data )->{data}->{registered_users}
-                    ->{ $target_user->{data}->{user}->{'e-mail'} }
-                  )
-                {
-                    $able_to_remove = 0;
-                }
+
+        # Target user is verified before, in authorize_and_validate function
+        if ( $user_data->{_hidden_data}->{user}->{is_super_admin} == 0 ) {
+            if (
+                !defined Daedalus::Users::Manager::show_registered_users( $c,
+                    $user_data )->{data}->{registered_users}
+                ->{ $target_user->{data}->{user}->{'e-mail'} }
+              )
+            {
+                $able_to_remove = 0;
             }
-            else {
-                if ( $user_data->{data}->{user}->{'e-mail'} eq
-                    $target_user->{data}->{user}->{'e-mail'} )
-                {
-                    $able_to_remove = 0;
-                }
+        }
+        else {
+            if ( $user_data->{data}->{user}->{'e-mail'} eq
+                $target_user->{data}->{user}->{'e-mail'} )
+            {
+                $able_to_remove = 0;
             }
-            if ( $able_to_remove == 1 ) {
-                Daedalus::Users::Manager::remove_user( $c, $target_user );
-                $response->{status} = 1;
-                $response->{message} =
-                  "Selected user has been removed from organization.";
-            }
+        }
+        if ( $able_to_remove == 1 ) {
+            Daedalus::Users::Manager::remove_user( $c, $target_user );
+            $response->{status} = 1;
+            $response->{message} =
+              "Selected user has been removed from organization.";
         }
     }
 
@@ -460,6 +534,12 @@ sub user_data : Path('/user') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
+=head2 user_data_GET
+
+Shows user data
+
+=cut
+
 sub user_data_GET {
     my ( $self, $c ) = @_;
 
@@ -472,7 +552,7 @@ sub user_data_GET {
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
-    elsif ( $authorization_and_validatation->{status} == 1 ) {
+    else {    #( $authorization_and_validatation->{status} == 1 ) {
         $user_data = $authorization_and_validatation->{data}->{user_data};
         $response->{status}       = 1;
         $response->{data}         = $user_data->{data};
@@ -533,7 +613,7 @@ sub user_data_PUT {
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
-    elsif ( $authorization_and_validatation->{status} == 1 ) {
+    else {    # ( $authorization_and_validatation->{status} == 1 ) {
         $user_data = $authorization_and_validatation->{data}->{user_data};
         for my $data ( sort ( keys %{$required_data} ) ) {
             if (

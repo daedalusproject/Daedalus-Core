@@ -534,6 +534,57 @@ is(
     'Required user is not active.',
 );
 
+my $superadmin_add_user_to_foreign_group = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    # Daedalus Project
+            group_token => $megashops_sysadmins_group_token,
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+
+is( $superadmin_add_user_to_foreign_group->code(), 400, );
+
+my $superadmin_add_user_to_foreign_group_json =
+  decode_json( $superadmin_add_user_to_foreign_group->content );
+
+is( $superadmin_add_user_to_foreign_group_json->{status},  0, );
+is( $superadmin_add_user_to_foreign_group_json->{message}, 'Invalid user.', );
+
+my $superadmin_same_user_organization_foreign_group = request(
+    POST $endpoint,
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # megashops
+            group_token => $daedalus_project_sysadmins_group_token,
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+
+is( $superadmin_same_user_organization_foreign_group->code(), 400, );
+
+my $superadmin_same_user_organization_foreign_group_json =
+  decode_json( $superadmin_same_user_organization_foreign_group->content );
+
+is( $superadmin_same_user_organization_foreign_group_json->{status}, 0, );
+is(
+    $superadmin_same_user_organization_foreign_group_json->{message},
+    'Required group does not exist.',
+);
+
 my $superadmin_get_active_users = request(
     GET "user/showactive",
     Content_Type  => 'application/json',

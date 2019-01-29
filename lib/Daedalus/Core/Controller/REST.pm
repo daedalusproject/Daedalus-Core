@@ -40,6 +40,12 @@ sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
+=head2 ping_GET
+
+/ping is a GET request
+
+=cut
+
 sub ping_GET {
     my ( $self, $c ) = @_;
     return $self->status_ok(
@@ -122,7 +128,7 @@ sub return_response {
 
             return $self->status_forbidden_entity( $c, entity => $response, );
         }
-        elsif ( $error_code == 400 ) {
+        else {    # 400
             return $self->status_bad_request_entity( $c, entity => $response, );
         }
 
@@ -162,8 +168,9 @@ sub authorize_and_validate {
     my $organization_token_check = { status => 1 };
 
     # If exists check organiation token first, yes, I have recopy code....
-    if (    ( exists $required_data->{organization_token} )
-        and ( $required_data->{organization_token}->{type} eq "organization" ) )
+    if ( exists $required_data->{organization_token} )
+
+     #  and ( $required_data->{organization_token}->{type} eq "organization" ) )
     {
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
@@ -207,7 +214,7 @@ sub authorize_and_validate {
                 $check_organization_roles = 1;
             }
         }
-        elsif ( $auth->{type} eq "admin" ) {
+        else {    #elsif ( $auth->{type} eq "admin" ) {
             $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
         }
 
@@ -215,7 +222,7 @@ sub authorize_and_validate {
             $response->{status} = 0;
             $response = $user;
         }
-        elsif ( $user->{status} == 1 ) {
+        else {    #elsif ( $user->{status} == 1 ) {
             $data->{user_data} = $user->{data};
         }
     }
@@ -318,62 +325,55 @@ sub authorize_and_validate {
                           . " $required_data_name is invalid.";
                     }
                     else {
-                        if ( $data_properties->{type} eq "registered_user_token"
-                            or $data_properties->{type} eq "active_user_token"
-                            or $data_properties->{type} eq "organization_user" )
-                        {
-                            my $registered_user =
-                              Daedalus::Users::Manager::get_user_from_token( $c,
-                                $value );
-                            if ( !$registered_user ) {
+                        my $registered_user =
+                          Daedalus::Users::Manager::get_user_from_token( $c,
+                            $value );
+                        if ( !$registered_user ) {
+                            $response->{status}     = 0;
+                            $response->{error_code} = 400;
+                            $response->{message}    = $response->{message}
+                              . "There is no registered user with that token.";
+                        }
+                        else {
+                            if (
+                                (
+                                    $data_properties->{type} eq
+                                    "active_user_token"
+                                    or $data_properties->{type} eq
+                                    "organization_user"
+                                )
+                                and $registered_user->active == 0
+                              )
+                            {
                                 $response->{status}     = 0;
                                 $response->{error_code} = 400;
-                                $response->{message}    = $response->{message}
-                                  . "There is no registered user with that token.";
+                                $response->{message} =
+                                  $response->{message}
+                                  . "Required user is not active.";
                             }
-                            else {
-                                if (
-                                    (
-                                        $data_properties->{type} eq
-                                        "active_user_token"
-                                        or $data_properties->{type} eq
-                                        "organization_user"
-                                    )
-                                    and $registered_user->active == 0
-                                  )
-                                {
+                            $data->{'registered_user_token'} =
+                              Daedalus::Users::Manager::get_user_data( $c,
+                                $registered_user );
+                            if (
+                                (
+                                    $data_properties->{type} eq
+                                    "organization_user"
+                                )
+                                and ( $response->{status} == 1 )
+                              )
+                            {
+                                my $is_organization_member =
+                                  Daedalus::Users::Manager::is_organization_member(
+                                    $c,
+                                    $data->{'registered_user_token'}
+                                      ->{_hidden_data}->{user}->{id},
+                                    $data->{organization}->{_hidden_data}
+                                      ->{organization}->{id}
+                                  );
+                                if ( $is_organization_member->{status} == 0 ) {
                                     $response->{status}     = 0;
                                     $response->{error_code} = 400;
-                                    $response->{message} =
-                                      $response->{message}
-                                      . "Required user is not active.";
-                                }
-                                $data->{'registered_user_token'} =
-                                  Daedalus::Users::Manager::get_user_data( $c,
-                                    $registered_user );
-                                if (
-                                    (
-                                        $data_properties->{type} eq
-                                        "organization_user"
-                                    )
-                                    and ( $response->{status} == 1 )
-                                  )
-                                {
-                                    my $is_organization_member =
-                                      Daedalus::Users::Manager::is_organization_member(
-                                        $c,
-                                        $data->{'registered_user_token'}
-                                          ->{_hidden_data}->{user}->{id},
-                                        $data->{organization}->{_hidden_data}
-                                          ->{organization}->{id}
-                                      );
-                                    if (
-                                        $is_organization_member->{status} == 0 )
-                                    {
-                                        $response->{status}     = 0;
-                                        $response->{error_code} = 400;
-                                        $response->{message} = "Invalid user.";
-                                    }
+                                    $response->{message}    = "Invalid user.";
                                 }
                             }
                         }
