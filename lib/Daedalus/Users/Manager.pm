@@ -733,6 +733,7 @@ sub get_organization_users {
             name     => $user->name,
             surname  => $user->surname,
             phone    => $user->phone,
+            token    => $user->token,
         };
 
         if ($is_super_admin) {
