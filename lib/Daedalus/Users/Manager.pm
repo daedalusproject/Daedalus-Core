@@ -110,6 +110,12 @@ sub get_user_from_id {
     return $user;
 }
 
+=head2 get_user_data
+
+Retrieves user data from user object
+
+=cut
+
 sub get_user_data {
     my $c    = shift;
     my $user = shift;
@@ -139,7 +145,7 @@ sub get_user_data {
     return $response;
 }
 
-=head2 get_user_from_token
+=head2 get_user_from_session_token
 
 Retrieve user data from model
 
@@ -159,41 +165,36 @@ sub get_user_from_session_token {
     my ( $session_token_name, $session_token ) =
       $c->req->headers->authorization_basic;
 
-    if ( ( !$session_token_name ) or ( !$session_token ) ) {
+    if ( ( $session_token_name ne "session_token" ) or ( !$session_token ) ) {
         $response->{message} = "No session token provided.";
     }
     else {
-        if ( $session_token_name ne "session_token" ) {
-            $response->{message} = "No session token provided.";
-        }
-        else {
-            $token_data =
-              Daedalus::Utils::Crypt::retrieve_token_data( $c,
-                $c->config->{authTokenConfig},
-                $session_token );
-            if ( $token_data->{status} != 1 ) {
-                $response->{status} = 0;
-                if ( $token_data->{message} =~ m/invalid/ ) {
-                    $response->{message} = "Session token invalid.";
-                }
-                else {
-                    $response->{message} = "Session token expired.";    #Expired
-                }
+        $token_data =
+          Daedalus::Utils::Crypt::retrieve_token_data( $c,
+            $c->config->{authTokenConfig},
+            $session_token );
+        if ( $token_data->{status} != 1 ) {
+            $response->{status} = 0;
+            if ( $token_data->{message} =~ m/invalid/ ) {
+                $response->{message} = "Session token invalid.";
             }
             else {
-                $user = $c->model('CoreRealms::User')
-                  ->find( { id => $token_data->{data}->{id} } );
+                $response->{message} = "Session token expired.";    #Expired
+            }
+        }
+        else {
+            $user = $c->model('CoreRealms::User')
+              ->find( { id => $token_data->{data}->{id} } );
 
 #if ( $user->active == 0 ) { User always is active, if it is deleted, user won't be found.
 #$response->{message} = "Session token invalid";
 #}
 #else {
-                $user_data = get_user_data( $c, $user );
-                $response->{status} = 1;
-                $response->{data}   = $user_data;
+            $user_data = get_user_data( $c, $user );
+            $response->{status} = 1;
+            $response->{data}   = $user_data;
 
-                #}
-            }
+            #}
         }
     }
 
@@ -236,6 +237,7 @@ sub is_admin_from_session_token {
 
 Authorize user, returns user data if submitted credentials match
 with database info.
+
 =cut
 
 sub auth_user {
@@ -487,7 +489,7 @@ sub register_new_user {
 
 =head2 show_registered_users
 
-Register a new user.
+Returns registered users
 
 =cut
 
@@ -694,7 +696,7 @@ sub show_inactive_users {
     return $response;
 }
 
-=head2 get_organization_userss
+=head2 get_organization_users
 
 Get users of given organization
 
