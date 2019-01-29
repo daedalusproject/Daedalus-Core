@@ -40,6 +40,12 @@ sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
 }
 
+=head2 ping_GET
+
+/ping is a GET request
+
+=cut
+
 sub ping_GET {
     my ( $self, $c ) = @_;
     return $self->status_ok(
@@ -162,8 +168,9 @@ sub authorize_and_validate {
     my $organization_token_check = { status => 1 };
 
     # If exists check organiation token first, yes, I have recopy code....
-    if (    ( exists $required_data->{organization_token} )
-        and ( $required_data->{organization_token}->{type} eq "organization" ) )
+    if ( exists $required_data->{organization_token} )
+
+     #  and ( $required_data->{organization_token}->{type} eq "organization" ) )
     {
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
