@@ -276,7 +276,7 @@ my $failed_not_your_organization = request(
     DELETE
 "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO/$daedalus_project_sysadmins_group_token",
     Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Authorization => "Basic $admin_authorization_basic",    #Daedalus Core token
 );
 
 is( $failed_not_your_organization->code(), 400, );
@@ -289,6 +289,20 @@ is(
     $failed_not_your_organization_json->{message},
     'Invalid organization token.',
 );
+
+my $failed_not_your_group = request(
+    DELETE
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/$daedalus_project_sysadmins_group_token",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+);
+
+is( $failed_not_your_group->code(), 400, );
+
+my $failed_not_your_group_json = decode_json( $failed_not_your_group->content );
+
+is( $failed_not_your_group_json->{status},  0, );
+is( $failed_not_your_group_json->{message}, 'Required group does not exist.', );
 
 my $superadmin_remove_group_success = request(
     DELETE
