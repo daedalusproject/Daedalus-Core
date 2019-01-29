@@ -312,7 +312,7 @@ sub get_organization_group_users {
     my $c                     = shift;
     my $organization_group_id = shift;
 
-    my $response = { data => [], _hidden_data => {} };
+    my $response = { data => {}, _hidden_data => {} };
 
     my @users = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { group_id => $organization_group_id } )->all;
@@ -321,7 +321,8 @@ sub get_organization_group_users {
         my $user = Daedalus::Users::Manager::get_user_from_id( $c,
             $user_from_group->user_id );
         my $user_info = Daedalus::Users::Manager::get_user_data( $c, $user );
-        push @{ $response->{data} }, $user_info->{data}->{user}->{'e-mail'};
+        $response->{data}->{ $user_info->{data}->{user}->{'e-mail'} } =
+          $user_info->{data}->{user};
         $response->{_hidden_data}->{ $user_info->{data}->{user}->{'e-mail'} } =
           $user_info;
     }
@@ -388,13 +389,20 @@ sub get_user_organizations_groups {
           get_organization_groups( $c, $organization_id );
 
         for my $organization_group ( keys %{ $organization_groups->{data} } ) {
+
+    #            if (
+    #                !(
+    #                    grep /^$user_email$/,
+    #                    @{
+    #                        $organization_groups->{data}->{$organization_group}
+    #                          ->{users}
+    #                    }
+    #                )
+    #              )
             if (
-                !(
-                    grep /^$user_email$/,
-                    @{
-                        $organization_groups->{data}->{$organization_group}
-                          ->{users}
-                    }
+                !exists(
+                    $organization_groups->{data}->{$organization_group}
+                      ->{users}->{$user_email}
                 )
               )
             {
