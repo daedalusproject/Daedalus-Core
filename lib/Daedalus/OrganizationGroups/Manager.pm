@@ -77,7 +77,7 @@ sub count_organization_admins {
     }
 
     for my $group_name (@groups_with_selected_role) {
-        $count = $count + scalar @{ $groups->{$group_name}->{users} };
+        $count = $count + keys %{ $groups->{$group_name}->{users} };
     }
 
     return $count;
@@ -135,11 +135,15 @@ sub user_match_role {
 
     for my $group_name ( keys %{ $response->{organization_groups}->{data} } ) {
         if (
-            grep( /^$user_email$/,
-                @{
-                    $response->{organization_groups}->{data}->{$group_name}
-                      ->{users}
-                } )
+    #            grep( /^$user_email$/,
+    #                @{
+    #                    $response->{organization_groups}->{data}->{$group_name}
+    #                      ->{users}
+    #                } )
+            exists(
+                $response->{organization_groups}->{data}->{$group_name}
+                  ->{users}->{$user_email}
+            )
           )
         {
             for my $role_name (

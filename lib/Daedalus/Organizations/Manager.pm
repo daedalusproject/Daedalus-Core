@@ -446,11 +446,15 @@ sub get_user_organization_groups {
 
     for my $organization_group ( keys %{ $organization_groups->{data} } ) {
         if (
-            !(
-                grep /^$user_email$/,
-                @{
-                    $organization_groups->{data}->{$organization_group}->{users}
-                }
+#            !(
+#                grep /^$user_email$/,
+#                @{
+#                    $organization_groups->{data}->{$organization_group}->{users}
+#                }
+#            )
+            !exists(
+                $organization_groups->{data}->{$organization_group}->{users}
+                  ->{$user_email}
             )
           )
         {

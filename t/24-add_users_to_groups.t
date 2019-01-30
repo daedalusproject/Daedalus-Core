@@ -367,7 +367,7 @@ isnt(
 );
 
 is(
-    scalar @{
+    keys %{
         $admin_user_mega_shop_groups_json->{data}->{groups}
           ->{'Mega Shop Sysadmins'}->{users}
     },
@@ -671,7 +671,7 @@ my $admin_user_mega_shop_two_roles_json =
 is( $admin_user_mega_shop_two_roles_json->{status}, 1, 'Status success.' );
 
 is(
-    scalar @{
+    keys %{
         $admin_user_mega_shop_two_roles_json->{data}->{groups}
           ->{'Mega Shop Sysadmins'}->{users}
     },
