@@ -557,6 +557,9 @@ sub user_data_GET {
         $response->{status}       = 1;
         $response->{data}         = $user_data->{data};
         $response->{_hidden_data} = $user_data->{_hidden_data};
+        $response->{data}->{user}->{api_key} =
+          $response->{_hidden_data}->{user}->{api_key};
+        delete( $response->{_hidden_data}->{user}->{api_key} );
     }
 
     $self->return_response( $c, $response );

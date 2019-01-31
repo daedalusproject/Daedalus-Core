@@ -9,7 +9,7 @@ use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
 
-my $endpoint = "organization/showorganizationusergroups";
+my $endpoint = "/organization/showorganizationusergroups";
 
 my $show_organizations_GET_content = get($endpoint);
 ok( $show_organizations_GET_content, qr /Method GET not implemented/ );

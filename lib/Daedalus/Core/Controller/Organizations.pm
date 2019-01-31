@@ -932,8 +932,11 @@ sub add_user_to_group_POST {
             else {
 
                 if (
-                    grep( /^$user_email$/,
-                        @{ $group->{data}->{$group_token}->{users} } )
+         #                    grep( /^$user_email$/,
+         #                        @{ $group->{data}->{$group_token}->{users} } )
+                    exists(
+                        $group->{data}->{$group_token}->{users}->{$user_email}
+                    )
                   )
                 {
                     $response->{status} = 0;
@@ -1053,9 +1056,11 @@ sub remove_user_group_DELETE {
         }
         else {
             if (
-
-                grep( /^$user_email$/,
-                    @{ $group->{data}->{$group_token}->{users} } )
+                #grep( /^$user_email$/,
+                #    @{ $group->{data}->{$group_token}->{users} } )
+                exists(
+                    $group->{data}->{$group_token}->{users}->{$user_email}
+                )
               )
             {
                 if (

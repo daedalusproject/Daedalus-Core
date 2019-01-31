@@ -128,13 +128,13 @@ sub get_user_data {
             name     => $user->name,
             surname  => $user->surname,
             phone    => $user->phone,
-            api_key  => $user->api_key,
             active   => $user->active,
             token    => $user->token,
         },
     };
 
-    $response->{_hidden_data} = { user => { id => $user->id } };
+    $response->{_hidden_data} =
+      { user => { id => $user->id, api_key => $user->api_key, } };
 
 #if ( $user->active ) { User is always active, innactive ones cannot login, deleted ones are no present in this model
     $response->{data}->{user}->{is_admin} =
@@ -733,6 +733,7 @@ sub get_organization_users {
             name     => $user->name,
             surname  => $user->surname,
             phone    => $user->phone,
+            token    => $user->token,
         };
 
         if ($is_super_admin) {
