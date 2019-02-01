@@ -515,9 +515,8 @@ sub remove_user_DELETE {
         }
         if ( $able_to_remove == 1 ) {
             Daedalus::Users::Manager::remove_user( $c, $target_user );
-            $response->{status} = 1;
-            $response->{message} =
-              "Selected user has been removed from organization.";
+            $response->{status}  = 1;
+            $response->{message} = "Selected user has been removed.";
         }
     }
 

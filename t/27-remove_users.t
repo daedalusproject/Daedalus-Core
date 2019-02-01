@@ -250,11 +250,8 @@ is( $remove_user_success->code(), 200, );
 
 my $remove_user_success_json = decode_json( $remove_user_success->content );
 
-is( $remove_user_success_json->{status}, 1, );
-is(
-    $remove_user_success_json->{message},
-    'Selected user has been removed from organization.',
-);
+is( $remove_user_success_json->{status},  1, );
+is( $remove_user_success_json->{message}, 'Selected user has been removed.', );
 
 is( $remove_user_success_json->{_hidden_data}, undef, );
 
@@ -304,7 +301,7 @@ my $superadmin_removes_marvin_json =
 is( $superadmin_removes_marvin_json->{status}, 1, );
 is(
     $superadmin_removes_marvin_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 my $already_removed_fail = request(
@@ -380,7 +377,7 @@ my $superadmin_removes_superboss_json =
 is( $superadmin_removes_superboss_json->{status}, 1, );
 is(
     $superadmin_removes_superboss_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 my $admin_get_inactive_users = request(
@@ -418,7 +415,7 @@ my $superadmin_removes_shiro_json =
 is( $superadmin_removes_shiro_json->{status}, 1, );
 is(
     $superadmin_removes_shiro_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 my $superadmin_removes_orphan = request(
@@ -435,7 +432,7 @@ my $superadmin_removes_orphan_json =
 is( $superadmin_removes_orphan_json->{status}, 1, );
 is(
     $superadmin_removes_orphan_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 done_testing();
