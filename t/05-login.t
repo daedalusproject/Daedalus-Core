@@ -127,7 +127,7 @@ is(
     'notanadmin@daedalus-project.io',
 );
 
-isnt( $login_non_admin_post_success_json->{data}->{user}->{'api_key'}, undef, );
+isnt( $login_non_admin_post_success_json->{data}->{user}->{api_key}, undef, );
 
 is( $login_non_admin_post_success_json->{data}->{user}->{is_admin}, 0, );
 is( $login_non_admin_post_success_json->{_hidden_data},
@@ -154,7 +154,7 @@ is( $login_admin_post_success_json->{message}, 'Auth Successful.', );
 is( $login_admin_post_success_json->{data}->{user}->{'e-mail'},
     'admin@daedalus-project.io', );
 
-isnt( $login_admin_post_success_json->{data}->{user}->{'api_key'}, undef, );
+isnt( $login_admin_post_success_json->{data}->{user}->{api_key}, undef, );
 
 is( $login_admin_post_success_json->{data}->{user}->{is_admin}, 1, );
 isnt( $login_admin_post_success_json->{_hidden_data},

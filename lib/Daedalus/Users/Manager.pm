@@ -273,6 +273,10 @@ sub auth_user {
             $response->{data}         = $user_data->{data};
             $response->{_hidden_data} = $user_data->{_hidden_data};
 
+            $response->{data}->{user}->{api_key} =
+              $response->{_hidden_data}->{user}->{api_key};
+            delete( $response->{_hidden_data}->{user}->{api_key} );
+
             $response->{data}->{session_token} =
               Daedalus::Utils::Crypt::create_session_token(
                 $c->config->{authTokenConfig},
