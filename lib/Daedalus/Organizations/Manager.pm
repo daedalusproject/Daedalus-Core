@@ -78,7 +78,7 @@ sub create_organization {
         # Create Organization
 
         my $organization_token =
-          Daedalus::Utils::Crypt::generateRandomString(32);
+          Daedalus::Utils::Crypt::generate_random_string(32);
         my $organization = $c->model('CoreRealms::Organization')->create(
             {
                 name  => $request_organization_name,
@@ -96,12 +96,15 @@ sub create_organization {
           );
 
         # Create an organization admin group
+        my $organization_admin_group_token =
+          Daedalus::Utils::Crypt::generate_random_string(32);
 
         my $organization_group =
           $c->model('CoreRealms::OrganizationGroup')->create(
             {
                 organization_id => $organization->id,
                 group_name => "$request_organization_name" . " Administrators",
+                token      => $organization_admin_group_token,
             }
           );
 
@@ -309,7 +312,7 @@ sub get_organization_group_users {
     my $c                     = shift;
     my $organization_group_id = shift;
 
-    my $response = { data => [], _hidden_data => {} };
+    my $response = { data => {}, _hidden_data => {} };
 
     my @users = $c->model('CoreRealms::OrgaizationUsersGroup')
       ->search( { group_id => $organization_group_id } )->all;
@@ -318,7 +321,8 @@ sub get_organization_group_users {
         my $user = Daedalus::Users::Manager::get_user_from_id( $c,
             $user_from_group->user_id );
         my $user_info = Daedalus::Users::Manager::get_user_data( $c, $user );
-        push @{ $response->{data} }, $user_info->{data}->{user}->{'e-mail'};
+        $response->{data}->{ $user_info->{data}->{user}->{'e-mail'} } =
+          $user_info->{data}->{user};
         $response->{_hidden_data}->{ $user_info->{data}->{user}->{'e-mail'} } =
           $user_info;
     }
@@ -351,6 +355,8 @@ sub get_organization_groups {
         my $users = get_organization_group_users( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name }->{users} =
           $users->{data};
+        $response->{data}->{ $organization_group->group_name }->{token} =
+          $organization_group->token;
         $response->{_hidden_data}->{ $organization_group->group_name }->{users}
           = $users->{_hidden_data};
     }
@@ -383,13 +389,20 @@ sub get_user_organizations_groups {
           get_organization_groups( $c, $organization_id );
 
         for my $organization_group ( keys %{ $organization_groups->{data} } ) {
+
+    #            if (
+    #                !(
+    #                    grep /^$user_email$/,
+    #                    @{
+    #                        $organization_groups->{data}->{$organization_group}
+    #                          ->{users}
+    #                    }
+    #                )
+    #              )
             if (
-                !(
-                    grep /^$user_email$/,
-                    @{
-                        $organization_groups->{data}->{$organization_group}
-                          ->{users}
-                    }
+                !exists(
+                    $organization_groups->{data}->{$organization_group}
+                      ->{users}->{$user_email}
                 )
               )
             {
@@ -433,11 +446,15 @@ sub get_user_organization_groups {
 
     for my $organization_group ( keys %{ $organization_groups->{data} } ) {
         if (
-            !(
-                grep /^$user_email$/,
-                @{
-                    $organization_groups->{data}->{$organization_group}->{users}
-                }
+#            !(
+#                grep /^$user_email$/,
+#                @{
+#                    $organization_groups->{data}->{$organization_group}->{users}
+#                }
+#            )
+            !exists(
+                $organization_groups->{data}->{$organization_group}->{users}
+                  ->{$user_email}
             )
           )
         {
@@ -469,17 +486,23 @@ sub create_organization_group {
     my $response;
     my $organization_group;
 
+    my $organization_group_token =
+      Daedalus::Utils::Crypt::generate_random_string(32);
+
     $organization_group = $c->model('CoreRealms::OrganizationGroup')->create(
         {
             organization_id => $organization_id,
-            group_name      => $group_name
+            group_name      => $group_name,
+            token           => $organization_group_token,
         }
     );
 
-    $response->{status}     = 1;
-    $response->{error_code} = 400;
-    $response->{data}->{organization_groups} =
-      { "group_name" => $organization_group->group_name };
+    $response->{status}                      = 1;
+    $response->{error_code}                  = 400;
+    $response->{data}->{organization_groups} = {
+        "group_name"  => $organization_group->group_name,
+        "group_token" => $organization_group->token
+    };
     $response->{_hidden_data}->{organization_groups} =
       { "id" => $organization_group->id };
     $response->{message} = "Organization group has been created.";

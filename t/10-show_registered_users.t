@@ -231,4 +231,10 @@ is( keys %{ $yet_other_admin_one_user_json->{data}->{registered_users} },
 is( $yet_other_admin_one_user_json->{_hidden_data},
     undef, 'yetanotheradmin@daedalus-project.io is not super admin.' );
 
+isnt(
+    $yet_other_admin_one_user_json->{data}->{registered_users}
+      ->{'newothernotanadmin@daedalus-project.io'}->{token},
+    undef
+);
+
 done_testing();

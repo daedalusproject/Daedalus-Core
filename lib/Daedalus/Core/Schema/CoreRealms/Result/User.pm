@@ -119,14 +119,21 @@ __PACKAGE__->table("users");
 
   data_type: 'tinyint'
   default_value: 1
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 auth_token
 
   data_type: 'varchar'
   default_value: (empty string)
-  is_nullable: 1
+  is_nullable: 0
   size: 64
+
+=head2 token
+
+  data_type: 'varchar'
+  default_value: (empty string)
+  is_nullable: 0
+  size: 33
 
 =cut
 
@@ -206,13 +213,20 @@ __PACKAGE__->add_columns(
         is_nullable               => 0,
     },
     "active",
-    { data_type => "tinyint", default_value => 1, is_nullable => 1 },
+    { data_type => "tinyint", default_value => 1, is_nullable => 0 },
     "auth_token",
     {
         data_type     => "varchar",
         default_value => "",
-        is_nullable   => 1,
+        is_nullable   => 0,
         size          => 64
+    },
+    "token",
+    {
+        data_type     => "varchar",
+        default_value => "",
+        is_nullable   => 0,
+        size          => 33
     },
 );
 
@@ -241,6 +255,18 @@ __PACKAGE__->set_primary_key("id");
 =cut
 
 __PACKAGE__->add_unique_constraint( "unique_email", ["email"] );
+
+=head2 C<user_token_unique>
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "user_token_unique", ["token"] );
 
 =head1 RELATIONS
 
@@ -304,8 +330,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2018-10-07 09:52:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0A8WIjRYBhnZJLtnwLBcJw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GF+mFywsZHJagY+U8Gy3mA
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

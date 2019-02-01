@@ -60,7 +60,7 @@ sub check_user_passwrd {
     my $user_password      = shift;
 
     my $password =
-      Daedalus::Utils::Crypt::hashPassword( $submitted_password, $user_salt );
+      Daedalus::Utils::Crypt::hash_password( $submitted_password, $user_salt );
 
     return $password eq $user_password;
 }
@@ -80,6 +80,21 @@ sub get_user_from_email {
     return $user;
 }
 
+=head2 get_user_from_token
+
+Retrieve user data from model using its token
+
+=cut
+
+sub get_user_from_token {
+    my $c     = shift;
+    my $token = shift;
+
+    my $user = $c->model('CoreRealms::User')->find( { 'token' => $token } );
+
+    return $user;
+}
+
 =head2 get_user_from_id
 
 Retrieve user data from model using user id
@@ -95,6 +110,12 @@ sub get_user_from_id {
     return $user;
 }
 
+=head2 get_user_data
+
+Retrieves user data from user object
+
+=cut
+
 sub get_user_data {
     my $c    = shift;
     my $user = shift;
@@ -107,12 +128,13 @@ sub get_user_data {
             name     => $user->name,
             surname  => $user->surname,
             phone    => $user->phone,
-            api_key  => $user->api_key,
             active   => $user->active,
+            token    => $user->token,
         },
     };
 
-    $response->{_hidden_data} = { user => { id => $user->id } };
+    $response->{_hidden_data} =
+      { user => { id => $user->id, api_key => $user->api_key, } };
 
 #if ( $user->active ) { User is always active, innactive ones cannot login, deleted ones are no present in this model
     $response->{data}->{user}->{is_admin} =
@@ -123,7 +145,7 @@ sub get_user_data {
     return $response;
 }
 
-=head2 get_user_from_token
+=head2 get_user_from_session_token
 
 Retrieve user data from model
 
@@ -143,40 +165,36 @@ sub get_user_from_session_token {
     my ( $session_token_name, $session_token ) =
       $c->req->headers->authorization_basic;
 
-    if ( ( !$session_token_name ) or ( !$session_token ) ) {
+    if ( ( $session_token_name ne "session_token" ) or ( !$session_token ) ) {
         $response->{message} = "No session token provided.";
     }
     else {
-        if ( $session_token_name ne "session_token" ) {
-            $response->{message} = "No session token provided.";
-        }
-        else {
-            $token_data = Daedalus::Utils::Crypt::retrieve_token_data(
-                $c->config->{authTokenConfig},
-                $session_token );
-            if ( $token_data->{status} != 1 ) {
-                $response->{status} = 0;
-                if ( $token_data->{message} =~ m/invalid/ ) {
-                    $response->{message} = "Session token invalid.";
-                }
-                else {
-                    $response->{message} = "Session token expired.";    #Expired
-                }
+        $token_data =
+          Daedalus::Utils::Crypt::retrieve_token_data( $c,
+            $c->config->{authTokenConfig},
+            $session_token );
+        if ( $token_data->{status} != 1 ) {
+            $response->{status} = 0;
+            if ( $token_data->{message} =~ m/invalid/ ) {
+                $response->{message} = "Session token invalid.";
             }
             else {
-                $user = $c->model('CoreRealms::User')
-                  ->find( { id => $token_data->{data}->{id} } );
+                $response->{message} = "Session token expired.";    #Expired
+            }
+        }
+        else {
+            $user = $c->model('CoreRealms::User')
+              ->find( { id => $token_data->{data}->{id} } );
 
 #if ( $user->active == 0 ) { User always is active, if it is deleted, user won't be found.
 #$response->{message} = "Session token invalid";
 #}
 #else {
-                $user_data = get_user_data( $c, $user );
-                $response->{status} = 1;
-                $response->{data}   = $user_data;
+            $user_data = get_user_data( $c, $user );
+            $response->{status} = 1;
+            $response->{data}   = $user_data;
 
-                #}
-            }
+            #}
         }
     }
 
@@ -219,6 +237,7 @@ sub is_admin_from_session_token {
 
 Authorize user, returns user data if submitted credentials match
 with database info.
+
 =cut
 
 sub auth_user {
@@ -403,11 +422,12 @@ sub register_new_user {
     else {
         #
         # Create a user
-        my $api_key    = Daedalus::Utils::Crypt::generateRandomString(32);
-        my $auth_token = Daedalus::Utils::Crypt::generateRandomString(63);
-        my $salt       = Daedalus::Utils::Crypt::generateRandomString(256);
-        my $password   = Daedalus::Utils::Crypt::generateRandomString(256);
-        $password = Daedalus::Utils::Crypt::hashPassword( $password, $salt );
+        my $api_key    = Daedalus::Utils::Crypt::generate_random_string(32);
+        my $auth_token = Daedalus::Utils::Crypt::generate_random_string(63);
+        my $salt       = Daedalus::Utils::Crypt::generate_random_string(256);
+        my $password   = Daedalus::Utils::Crypt::generate_random_string(256);
+        my $user_token = Daedalus::Utils::Crypt::generate_random_string(32);
+        $password = Daedalus::Utils::Crypt::hash_password( $password, $salt );
 
         my $registered_user = $user_model->create(
             {
@@ -420,6 +440,7 @@ sub register_new_user {
                 expires    => "3000-01-01",                        #Change it
                 active     => 0,
                 auth_token => $auth_token,
+                token      => $user_token,
             }
         );
 
@@ -445,6 +466,12 @@ sub register_new_user {
             },
         };
 
+        $response->{data} = {
+            new_user => {
+                token => $registered_user->token,
+            },
+        };
+
         # Send notification to new user
         notify_new_user(
             $c,
@@ -462,7 +489,7 @@ sub register_new_user {
 
 =head2 show_registered_users
 
-Register a new user.
+Returns registered users
 
 =cut
 
@@ -498,6 +525,7 @@ sub show_registered_users {
                     is_admin => is_admin_of_any_organization(
                         $c, $registered_user->registered_user->id
                     ),
+                    token => $registered_user->registered_user->token,
                 },
             },
             _hidden_data => {
@@ -556,18 +584,18 @@ sub confirm_registration {
             else {
                 my $password = $required_data->{password};
                 my $password_strenght =
-                  Daedalus::Utils::Crypt::checkPassword($password);
+                  Daedalus::Utils::Crypt::check_password($password);
                 if ( !$password_strenght->{status} ) {
                     $response->{message} = 'Password is invalid.';
                 }
                 else {
                     # Password is valid
                     my $new_auth_token =
-                      Daedalus::Utils::Crypt::generateRandomString(64);
+                      Daedalus::Utils::Crypt::generate_random_string(64);
                     my $new_salt =
-                      Daedalus::Utils::Crypt::generateRandomString(256);
+                      Daedalus::Utils::Crypt::generate_random_string(256);
                     $password =
-                      Daedalus::Utils::Crypt::hashPassword( $password,
+                      Daedalus::Utils::Crypt::hash_password( $password,
                         $new_salt );
 
                     $response->{status}  = 1;
@@ -668,7 +696,7 @@ sub show_inactive_users {
     return $response;
 }
 
-=head2 get_organization_userss
+=head2 get_organization_users
 
 Get users of given organization
 
@@ -705,6 +733,7 @@ sub get_organization_users {
             name     => $user->name,
             surname  => $user->surname,
             phone    => $user->phone,
+            token    => $user->token,
         };
 
         if ($is_super_admin) {
@@ -782,7 +811,7 @@ sub remove_user {
     my $c         = shift;
     my $user_data = shift;
 
-    my $user_id = $user_data->id;
+    my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
         {
@@ -792,13 +821,13 @@ sub remove_user {
 
     $user_group->delete() if ($user_group);
 
-    my $role_group = $c->model('CoreRealms::UserOrganization')->find(
+    my $user_organization = $c->model('CoreRealms::UserOrganization')->find(
         {
             user_id => $user_id
         }
     );
 
-    $role_group->delete() if ($role_group);
+    $user_organization->delete() if ($user_organization);
 
     my $registrator_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
@@ -824,6 +853,25 @@ sub remove_user {
             id => $user_id
         }
     )->delete();
+
+}
+
+=head2 update_user_data
+
+Updates user data
+
+=cut
+
+sub update_user_data {
+    my $c              = shift;
+    my $user_data      = shift;
+    my $data_to_update = shift;
+
+    $c->model('CoreRealms::User')->find(
+        {
+            id => $user_data->{_hidden_data}->{user}->{id},
+        }
+    )->update($data_to_update);
 
 }
 

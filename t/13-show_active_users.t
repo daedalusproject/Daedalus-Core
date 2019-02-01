@@ -22,7 +22,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -195,5 +195,11 @@ is( keys %{ $admin_two_users_json->{data}->{active_users} },
 
 isnt( $admin_two_users_json->{_hidden_data},
     undef, 'admin@daedalus-project.io is super admin.' );
+
+isnt(
+    $admin_two_users_json->{data}->{active_users}
+      ->{'othernotanadmin2@daedalus-project.io'}->{token},
+    undef
+);
 
 done_testing();

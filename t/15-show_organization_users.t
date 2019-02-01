@@ -212,7 +212,19 @@ is( keys %{ $superadmin_megashops_token_json->{data}->{users} },
 isnt( $superadmin_megashops_token_json->{_hidden_data},
     undef, 'Super admin users receive hidden data' );
 
-sleep 30;
+isnt(
+    $superadmin_megashops_token_json->{data}->{users}
+      ->{'otheradminagain@megashops.com'},
+    undef, 'otheradminagain@megashops.com belongs to megashops'
+);
+
+isnt(
+    $superadmin_megashops_token_json->{data}->{users}
+      ->{'otheradminagain@megashops.com'}->{token},
+    undef, 'otheradminagain@megashops.com has a token'
+);
+
+sleep 10;
 
 my $superadmin_expired_token = request(
     GET "$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO",

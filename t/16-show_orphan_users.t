@@ -16,7 +16,7 @@ my $endpoint = "/user/showorphan";
 my $failed_because_no_auth =
   request( GET $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -180,5 +180,11 @@ is( keys %{ $magashops_admin_one_new_user_json->{data}->{orphan_users} },
 
 is( $magashops_admin_one_new_user_json->{_hidden_data},
     undef, "Non Superadmin users do not see hidden_data" );
+
+isnt(
+    $magashops_admin_one_new_user_json->{data}->{orphan_users}
+      ->{'marvin@megashops.com'}->{token},
+    undef
+);
 
 done_testing();

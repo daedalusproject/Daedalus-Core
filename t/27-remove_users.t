@@ -11,19 +11,10 @@ use HTTP::Request::Common qw(GET PUT POST DELETE);
 
 my $endpoint = '/user/remove';
 
-my $failed_because_no_auth_token =
+my $failed_because_no_user_token =
   request( DELETE $endpoint, Content_Type => 'application/json', );
 
-is( $failed_because_no_auth_token->code(), 400, );
-
-my $failed_because_no_auth_token_json =
-  decode_json( $failed_because_no_auth_token->content );
-
-is( $failed_because_no_auth_token_json->{status}, 0, );
-is(
-    $failed_because_no_auth_token_json->{message},
-    "No session token provided.",
-);
+is( $failed_because_no_user_token->code(), 404, );
 
 my $non_admin_success = request(
     POST '/user/login',
@@ -50,22 +41,12 @@ my $not_admin_authorization_basic =
 my $failed_no_token =
   request( DELETE $endpoint, Content_Type => 'application/json', );
 
-is( $failed_no_token->code(), 400, );
-
-my $failed_no_token_json = decode_json( $failed_no_token->content );
-
-is( $failed_no_token_json->{status},  0, );
-is( $failed_no_token_json->{message}, 'No session token provided.', );
+is( $failed_no_token->code(), 404, );
 
 my $failed_no_admin = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/whocaresabouthtisusertoken",
     Content_Type  => 'application/json',
     Authorization => "Basic $not_admin_authorization_basic",
-    Content       => encode_json(
-        {
-            user_email => 'whocaresabouthtisuser@domain.com',
-        }
-    ),
 );
 
 is( $failed_no_admin->code(), 403, );
@@ -134,39 +115,10 @@ is( $list_users_json->{status}, 1, 'Status success.' );
 is( keys %{ $list_users_json->{data}->{registered_users} },
     4, 'This user has registered 4 users for the tiem being.' );
 
-my $failed_no_data = request(
-    DELETE $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( {} )
-);
-
-is( $failed_no_data->code(), 400, );
-#
-my $failed_no_data_json = decode_json( $failed_no_data->content );
-
-is( $failed_no_data_json->{status},  0, );
-is( $failed_no_data_json->{message}, 'No user_email provided.', );
-
-my $failed_invalid_email = request(
-    DELETE $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content => encode_json( { user_email => 'ofcourseinvalid@emails_fail' } ),
-);
-
-is( $failed_invalid_email->code(), 400, );
-
-my $failed_invalid_email_json = decode_json( $failed_invalid_email->content );
-
-is( $failed_invalid_email_json->{status},  0, );
-is( $failed_invalid_email_json->{message}, 'user_email is invalid.', );
-
 my $failed_non_existent_user = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/invalidtoken_adddddoiuhjhgjhagds",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json( { user_email => 'nonrobot@megashops.com' } ),
 );
 
 is( $failed_non_existent_user->code(), 400, );
@@ -180,12 +132,25 @@ is(
     'Requested user does not exists or it has not been registered by you.',
 );
 
+my $superadmin_get_active_users = request(
+    GET "user/showactive",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+my $superadmin_get_active_users_json =
+  decode_json( $superadmin_get_active_users->content );
+
+is( $superadmin_get_active_users_json->{status}, 1, );
+
+my $othernotanadmin_user_token =
+  $superadmin_get_active_users_json->{data}->{active_users}
+  ->{'othernotanadmin@daedalus-project.io'}->{token};
+
 my $failed_not_my_registered_user = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/$othernotanadmin_user_token",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
-    Content =>
-      encode_json( { user_email => 'othernotanadmin@daedalus-project.io' } ),
 );
 
 is( $failed_not_my_registered_user->code(), 400, );
@@ -225,6 +190,9 @@ is(
 
 is( $create_group_success_json->{_hidden_data}, undef, );
 
+my $megashops_sysadmins_group_token =
+  $create_group_success_json->{data}->{organization_groups}->{group_token};
+
 my $add_user_to_group_success = request(
     POST '/organization/addusertogroup',
     Content_Type => 'application/json',
@@ -233,8 +201,9 @@ my $add_user_to_group_success = request(
     Content => encode_json(
         {
             organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            group_name         => 'Mega Shop Sysadmins',
-            user_email         => 'noadmin@megashops.com'
+            group_token        => $megashops_sysadmins_group_token,
+            user_token =>
+              '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt',    # noadmin@megashops.com
         }
     ),
 );
@@ -253,7 +222,7 @@ is(
 is( $add_user_to_group_success_json->{_hidden_data}, undef, );
 
 my $get_noadmin_is_sysadmin = request(
-    GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+    GET '/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
@@ -271,15 +240,10 @@ isnt(
 );
 
 my $remove_user_success = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            user_email => 'noadmin@megashops.com',
-        }
-    ),
 );
 
 is( $remove_user_success->code(), 200, );
@@ -309,7 +273,7 @@ is( keys %{ $list_users_again_json->{data}->{registered_users} },
     3, 'noadmin@megashops.com has been deleted' );
 
 my $get_sysadmins = request(
-    GET '/organization/showoallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+    GET '/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
 );
@@ -326,15 +290,10 @@ is(
 );
 
 my $superadmin_removes_marvin = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            user_email => 'marvin@megashops.com',
-        }
-    ),
 );
 
 is( $superadmin_removes_marvin->code(), 200, );
@@ -349,15 +308,10 @@ is(
 );
 
 my $already_removed_fail = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $admin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            user_email => 'noadmin@megashops.com',
-        }
-    ),
 );
 
 is( $already_removed_fail->code(), 400, );
@@ -373,15 +327,10 @@ is(
 is( $already_removed_fail_json->{_hidden_data}, undef, );
 
 my $already_removed_fail_superadmin = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            user_email => 'noadmin@megashops.com',
-        }
-    ),
 );
 
 is( $already_removed_fail_superadmin->code(), 400, );
@@ -398,15 +347,10 @@ is(
 is( $already_removed_fail_superadmin_json->{_hidden_data}, undef, );
 
 my $remove_myslef_fail_superadmin = request(
-    DELETE $endpoint,
+    DELETE "$endpoint/gDoGxCkNI0DrItDrOzWKjS5tzCHjJTVO",
     Content_Type => 'application/json',
     Authorization =>
       "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
-        {
-            user_email => 'admin@daedalus-project.io',
-        }
-    ),
 );
 
 is( $remove_myslef_fail_superadmin->code(), 400, );
@@ -421,5 +365,77 @@ is(
 );
 
 is( $remove_myslef_fail_superadmin_json->{_hidden_data}, undef, );
+
+my $superadmin_removes_superboss = request(
+    DELETE "$endpoint/tqqZW1Xrjw6BAUJo6Y5WqQzBJenxOY9X",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_removes_superboss->code(), 200, );
+
+my $superadmin_removes_superboss_json =
+  decode_json( $superadmin_removes_superboss->content );
+
+is( $superadmin_removes_superboss_json->{status}, 1, );
+is(
+    $superadmin_removes_superboss_json->{message},
+    'Selected user has been removed from organization.',
+);
+
+my $admin_get_inactive_users = request(
+    GET "user/showinactive",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $admin_get_inactive_users_json =
+  decode_json( $admin_get_inactive_users->content );
+
+is( $admin_get_inactive_users_json->{status}, 1, );
+
+isnt(
+    $admin_get_inactive_users_json->{data}->{inactive_users}
+      ->{'shirorobot@megashops.com'}->{token},
+    undef
+);
+
+my $shirorobot_user_token =
+  $admin_get_inactive_users_json->{data}->{inactive_users}
+  ->{'shirorobot@megashops.com'}->{token};
+
+my $superadmin_removes_shiro = request(
+    DELETE "$endpoint/$shirorobot_user_token",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_removes_shiro->code(), 200, );
+
+my $superadmin_removes_shiro_json =
+  decode_json( $superadmin_removes_shiro->content );
+
+is( $superadmin_removes_shiro_json->{status}, 1, );
+is(
+    $superadmin_removes_shiro_json->{message},
+    'Selected user has been removed from organization.',
+);
+
+my $superadmin_removes_orphan = request(
+    DELETE "$endpoint/qQGzQ4X3BBNiSFvEwBhsQZF47FS0v5AP",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_removes_orphan->code(), 200, );
+
+my $superadmin_removes_orphan_json =
+  decode_json( $superadmin_removes_orphan->content );
+
+is( $superadmin_removes_orphan_json->{status}, 1, );
+is(
+    $superadmin_removes_orphan_json->{message},
+    'Selected user has been removed from organization.',
+);
 
 done_testing();

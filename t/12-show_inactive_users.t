@@ -19,7 +19,7 @@ my $failed_because_no_auth = request(
     Content      => encode_json( {} ),
 );
 
-is( $failed_because_no_auth->code(), 403, );
+is( $failed_because_no_auth->code(), 400, );
 
 my $failed_because_no_auth_json =
   decode_json( $failed_because_no_auth->content );
@@ -100,6 +100,12 @@ my $admin_two_user_json = decode_json( $admin_two_user->content );
 is( $admin_two_user_json->{status}, 1, 'Status success, admin.' );
 is( keys %{ $admin_two_user_json->{data}->{inactive_users} },
     2, 'There are 2 inactive users' );
+
+isnt(
+    $admin_two_user_json->{data}->{inactive_users}
+      ->{'othernotanadmin@daedalus-project.io'}->{token},
+    undef
+);
 
 my $other_admin_success = request(
     POST '/user/login',
