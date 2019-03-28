@@ -51,7 +51,8 @@ create_package:
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
         - mkdir packages
-        - mv ../libdaedalus-core-perl* packages/
+        - mv ../libdaedalus-core-perl*-deb packages/
     artifacts:
         paths:
-            - packages
+        - packages
+        expire_in: 5 minutes
