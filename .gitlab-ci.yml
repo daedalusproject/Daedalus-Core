@@ -50,6 +50,8 @@ create_package:
     image: daedalusproject/base_deb_perl_builder:201903280602
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
+        - mkdir packages
+        - mv ../libdaedalus-core-perl* packages/
     artifacts:
         paths:
-            - ../libdaedalus-core-perl*
+            - packages
