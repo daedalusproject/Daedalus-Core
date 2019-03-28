@@ -1,4 +1,4 @@
-image: daedalsproject/base
+image: daedalusproject/base
 
 stages:
     - test
