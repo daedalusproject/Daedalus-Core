@@ -1,0 +1,16 @@
+Source: libdaedalus-core-perl
+Section: perl
+Priority: optional
+Maintainer: root <@>
+Build-Depends: debhelper (>= 10)
+Build-Depends-Indep: perl
+Standards-Version: 4.1.3
+Homepage: https://git.daedalus-project.io/daedalusproject/Daedalus-Core
+
+Package: libdaedalus-core-perl
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}
+Description: Catalyst based application
+ [enter your description here]
+ .
+ This description was automagically extracted from the module by dh-make-perl.
