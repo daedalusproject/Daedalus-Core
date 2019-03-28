@@ -31,9 +31,18 @@ Depends: ${misc:Depends}, ${perl:Depends},
  libstring-random-perl,
  libdata-password-perl,
  libdbix-class-timestamp-perl,
- libcatalyst-authentication-store-dbix-class-perl libcatalyst-action-rest-perl libdata-password-check-perl libdbix-class-validation-perl libdatetime-format-sqlite-perl libdaedalus-hermes-perl libcatalyst-plugin-configloader-multi-perl libcrypt-jwt-perl libdatetime-format-mysql-perl libnumber-phone-perl libcatalyst-plugin-cache-perl redis libredis-perl libcache-redis-perl
-
- 
+ libcatalyst-action-rest-perl,
+ libdata-password-check-perl,
+ libdbix-class-validation-perl,
+ libdatetime-format-sqlite-perl,
+ libdaedalus-hermes-perl,
+ libcatalyst-plugin-configloader-multi-perl,
+ libcrypt-jwt-perl,
+ libdatetime-format-mysql-perl,
+ libnumber-phone-perl,
+ libcatalyst-plugin-cache-perl,
+ libredis-perl,
+ libcache-redis-perl
 Description: Catalyst based application
  [enter your description here]
  .
