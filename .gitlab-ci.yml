@@ -46,7 +46,7 @@ cover:
     coverage: /Total\s+.+\s(\d+\.\d+?)$/
 
 create_package:
-    stage: build
+    stage: package
     image: daedalusproject/base_deb_perl_builder:201903280602
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
