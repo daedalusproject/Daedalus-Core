@@ -6,7 +6,7 @@ stages:
 
 test_kubernetes:
     stage: kubernetes
-    image: daedaluscore/base_kubectl:201904071145
+    image: daedalusproject/base_kubectl:201904071145
     script:
         kubectl get pods
 
