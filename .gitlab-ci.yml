@@ -1,7 +1,14 @@
 image: acastellano/cirunnerdaedaluscore
 
 stages:
+    - kubernetes
     - test
+
+test_kubernetes:
+    stage: kubernetes
+    image: daedaluscore/basekubectl:201904071145
+    script:
+        kubectl get pods
 
 integration_tests:
     stage: test
