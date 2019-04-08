@@ -8,7 +8,8 @@ test_kubernetes:
     stage: kubernetes
     image: daedalusproject/base_kubectl:201904071145
     script:
-        kubectl get pods
+        - kubectl config current-context
+        - kubectl get pods
 
 integration_tests:
     stage: test
