@@ -9,7 +9,7 @@ test_kubernetes:
     image: daedalusproject/base_kubectl:201904071145
     before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
-        - kubectl config set-credentials gitlab-daedalus-project-deployer --token=$KUBE_USER_TOKEN
+        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-project-deployer
         - kubectl config use-context default
         - kubectl get pods 
