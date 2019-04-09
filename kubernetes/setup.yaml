@@ -21,9 +21,9 @@ metadata:
   name: gitlab-daedalus-core-deployer
   namespace: daedalus-core-develop
 rules:
-- apiGroups: ["apps"]
-  resources: ["deployments", "services", "pods"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["", "extensions", "apps"]
+  resources: ["*"]
+  verbs: ["*"]
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -45,7 +45,7 @@ metadata:
   name: gitlab-daedalus-core-deployer
   namespace: daedalus-core
 rules:
-- apiGroups: ["apps"]
+- apiGroups: ["", "extensions", "apps"]
   resources: ["deployments", "services", "pods"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
@@ -57,7 +57,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: gitlab-daedalus-core-deployer
-  namespace: daedalus-project-docs
+  namespace: daedalus-core
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

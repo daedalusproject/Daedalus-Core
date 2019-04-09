@@ -12,15 +12,15 @@ test_kubernetes:
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
-        - kubectl get pods
-        - kubectl apply -f kubernetes/daedalus-core-develop/dev-environment.yml
+        - kubectl get pods -n daedalus-core-develop
+        - kubectl apply -f kubernetes/daedalus-core-develop/dev-environment.yml -n daedalus-core-develop
     script:
         - apt-get update
         - apt-get install redis-tools
         - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
         - redis-cli -h redis-daedalus-core-develop get greeting
     after_script:
-        - kubectl delete -f kubernetes/daedalus-core-develop/dev-environment.yml
+        - kubectl delete -f kubernetes/daedalus-core-develop/dev-environment.yml -n daedalus-core-develop
 
 integration_tests:
     stage: test
