@@ -10,9 +10,9 @@ test_kubernetes:
     before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_USER_TOKEN
-        - kubectl config set-context default --cluster=default --user=gitlab-daedalus-project-deployer
+        - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
-        - kubectl get pods 
+        - kubectl get pods
         - kubectl apply -f kubernetes/daedalus-core-develop/dev-environment.yml
     script:
         - apt-get update
