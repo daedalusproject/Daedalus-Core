@@ -7,12 +7,19 @@ stages:
 test_kubernetes:
     stage: kubernetes
     image: daedalusproject/base_kubectl:201904071145
-    script:
+    before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
         - kubectl config set-credentials gitlab-daedalus-project-deployer --token=$KUBE_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-project-deployer
         - kubectl config use-context default
-        - kubectl get pods
+        - kubectl apply -f kubernetes/daedalus-core-develop/dev-environment.yml
+    script:
+        - apt-get update
+        - apt-get install redis-tools
+        - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
+        - redis-cli -h redis-daedalus-core-develop get greeting
+    after_script:
+        - kubectl delete -f kubernetes/daedalus-core-develop/dev-environment.yml
 
 integration_tests:
     stage: test
