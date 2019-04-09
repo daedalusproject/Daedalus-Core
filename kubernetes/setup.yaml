@@ -1,14 +1,14 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: daedalus-core-develop
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: daedalus-core
----
+#---
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: daedalus-core-develop
+#---
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: daedalus-core
+#---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
