@@ -24,6 +24,8 @@ spec:
       containers:
       - name: redis
         image: daedalusproject/base_redis_server:201904082015
+        command: ["redis-server"]
+        args: ["--protected-mode no"]
         resources:
           requests:
             cpu: 50m
@@ -32,7 +34,7 @@ spec:
         - containerPort: 6379
         volumeMounts:
         - name: redis-config
-          mountPath: /etc/redis/redis.conf
+          mountPath: /etc/redis/
       volumes:
         - name: redis-config
           configMap:
