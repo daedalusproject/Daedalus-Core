@@ -28,7 +28,7 @@ metadata:
   namespace: daedalus-core-develop
 rules:
 - apiGroups: ["", "extensions", "apps"]
-  resources: ["deployments","pods","services"]
+  resources: ["deployments","pods","services", "configmaps"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: RoleBinding
@@ -52,7 +52,7 @@ metadata:
   namespace: daedalus-core
 rules:
 - apiGroups: ["", "extensions", "apps"]
-  resources: ["deployments","pods","services"]
+  resources: ["deployments","pods","services","configmaps"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: RoleBinding
