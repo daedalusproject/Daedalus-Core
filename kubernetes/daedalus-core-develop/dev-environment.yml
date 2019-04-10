@@ -37,7 +37,6 @@ spec:
         - name: redis-conf
           configMap:
             name: redis-conf
-  restartPolicy: Never
 ---
 apiVersion: v1
 kind: Service
