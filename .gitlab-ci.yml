@@ -12,7 +12,7 @@ test_kubernetes:
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
-        - kubectl get pods -n daedalus-core
+        - kubectl get pods -n daedalus-core-develop
         - kubectl apply -f kubernetes/daedalus-core-develop/dev-environment.yml -n daedalus-core-develop
     script:
         - apt-get update
