@@ -12,7 +12,7 @@ test_kubernetes:
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
-        - cat kubernetes/redis.conf.template | sed "s/__REDIS_BIND__/$KUBE_CDIR/" > kubernetes/redis.conf
+        - sed -i s/__REDIS_BIND__/$KUBE_CDIR/ kubernetes/redis.conf
         - kubectl -n daedalus-core-develop  create configmap redis-config --from-file kubernetes/redis.conf
         - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
     script:
