@@ -34,9 +34,9 @@ spec:
         - name: redis-conf
           mountPath: /etc/redis/redis.conf
       volumes:
-        - name: redis-conf
+        - name: redis-config
           configMap:
-            name: redis-conf
+            name: redis-config
 ---
 apiVersion: v1
 kind: Service
