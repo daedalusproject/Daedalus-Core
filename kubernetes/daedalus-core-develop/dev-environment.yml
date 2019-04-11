@@ -59,3 +59,71 @@ spec:
     role: master
     tier: backend
     environment: develop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+      tier: broker
+      environment: develop
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        tier: broker
+        environment: develop
+    spec:
+      containers:
+      - name: rabbitmq
+        image: daedalusproject/base_rabbitmq_server:latest
+        env:
+        - name: RABBITMQ_ENABLED_PLUGINS_FILE
+          value: /etc/rabbitmq/enabled_plugins
+        ports:
+        - name: clitool
+          containerPort: 25672
+        - name: client-access-2
+          containerPort: 5672
+        - name: client-access-1
+          containerPort: 5671
+        - name: epmd
+          containerPort: 4369
+        volumeMounts:
+        - name: rabbitmq-config
+          mountPath: /etc/rabbitmq/
+      volumes:
+        - name: rabbitmq-config
+          configMap:
+            name: rabbitmq-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: rabbitmq
+    tier: broker
+    environment: develop
+spec:
+  ports:
+  - name: client-access-2
+    port: 5672
+  - name: client-access-1
+    port: 5671
+  - name: clitool
+    port: 25672
+  - name: epmd
+    port: 4369
+  selector:
+    app: rabbitmq
+    tier: broker
+    environment: develop

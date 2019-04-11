@@ -14,16 +14,22 @@ test_kubernetes:
         - kubectl config use-context default
         - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml --ignore-not-found=true
         - kubectl -n daedalus-core-develop delete configmap redis-config --ignore-not-found=true
-        - kubectl -n daedalus-core-develop  create configmap redis-config --from-file kubernetes/redis.conf
+        - kubectl -n daedalus-core-develop delete configmap rabbitmq-config --ignore-not-found=true
+        - kubectl -n daedalus-core-develop create configmap redis-config --from-file kubernetes/config/redis.conf
+        - kubectl -n daedalus-core-develop create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
-    script:
         - apt-get update
-        - apt-get install -y redis-tools
+        - apt-get install -y redis-tools golang golang-github-streadway-amqp-dev
+        - export GOPATH=/usr/share/gocode
+    script:
         - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
         - redis-cli -h redis-daedalus-core-develop get greeting
+        - go run kubernetes/utils/send.go
+        - go run kubernetes/utils/receive.go
     after_script:
         - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml
         - kubectl -n daedalus-core-develop delete configmap redis-config
+        - kubectl -n daedalus-core-develop delete configmap rabbitmq-config --ignore-not-found=true
 
 integration_tests:
     stage: test
