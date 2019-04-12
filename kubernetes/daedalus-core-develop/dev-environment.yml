@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: daedalusproject/base_redis_server:201904082015
+        image: daedalusproject/base_redis_server:201904111955
         command: ["redis-server"]
         args: ["--protected-mode no"]
         resources:
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: rabbitmq
-        image: daedalusproject/base_rabbitmq_server:latest
+        image: daedalusproject/base_rabbitmq_server:201904111955
         env:
         - name: RABBITMQ_ENABLED_PLUGINS_FILE
           value: /etc/rabbitmq/enabled_plugins
