@@ -27,6 +27,12 @@ test_kubernetes:
         - redis-cli -h redis-daedalus-core-develop get greeting
         - go run kubernetes/utils/send.go
         - go run kubernetes/utils/receive.go
+		- perl --version
+		- cd t && cpanm --quiet --installdeps --notest . && cd ..
+		- perl script/deploy.pl SQLite /var/tmp/daedalus_core_realms.db
+		- perl Makefile.PL
+		- make
+		- make test
     after_script:
         - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml
         - kubectl -n daedalus-core-develop delete configmap redis-config
