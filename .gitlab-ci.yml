@@ -29,7 +29,6 @@ test_kubernetes:
         - go run kubernetes/utils/receive.go
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
-		- mkdir -p /var/tmp
         - perl script/deploy.pl SQLite /var/tmp/daedalus_core_realms.db
         - perl t/script/populate_test_database.pl
         - perl Makefile.PL
