@@ -1,13 +1,23 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
 
 use Catalyst::Test 'Daedalus::Core';
 
-#æuse Daedalus::Core::Controller::REST;
-
 use JSON::XS;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+use Daedalus::Core::Schema::CoreRealms;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 ok( request('/')->is_success, 'Request should succeed' );
 
@@ -29,3 +39,5 @@ my $not_admin_no_session_token_json =
 is( $not_admin_no_session_token_json->{status}, 'pong', );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();
