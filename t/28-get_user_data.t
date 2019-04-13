@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST DELETE);
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/user';
 
@@ -183,3 +193,5 @@ is( $super_admin_get_data_json->{_hidden_data}->{user}->{id},             1, );
 is( $super_admin_get_data_json->{_hidden_data}->{user}->{is_super_admin}, 1, );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

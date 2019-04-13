@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -10,6 +11,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = "/user/showactive";
 
@@ -203,3 +213,5 @@ isnt(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

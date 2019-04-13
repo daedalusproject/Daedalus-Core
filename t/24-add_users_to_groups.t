@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/organization/addusertogroup';
 
@@ -680,3 +690,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

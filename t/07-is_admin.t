@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -7,6 +8,15 @@ use Catalyst::Test 'Daedalus::Core';
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 # Check if User is admin
 
@@ -118,3 +128,5 @@ is( $super_admin_user_get_json->{_hidden_data},
     undef, "Super admin does not get extra data in this endpoint" );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

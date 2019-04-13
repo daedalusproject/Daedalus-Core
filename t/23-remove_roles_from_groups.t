@@ -662,3 +662,5 @@ is(
 isnt( $make_admin_again_json->{_hidden_data}, undef, );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

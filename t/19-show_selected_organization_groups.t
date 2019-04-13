@@ -9,6 +9,15 @@ use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
 
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
+
 my $endpoint = "/organization/showorganizationusergroups";
 
 my $show_organizations_GET_content = get($endpoint);
@@ -260,3 +269,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -10,6 +11,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/organization/showusers';
 
@@ -241,3 +251,5 @@ is( $superadmin_expired_token_json->{status},  0, );
 is( $superadmin_expired_token_json->{message}, 'Session token expired.', );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

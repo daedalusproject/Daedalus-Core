@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -9,7 +10,14 @@ use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST DELETE);
 
-use Data::Dumper;
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/organization/removeuserfromgroup';
 

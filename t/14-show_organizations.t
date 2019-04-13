@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = "/organization/show";
 
@@ -222,3 +232,5 @@ is( $no_admin_user_mega_shop_organization_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

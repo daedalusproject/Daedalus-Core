@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -7,6 +8,20 @@ use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $confirm_registration_GET_content = get('/user/confirm');
 ok( $confirm_registration_GET_content, qr /Method GET not implemented/ );
@@ -239,3 +254,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

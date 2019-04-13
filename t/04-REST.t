@@ -12,9 +12,8 @@ use FindBin qw($Bin);
 use lib "$Bin/../lib";
 use lib "$Bin/script";
 
-use DatabaseSetUpTearDown;
-
 use Daedalus::Core::Schema::CoreRealms;
+use DatabaseSetUpTearDown;
 
 DatabaseSetUpTearDown::delete_database();
 DatabaseSetUpTearDown::create_database();
