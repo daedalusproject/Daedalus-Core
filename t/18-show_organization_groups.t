@@ -229,15 +229,15 @@ my $create_Ultrashops_success = request(
     Content       => encode_json( { name => "Ultrashops" } ),
 );
 
-is( $create_supershops_success->code(), 200, );
+is( $create_Ultrashops_success->code(), 200, );
 #
-my $create_supershops_success_json =
-  decode_json( $create_supershops_success->content );
+my $create_Ultrashops_success_json =
+  decode_json( $create_Ultrashops_success->content );
 
-is( $create_supershops_success_json->{status},  1, );
-is( $create_supershops_success_json->{message}, 'Organization created.', );
+is( $create_Ultrashops_success_json->{status},  1, );
+is( $create_Ultrashops_success_json->{message}, 'Organization created.', );
 
-is( $create_supershops_success_json->{_hidden_data}, undef, );
+isnt( $create_Ultrashops_success_json->{_hidden_data}, undef, );
 
 my $superadmin_user_ultra_shop_groups = request(
     GET $endpoint,
