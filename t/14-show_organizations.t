@@ -61,6 +61,26 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $superadmin_create_ultrashops_organization = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json( { name => "Ultrashops" } ),
+);
+
+is( $superadmin_create_ultrashops_organization->code(), 200, );
+#
+my $superadmin_create_ultrashops_organization_json =
+  decode_json( $superadmin_create_ultrashops_organization->content );
+
+is( $superadmin_create_ultrashops_organization_json->{status}, 1, );
+is(
+    $superadmin_create_ultrashops_organization_json->{message},
+    'Organization created.',
+);
+
+isnt( $superadmin_create_ultrashops_organization_json->{_hidden_data}, undef, );
+
 my $admin_two_organization = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -148,6 +168,22 @@ my $admin_megashops_session_token =
 
 my $admin_megashops_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_megashops_session_token", '' );
+
+my $create_supershops = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content       => encode_json( { name => "Supershops" } ),
+);
+
+is( $create_supershops->code(), 200, );
+#
+my $create_supershops_json = decode_json( $create_supershops->content );
+
+is( $create_supershops_json->{status},  1, );
+is( $create_supershops_json->{message}, 'Organization created.', );
+
+is( $create_supershops_json->{_hidden_data}, undef, );
 
 my $admin_user_mega_shop_organization = request(
     GET $endpoint,
