@@ -322,6 +322,71 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $create_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins'
+        }
+    ),
+);
+
+is( $create_group_success->code(), 200, );
+
+my $create_group_success_json = decode_json( $create_group_success->content );
+
+is( $create_group_success_json->{status}, 1, );
+is(
+    $create_group_success_json->{message},
+    'Organization group has been created.',
+);
+
+is( $create_group_success_json->{_hidden_data}, undef, );
+
+isnt( $create_group_success_json->{data}, undef, );
+
+my $superadmin_create_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            group_name         => 'Daedalus Core Sysadmins'
+        }
+    ),
+);
+
+is( $superadmin_create_group_success->code(), 200, );
+
+my $superadmin_create_group_success_json =
+  decode_json( $superadmin_create_group_success->content );
+
+is( $superadmin_create_group_success_json->{status}, 1, );
+is(
+    $superadmin_create_group_success_json->{message},
+    'Organization group has been created.',
+);
+
+isnt( $superadmin_create_group_success_json->{_hidden_data}, undef, );
+
+isnt( $superadmin_create_group_success_json->{data}, undef, );
+
+is(
+    $superadmin_create_group_success_json->{data}->{organization_groups}
+      ->{group_name},
+    'Daedalus Core Sysadmins',
+);
+isnt(
+    $superadmin_create_group_success_json->{data}->{organization_groups}
+      ->{group_token},
+    undef,
+);
+
 my $superadminadmin_get_megashops_groups = request(
     GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
@@ -336,6 +401,12 @@ my $superadminadmin_get_megashops_groups_json =
 
 is( $superadminadmin_get_megashops_groups_json->{status}, 1,
     'Status success.' );
+
+isnt(
+    $superadminadmin_get_megashops_groups_json->{data}->{groups}
+      ->{'Mega Shop Sysadmins'}->{token},
+    undef,
+);
 
 my $megashops_sysadmins_group_token =
   $superadminadmin_get_megashops_groups_json->{data}->{groups}
@@ -431,6 +502,12 @@ my $superadminadmin_get_daedalus_core_groups_json =
 is( $superadminadmin_get_daedalus_core_groups_json->{status},
     1, 'Status success.' );
 
+isnt(
+    $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+      ->{'Daedalus Core Sysadmins'}->{token},
+    undef, 'Status success.'
+);
+
 my $daedalus_project_sysadmins_group_token =
   $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
   ->{'Daedalus Core Sysadmins'}->{token};
@@ -477,7 +554,7 @@ my $admin_user_mega_shop_groups_json =
 
 is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
-    3, 'This response contains three groups' );
+    2, 'This response contains two groups' );
 
 isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
     undef, 'API response contains organization groups' );
