@@ -201,6 +201,21 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $create_Ultrashops_success = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json( { name => "Ultrashops" } ),
+);
+
+is( $create_Ultrashops_success->code(), 200, );
+#
+my $create_Ultrashops_success_json =
+  decode_json( $create_Ultrashops_success->content );
+
+is( $create_Ultrashops_success_json->{status},  1, );
+is( $create_Ultrashops_success_json->{message}, 'Organization created.', );
+
 my $superadmin_show_organizations = request(
     GET "/organization/show",
     Content_Type  => 'application/json',

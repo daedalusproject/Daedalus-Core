@@ -219,8 +219,8 @@ is( $create_Ultrashops_success->code(), 200, );
 my $create_Ultrashops_success_json =
   decode_json( $create_Ultrashops_success->content );
 
-is( $create_Ultrashops_success_json->{status},    1, );
-is( $create_Ultrashopnts_success_json->{message}, 'Organization created.', );
+is( $create_Ultrashops_success_json->{status},  1, );
+is( $create_Ultrashops_success_json->{message}, 'Organization created.', );
 
 my $superadmin_show_organizations = request(
     GET "/organization/show",
