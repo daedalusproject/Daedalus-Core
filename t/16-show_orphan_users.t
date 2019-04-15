@@ -144,6 +144,64 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $success_superadmin_register = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_superadmin_register->code(), 200, );
+
+my $success_superadmin_register_json =
+  decode_json( $success_superadmin_register->content );
+
+is( $success_superadmin_register_json->{status}, 1, 'User has been created.' );
+is(
+    $success_superadmin_register_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_superadmin_register_json->{_hidden_data}->{new_user}->{'e-mail'},
+    'othernotanadmin@daedalus-project.io',
+);
+
+isnt( $success_superadmin_register_json->{data}->{new_user}->{token}, undef, );
+
+my $othernotanadmin_auth_token =
+  $success_superadmin_register_json->{_hidden_data}->{new_user}->{auth_token};
+
+my $othernotanadmin_confirms_registration = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token => $othernotanadmin_auth_token,
+            password   => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $othernotanadmin_confirms_registration->code(), 200 );
+
+my $othernotanadmin_confirms_registration_json =
+  decode_json( $othernotanadmin_confirms_registration->content );
+
+is( $othernotanadmin_confirms_registration_json->{status},
+    1, 'Password changed, account is activated.' );
+is(
+    $othernotanadmin_confirms_registration_json->{message},
+    'Account activated.',
+    'Auth token has changed.'
+);
+
 my $daedalus_admin = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -155,12 +213,12 @@ is( $daedalus_admin->code(), 200, );
 my $daedalus_admin_json = decode_json( $daedalus_admin->content );
 
 is( keys %{ $daedalus_admin_json->{data}->{orphan_users} },
-    2, 'Daedalus Project has only one user so far' );
+    1, 'Daedalus Project has only one user so far' );
 
 isnt( $daedalus_admin_json->{_hidden_data},
     undef, "Superadmin users see hidden_data" );
 
-# Register new user
+# marvin@megashops.com confirms its registration
 
 request(
     POST '/user/confirm',
