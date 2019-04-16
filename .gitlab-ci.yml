@@ -19,7 +19,7 @@ integration_tests:
         - kubectl -n daedalus-core-develop create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
         - export GOPATH=/usr/share/gocode
-        - sleep 30
+        - bash utils/test_redis.sh redis-daedalus-core-develop 5 5
     script:
         - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
         - redis-cli -h redis-daedalus-core-develop get greeting
@@ -50,7 +50,7 @@ cover:
         - kubectl -n daedalus-core-develop create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
         - export GOPATH=/usr/share/gocode
-        - sleep 30
+        - bash utils/test_redis.sh redis-daedalus-core-develop 5 5
     script:
         - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
         - redis-cli -h redis-daedalus-core-develop get greeting
