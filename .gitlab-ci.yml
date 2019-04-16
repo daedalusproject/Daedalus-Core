@@ -51,7 +51,7 @@ cover:
         - kubectl -n daedalus-core-develop create configmap redis-config --from-file kubernetes/config/redis.conf
         - kubectl -n daedalus-core-develop create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
-		- apt-get update
+        - apt-get update
         - apt-get install -y redis-tools golang golang-github-streadway-amqp-dev cpanminus
         - apt-get install -y   libdaedalus-hermes-perl libcatalyst-plugin-configloader-multi-perl libcrypt-jwt-perl libdatetime-format-mysql-perl libnumber-phone-perl libcatalyst-plugin-cache-perl libredis-perl libcache-redis-perl
         - export GOPATH=/usr/share/gocode
