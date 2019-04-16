@@ -149,6 +149,21 @@ isnt( $success_superadmin_register_json->{data}->{new_user}->{token}, undef, );
 my $othernotanadmin_auth_token =
   $success_superadmin_register_json->{_hidden_data}->{new_user}->{auth_token};
 
+my $admin_still_zero_users = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $admin_still_zero_users->code(), 200, );
+
+my $admin_still_zero_users_json =
+  decode_json( $admin_still_zero_users->content );
+
+is( $admin_still_zero_users_json->{status}, 1, 'Status success, admin.' );
+is( keys %{ $admin_still_zero_users_json->{data}->{active_users} },
+    0, 'There are noactive users yet' );
+
 my $othernotanadmin_confirms_registration = request(
     POST '/user/confirm',
     Content_Type => 'application/json',
