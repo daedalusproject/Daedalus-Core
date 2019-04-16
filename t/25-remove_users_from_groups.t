@@ -163,6 +163,22 @@ is(
     'There is no registered user with that token.',
 );
 
+my $add_user_success = request(
+    POST '/organization/adduser',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+
+is( $add_user_success->code(), 200, );
+
 # User is marvin@megashops.com
 
 my $failed_group_not_found = request(
@@ -181,6 +197,20 @@ is( $failed_group_not_found_json->{status}, 0, );
 is( $failed_group_not_found_json->{message},
     'Required group does not exist.', );
 
+my $create_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins'
+        }
+    ),
+);
+
+is( $create_group_success->code(), 200, );
+
 my $get_megashops_sysadmins_group_token = request(
     GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
     ,    # Mega Shops Token
@@ -194,6 +224,12 @@ my $get_megashops_sysadmins_group_token_json =
   decode_json( $get_megashops_sysadmins_group_token->content );
 
 is( $get_megashops_sysadmins_group_token_json->{status}, 1, 'Status success.' );
+
+isnt(
+    $get_megashops_sysadmins_group_token_json->{data}->{groups}
+      ->{'Mega Shop Sysadmins'}->{token},
+    undef,
+);
 
 my $megashops_sysadmins_group_token =
   $get_megashops_sysadmins_group_token_json->{data}->{groups}
@@ -218,6 +254,23 @@ is(
     $failed_user_not_found_json->{message},
     'There is no registered user with that token.',
 );
+
+my $add_user_to_group_success = request(
+    POST '/organization/addusertogroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $admin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_token        => $megashops_sysadmins_group_token,
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+
+is( $add_user_to_group_success->code(), 200, );
 
 # User -> marvin@megashops.com
 
@@ -275,7 +328,7 @@ my $admin_user_mega_shop_groups_json =
 
 is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
-    3, 'This response contains three groups' );
+    2, 'This response contains two groups' );
 
 isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
     undef, 'API response contains organization groups' );
@@ -291,8 +344,8 @@ is(
         $admin_user_mega_shop_groups_json->{data}->{groups}
           ->{'Mega Shop Sysadmins'}->{users}
     },
-    1,
-'For the time being Mega Shop Sysadmins group has only one user, marvin@megashops.com has been removed.'
+    0,
+'For the time being Mega Shop Sysadmins group has no users, marvin@megashops.com has been removed.'
 );
 
 my $superadmin_success = request(
@@ -317,6 +370,20 @@ my $superadmin_session_token =
 
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_create_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            group_name         => 'Daedalus Core Sysadmins'
+        }
+    ),
+);
+
+is( $superadmin_create_group_success->code(), 200, );
 
 my $superadminadmin_get_daedalus_core_groups = request(
     GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
@@ -359,9 +426,32 @@ is(
     'Invalid organization token.',
 );
 
+isnt(
+    $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+      ->{'Daedalus Core Sysadmins'}->{token},
+    undef,
+);
+
 my $daedalus_core_sysadmins_group_token =
   $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
   ->{'Daedalus Core Sysadmins'}->{token};
+
+my $superadmin_add_user_success = request(
+    POST '/organization/addusertogroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            group_token        => $daedalus_project_sysadmins_group_token,
+            user_token         => 'IXI1VoS8BiIuRrOGS4HEAOBleJVMflfG'
+            ,    # notanadmin@daedalus-project.io
+        }
+    ),
+);
+
+is( $superadmin_add_user_success->code(), 200, );
 
 # organization -> Daedalus Project
 # group -> Daedalus Core Sysadmins
@@ -386,6 +476,24 @@ is(
 );
 
 isnt( $superadmin_remove_user_success_json->{_hidden_data}, undef, );
+
+my $superadmin_add_user_other_organization_success = request(
+    POST '/organization/addusertogroup',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            group_token => $megashops_sysadmins_group_token,
+            user_token =>
+              '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt',    # noadmin@megashops.com
+        }
+    ),
+);
+
+is( $superadmin_add_user_other_organization_success->code(), 200, );
 
 # organization -> Megashops
 # group -> Mega Shop Sysadmins
