@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/organization/addusertogroup';
 
@@ -222,6 +232,44 @@ is(
     $failed_invalid_organization_data_json->{message},
     'Invalid organization token.',
 );
+my $superadmin_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_success->code(), 200, );
+
+my $superadmin_success_json = decode_json( $superadmin_success->content );
+
+is( $superadmin_success_json->{status}, 1, );
+
+my $superadmin_session_token =
+  $superadmin_success_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $add_user_success = request(
+    POST '/organization/adduser',
+    Content_Type => 'application/json',
+    Authorization =>
+      "Basic $superadmin_authorization_basic",    #Megashops Project token
+    Content => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+
+is( $add_user_success->code(), 200, );
 
 my $failed_group_not_found = request(
     POST $endpoint,
@@ -245,6 +293,23 @@ my $failed_group_not_found_json =
 is( $failed_group_not_found_json->{status}, 0, );
 is( $failed_group_not_found_json->{message},
     'Required group does not exist.', );
+my $create_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins'
+        }
+    ),
+);
+
+is( $create_group_success->code(), 200, );
+
+my $create_group_success_json = decode_json( $create_group_success->content );
+
+is( $create_group_success_json->{status}, 1, );
 
 my $get_megashops_sysadmins_group_token = request(
     GET "/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
@@ -259,6 +324,12 @@ my $get_megashops_sysadmins_group_token_json =
   decode_json( $get_megashops_sysadmins_group_token->content );
 
 is( $get_megashops_sysadmins_group_token_json->{status}, 1, 'Status success.' );
+
+isnt(
+    $get_megashops_sysadmins_group_token_json->{data}->{groups}
+      ->{'Mega Shop Sysadmins'}->{token},
+    undef,
+);
 
 my $megashops_sysadmins_group_token =
   $get_megashops_sysadmins_group_token_json->{data}->{groups}
@@ -355,7 +426,7 @@ my $admin_user_mega_shop_groups_json =
 
 is( $admin_user_mega_shop_groups_json->{status}, 1, 'Status success.' );
 is( keys %{ $admin_user_mega_shop_groups_json->{data}->{groups} },
-    3, 'This response contains three groups' );
+    2, 'This response contains two groups' );
 
 isnt( $admin_user_mega_shop_groups_json->{data}->{groups},
     undef, 'API response contains organization groups' );
@@ -397,28 +468,24 @@ my $failed_not_organization_user_json =
 is( $failed_not_organization_user_json->{status},  0, );
 is( $failed_not_organization_user_json->{message}, 'Invalid user.', );
 
-my $superadmin_success = request(
-    POST '/user/login',
-    Content_Type => 'application/json',
-    Content      => encode_json(
+my $superadmin_create_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
-            'e-mail' => 'admin@daedalus-project.io',
-            password => 'this_is_a_Test_1234',
+            organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
+            group_name         => 'Daedalus Core Sysadmins'
         }
-    )
+    ),
 );
 
-is( $superadmin_success->code(), 200, );
+is( $superadmin_create_group_success->code(), 200, );
 
-my $superadmin_success_json = decode_json( $superadmin_success->content );
+my $superadmin_create_group_success_json =
+  decode_json( $superadmin_create_group_success->content );
 
-is( $superadmin_success_json->{status}, 1, );
-
-my $superadmin_session_token =
-  $superadmin_success_json->{data}->{session_token};
-
-my $superadmin_authorization_basic =
-  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+is( $superadmin_create_group_success_json->{status}, 1, );
 
 my $superadminadmin_get_daedalus_core_groups = request(
     GET "/organization/showallgroups/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO"
@@ -434,6 +501,12 @@ my $superadminadmin_get_daedalus_core_groups_json =
 
 is( $superadminadmin_get_daedalus_core_groups_json->{status},
     1, 'Status success.' );
+
+isnt(
+    $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
+      ->{'Daedalus Core Sysadmins'}->{token},
+    undef,
+);
 
 my $daedalus_project_sysadmins_group_token =
   $superadminadmin_get_daedalus_core_groups_json->{data}->{groups}
@@ -492,6 +565,21 @@ is(
 );
 
 isnt( $superadmin_add_user_success_json->{_hidden_data}, undef, );
+
+my $success_register_megashops_user = request(
+    POST '/user/register',
+    Authorization => "Basic $admin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'shirorobot@megashops.com',
+            name     => 'Shiro',
+            surname  => 'Robot',
+        }
+    )
+);
+
+is( $success_register_megashops_user->code(), 200, );
 
 my $admin_get_inactive_users = request(
     GET "user/showinactive",
@@ -585,6 +673,42 @@ is(
     'Required group does not exist.',
 );
 
+my $success_superadmin_register = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_superadmin_register->code(), 200, );
+
+my $success_superadmin_register_json =
+  decode_json( $success_superadmin_register->content );
+
+isnt( $success_superadmin_register_json->{data}->{new_user}->{token}, undef, );
+
+my $othernotanadmin_auth_token =
+  $success_superadmin_register_json->{_hidden_data}->{new_user}->{auth_token};
+
+my $othernotanadmin_confirms_registration = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token => $othernotanadmin_auth_token,
+            password   => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $othernotanadmin_confirms_registration->code(), 200 );
+
 my $superadmin_get_active_users = request(
     GET "user/showactive",
     Content_Type  => 'application/json',
@@ -595,6 +719,12 @@ my $superadmin_get_active_users_json =
   decode_json( $superadmin_get_active_users->content );
 
 is( $superadmin_get_active_users_json->{status}, 1, );
+
+isnt(
+    $superadmin_get_active_users_json->{data}->{active_users}
+      ->{'othernotanadmin@daedalus-project.io'}->{token},
+    undef,
+);
 
 my $othernotanadmin_user_token =
   $superadmin_get_active_users_json->{data}->{active_users}
@@ -680,3 +810,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

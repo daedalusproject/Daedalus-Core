@@ -1,13 +1,24 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
 
 use Catalyst::Test 'Daedalus::Core';
 
-#æuse Daedalus::Core::Controller::REST;
+use Daedalus::Core::Controller::REST;
 
 use JSON::XS;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use Daedalus::Core::Schema::CoreRealms;
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 # Login User
 
@@ -161,3 +172,5 @@ isnt( $login_admin_post_success_json->{_hidden_data},
     undef, 'Admin users receive hidden data' );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

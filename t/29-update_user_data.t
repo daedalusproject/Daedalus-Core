@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST DELETE);
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/user';
 
@@ -274,3 +284,5 @@ is( $check_all_data_json->{data}->{user}->{surname}, 'Jimenez', );
 is( $check_all_data_json->{data}->{user}->{phone}, '+34962525478', );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

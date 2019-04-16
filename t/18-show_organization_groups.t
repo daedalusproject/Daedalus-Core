@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = "/organization/showusergroups";
 
@@ -49,6 +59,84 @@ my $admin_session_token = $admin_success_json->{data}->{session_token};
 
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_session_token", '' );
+
+my $admin_user_mega_shop_group = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $admin_user_mega_shop_group->code(), 200, );
+
+my $admin_user_mega_shop_group_json =
+  decode_json( $admin_user_mega_shop_group->content );
+
+is( $admin_user_mega_shop_group_json->{status}, 1, 'Status success.' );
+is( keys %{ $admin_user_mega_shop_group_json->{data}->{organizations} },
+    1, 'This user belongs to Mega Shops only.' );
+
+isnt(
+    $admin_user_mega_shop_group_json->{data}->{organizations}->{'Mega Shops'}
+      ->{token},
+    undef, 'API response contains organization token'
+);
+
+isnt(
+    $admin_user_mega_shop_group_json->{data}->{organizations}->{'Mega Shops'}
+      ->{groups},
+    undef, 'API response contains organization groups'
+);
+
+is(
+    keys %{
+        $admin_user_mega_shop_group_json->{data}->{organizations}
+          ->{'Mega Shops'}->{groups}
+    },
+    1,
+'For the time being there is only a group in this organization, Mega Shops Administrators'
+);
+
+isnt(
+    $admin_user_mega_shop_group_json->{data}->{organizations}->{'Mega Shops'}
+      ->{groups}->{'Mega Shops Administrators'},
+    undef,
+'For the time being there is only a group in this organization, Mega Shops Administrators'
+);
+
+isnt(
+    $admin_user_mega_shop_group_json->{data}->{organizations}->{'Mega Shops'}
+      ->{groups}->{'Mega Shops Administrators'}->{'token'},
+    undef, 'Mega Shops Administrators has an organization group token'
+);
+
+is(
+    scalar @{
+        $admin_user_mega_shop_group_json->{data}->{organizations}
+          ->{'Mega Shops'}->{groups}->{'Mega Shops Administrators'}->{roles}
+    },
+    2,
+    'For the time being Mega Shop Administrators has two roles'
+);
+
+is( $admin_user_mega_shop_group_json->{_hidden_data},
+    undef, 'Non Super admin users do not receive hidden data' );
+
+my $create_supershops_success = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json( { name => "Supershops" } ),
+);
+
+is( $create_supershops_success->code(), 200, );
+#
+my $create_supershops_success_json =
+  decode_json( $create_supershops_success->content );
+
+is( $create_supershops_success_json->{status},  1, );
+is( $create_supershops_success_json->{message}, 'Organization created.', );
+
+is( $create_supershops_success_json->{_hidden_data}, undef, );
 
 my $admin_user_mega_shop_groups = request(
     GET $endpoint,
@@ -134,6 +222,23 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $create_Ultrashops_success = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json( { name => "Ultrashops" } ),
+);
+
+is( $create_Ultrashops_success->code(), 200, );
+#
+my $create_Ultrashops_success_json =
+  decode_json( $create_Ultrashops_success->content );
+
+is( $create_Ultrashops_success_json->{status},  1, );
+is( $create_Ultrashops_success_json->{message}, 'Organization created.', );
+
+isnt( $create_Ultrashops_success_json->{_hidden_data}, undef, );
+
 my $superadmin_user_ultra_shop_groups = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -206,3 +311,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();
