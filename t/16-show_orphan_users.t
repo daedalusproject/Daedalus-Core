@@ -121,6 +121,40 @@ is( keys %{ $megashops_admin_valid_token_json->{data}->{users} },
 is( $megashops_admin_valid_token_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
+my $success_admin_megashops_register = request(
+    POST '/user/register',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@megashops.com',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_admin_megashops_register->code(), 200, );
+
+my $megashops_admin_still_zero_orphan = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+);
+
+is( $megashops_admin_still_zero_orphan->code(), 200, );
+
+my $megashops_admin_still_zero_orphan_json =
+  decode_json( $megashops_admin_still_zero_orphan->content );
+
+is( $megashops_admin_still_zero_orphan_json->{status}, 1, );
+
+is( keys %{ $megashops_admin_still_zero_orphan_json->{data}->{users} },
+    0, 'Mega Shops admin has no orphan users' );
+
+is( $megashops_admin_still_zero_orphan_json->{_hidden_data},
+    undef, 'Non Super admin users do no receive hidden data' );
+
 my $superadmin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
