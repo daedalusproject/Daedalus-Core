@@ -6,7 +6,7 @@ stages:
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:201904171858
+    image: daedalusproject/base_daedaluscore:201904180030
     before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
@@ -37,7 +37,7 @@ integration_tests:
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:201904171858
+    image: daedalusproject/base_daedaluscore:201904180030
     before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
