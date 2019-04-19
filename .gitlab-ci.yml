@@ -18,7 +18,7 @@ integration_tests:
         - kubectl -n daedalus-core-testing create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-testing apply -f kubernetes/daedalus-core-testing/testing-environment.yml
         - export GOPATH=/usr/share/gocode
-        - bash utils/test_redis.sh redis-daedalus-core-testing 5 5
+        - bash utils/test_redis.sh redis-daedalus-core-testing 10 10
     script:
         - echo "Hello" | redis-cli -h redis-daedalus-core-testing -x set greeting
         - redis-cli -h redis-daedalus-core-testing get greeting
