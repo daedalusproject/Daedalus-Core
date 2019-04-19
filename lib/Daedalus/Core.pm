@@ -38,8 +38,9 @@ if ( $ENV{APP_TEST} ) {
         # Cache
         __PACKAGE__->config->{'Plugin::Cache'}{backend} =
           {    #This config must be placed into conf folder
-            class     => "Cache::Redis",
-            server    => "redis-daedalus-core-develop:6379",
+            class => "Cache::Redis",
+            server =>
+"redis-daedalus-core-testing.daedalus-core-testing.svc.cluster.local:6379",
             namespace => "cache:",
           };
     }
