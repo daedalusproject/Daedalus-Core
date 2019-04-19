@@ -8,7 +8,7 @@ counter=0
 
 while [[ $counter < $ATTEMPTS ]]
 do
-    redis-cli -h $REDIS_HOST ping
+    redis-cli -h $REDIS_HOST ping > /dev/null 2>&1
     if [[ $? == 0 ]]; then
         break
     fi
