@@ -43,7 +43,4 @@ Depends: ${misc:Depends}, ${perl:Depends},
  libcatalyst-plugin-cache-perl,
  libredis-perl,
  libcache-redis-perl
-Description: Catalyst based application
- [enter your description here]
- .
- This description was automagically extracted from the module by dh-make-perl.
+Description: Information system which also manages all other services, clients, organization and projects.

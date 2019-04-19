@@ -9,6 +9,15 @@ use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
 
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
+
 my $endpoint = "/organization/showorganizationusergroups";
 
 my $show_organizations_GET_content = get($endpoint);
@@ -198,6 +207,21 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $create_Ultrashops_success = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json( { name => "Ultrashops" } ),
+);
+
+is( $create_Ultrashops_success->code(), 200, );
+#
+my $create_Ultrashops_success_json =
+  decode_json( $create_Ultrashops_success->content );
+
+is( $create_Ultrashops_success_json->{status},  1, );
+is( $create_Ultrashops_success_json->{message}, 'Organization created.', );
+
 my $superadmin_show_organizations = request(
     GET "/organization/show",
     Content_Type  => 'application/json',
@@ -206,11 +230,11 @@ my $superadmin_show_organizations = request(
 
 is( $superadmin_show_organizations->code(), 200, );
 
-my $superadmin_show_organizations =
+my $superadmin_show_organizations_json =
   decode_json( $superadmin_show_organizations->content );
 
 my $ultra_shops_token =
-  $superadmin_show_organizations->{data}->{organizations}->{Ultrashops}
+  $superadmin_show_organizations_json->{data}->{organizations}->{Ultrashops}
   ->{token};
 
 my $superadmin_user_ultra_shop_groups = request(
@@ -260,3 +284,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

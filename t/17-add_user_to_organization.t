@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/organization/adduser';
 
@@ -401,6 +411,71 @@ is(
     'Invalid organization token.',
 );
 
+my $success_superadmin_register_other_user = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin2@daedalus-project.io',
+            name     => 'Other 2',
+            surname  => 'Not Admin 2',
+        }
+    )
+);
+
+is( $success_superadmin_register_other_user->code(), 200, );
+
+my $success_superadmin_register_other_user_json =
+  decode_json( $success_superadmin_register_other_user->content );
+
+is( $success_superadmin_register_other_user_json->{status},
+    1, 'User has been created.' );
+is(
+    $success_superadmin_register_other_user_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_superadmin_register_other_user_json->{_hidden_data}->{new_user}
+      ->{'e-mail'},
+    'othernotanadmin2@daedalus-project.io',
+);
+
+isnt( $success_superadmin_register_other_user_json->{data}->{new_user}->{token},
+    undef, );
+
+# This new user is inactive
+
+my $admin_one_inactive_user = request(
+    GET '/user/showinactive',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+#anotheradmin@daedalus-project.io
+my $admin_one_inactive_user_json =
+  decode_json( $admin_one_inactive_user->content );
+
+is( $admin_one_inactive_user_json->{status}, 1, 'Status success, admin.' );
+
+my $inactive_user_data_auth_token =
+  $admin_one_inactive_user_json->{_hidden_data}->{inactive_users}
+  ->{'othernotanadmin2@daedalus-project.io'}->{auth_token};
+
+my $success_valid_auth_token_and_password = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token => $inactive_user_data_auth_token,
+            password   => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $success_valid_auth_token_and_password->code(), 200 );
+
 my $superadmin_get_active_users = request(
     GET "user/showactive",
     Content_Type  => 'application/json',
@@ -438,3 +513,5 @@ is( $add_user_success_superuser_json->{message}, 'User has been registered.', );
 isnt( $add_user_success_superuser_json->{_hidden_data}, undef, );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

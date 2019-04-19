@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -10,6 +11,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = "/user/showorphan";
 
@@ -111,6 +121,40 @@ is( keys %{ $megashops_admin_valid_token_json->{data}->{users} },
 is( $megashops_admin_valid_token_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
+my $success_admin_megashops_register = request(
+    POST '/user/register',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@megashops.com',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_admin_megashops_register->code(), 200, );
+
+my $megashops_admin_still_zero_orphan = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+);
+
+is( $megashops_admin_still_zero_orphan->code(), 200, );
+
+my $megashops_admin_still_zero_orphan_json =
+  decode_json( $megashops_admin_still_zero_orphan->content );
+
+is( $megashops_admin_still_zero_orphan_json->{status}, 1, );
+
+is( keys %{ $megashops_admin_still_zero_orphan_json->{data}->{users} },
+    0, 'Mega Shops admin has no orphan users' );
+
+is( $megashops_admin_still_zero_orphan_json->{_hidden_data},
+    undef, 'Non Super admin users do no receive hidden data' );
+
 my $superadmin_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
@@ -134,6 +178,64 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $success_superadmin_register = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_superadmin_register->code(), 200, );
+
+my $success_superadmin_register_json =
+  decode_json( $success_superadmin_register->content );
+
+is( $success_superadmin_register_json->{status}, 1, 'User has been created.' );
+is(
+    $success_superadmin_register_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_superadmin_register_json->{_hidden_data}->{new_user}->{'e-mail'},
+    'othernotanadmin@daedalus-project.io',
+);
+
+isnt( $success_superadmin_register_json->{data}->{new_user}->{token}, undef, );
+
+my $othernotanadmin_auth_token =
+  $success_superadmin_register_json->{_hidden_data}->{new_user}->{auth_token};
+
+my $othernotanadmin_confirms_registration = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token => $othernotanadmin_auth_token,
+            password   => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $othernotanadmin_confirms_registration->code(), 200 );
+
+my $othernotanadmin_confirms_registration_json =
+  decode_json( $othernotanadmin_confirms_registration->content );
+
+is( $othernotanadmin_confirms_registration_json->{status},
+    1, 'Password changed, account is activated.' );
+is(
+    $othernotanadmin_confirms_registration_json->{message},
+    'Account activated.',
+    'Auth token has changed.'
+);
+
 my $daedalus_admin = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -145,12 +247,12 @@ is( $daedalus_admin->code(), 200, );
 my $daedalus_admin_json = decode_json( $daedalus_admin->content );
 
 is( keys %{ $daedalus_admin_json->{data}->{orphan_users} },
-    2, 'Daedalus Project has only one user so far' );
+    1, 'Daedalus Project has only one user so far' );
 
 isnt( $daedalus_admin_json->{_hidden_data},
     undef, "Superadmin users see hidden_data" );
 
-# Register new user
+# marvin@megashops.com confirms its registration
 
 request(
     POST '/user/confirm',
@@ -188,3 +290,5 @@ isnt(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

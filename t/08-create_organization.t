@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $failed_because_no_auth_token =
   request( POST '/organization/create', Content_Type => 'application/json', );
@@ -184,3 +194,5 @@ is( $superadmin_failed_duplicated_name_json->{_hidden_data},
     undef, 'If response code is not 2xx there is no hidden_data' );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

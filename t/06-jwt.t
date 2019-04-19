@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -7,6 +8,15 @@ use Catalyst::Test 'Daedalus::Core';
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 # Check if User is admin
 
@@ -79,12 +89,12 @@ is(
     'No session token provided.',
 );
 
-my $not_admin_no_session_token = request( GET '/user/imadmin',
+$not_admin_no_session_token = request( GET '/user/imadmin',
     Authorization => "Basic $not_admin_authorization_basic_failed", );
 
 is( $not_admin_no_session_token->code(), 400, );
 
-my $not_admin_no_session_token_json =
+$not_admin_no_session_token_json =
   decode_json( $not_admin_no_session_token->content );
 
 is( $not_admin_no_session_token_json->{status}, 0, );
@@ -111,3 +121,5 @@ is(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

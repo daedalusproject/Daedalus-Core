@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -10,6 +11,16 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+use Data::Dumper;
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = "/user/showactive";
 
@@ -90,6 +101,93 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $admin_zero_users = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $admin_zero_users->code(), 200, );
+
+my $admin_zero_users_json = decode_json( $admin_zero_users->content );
+
+is( $admin_zero_users_json->{status}, 1, 'Status success, admin.' );
+is( keys %{ $admin_zero_users_json->{data}->{active_users} },
+    0, 'There are no active users' );
+
+my $success_superadmin_register = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_superadmin_register->code(), 200, );
+
+my $success_superadmin_register_json =
+  decode_json( $success_superadmin_register->content );
+
+is( $success_superadmin_register_json->{status}, 1, 'User has been created.' );
+is(
+    $success_superadmin_register_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_superadmin_register_json->{_hidden_data}->{new_user}->{'e-mail'},
+    'othernotanadmin@daedalus-project.io',
+);
+
+isnt( $success_superadmin_register_json->{data}->{new_user}->{token}, undef, );
+
+my $othernotanadmin_auth_token =
+  $success_superadmin_register_json->{_hidden_data}->{new_user}->{auth_token};
+
+my $admin_still_zero_users = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $admin_still_zero_users->code(), 200, );
+
+my $admin_still_zero_users_json =
+  decode_json( $admin_still_zero_users->content );
+
+is( $admin_still_zero_users_json->{status}, 1, 'Status success, admin.' );
+is( keys %{ $admin_still_zero_users_json->{data}->{active_users} },
+    0, 'There are noactive users yet' );
+
+my $othernotanadmin_confirms_registration = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token => $othernotanadmin_auth_token,
+            password   => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $othernotanadmin_confirms_registration->code(), 200 );
+
+my $othernotanadmin_confirms_registration_json =
+  decode_json( $othernotanadmin_confirms_registration->content );
+
+is( $othernotanadmin_confirms_registration_json->{status},
+    1, 'Password changed, account is activated.' );
+is(
+    $othernotanadmin_confirms_registration_json->{message},
+    'Account activated.',
+    'Auth token has changed.'
+);
+
 my $admin_one_user = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -150,6 +248,44 @@ is( $anotheradmin_admin_zero_users_json->{_hidden_data},
 # Let's confirm one of admin@daedalus-project.io inactive users
 # othernotanadmin@daedalus-project.io
 
+# Register other new user
+
+my $success_superadmin_register_other_user = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin2@daedalus-project.io',
+            name     => 'Other 2',
+            surname  => 'Not Admin 2',
+        }
+    )
+);
+
+is( $success_superadmin_register_other_user->code(), 200, );
+
+my $success_superadmin_register_other_user_json =
+  decode_json( $success_superadmin_register_other_user->content );
+
+is( $success_superadmin_register_other_user_json->{status},
+    1, 'User has been created.' );
+is(
+    $success_superadmin_register_other_user_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_superadmin_register_other_user_json->{_hidden_data}->{new_user}
+      ->{'e-mail'},
+    'othernotanadmin2@daedalus-project.io',
+);
+
+isnt( $success_superadmin_register_other_user_json->{data}->{new_user}->{token},
+    undef, );
+
+# This new user is inactive
+
 my $admin_one_inactive_user = request(
     GET '/user/showinactive',
     Content_Type  => 'application/json',
@@ -179,6 +315,8 @@ my $success_valid_auth_token_and_password = request(
 
 is( $success_valid_auth_token_and_password->code(), 200 );
 
+# Check users
+
 my $admin_two_users = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -203,3 +341,5 @@ isnt(
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();
