@@ -8,10 +8,9 @@ integration_tests:
     image: daedalusproject/base_daedaluscore:latest
     before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
-        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
+        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_TESTING_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
-        - kubectl -n daedalus-core-testing get pods
         - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml --ignore-not-found=true
         - kubectl -n daedalus-core-testing delete configmap redis-config --ignore-not-found=true
         - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
@@ -40,7 +39,7 @@ cover:
     image: daedalusproject/base_daedaluscore:latest
     before_script:
         - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
-        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
+        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_TESTING_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
         - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml --ignore-not-found=true
