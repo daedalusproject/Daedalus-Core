@@ -1,8 +1,8 @@
 stages:
-    - package
-    - update_repo
     - test
     - coverage
+    - package
+    - update_repo
 
 integration_tests:
     stage: test
