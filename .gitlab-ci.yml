@@ -73,11 +73,11 @@ create_package:
     image: daedalusproject/base_deb_perl_builder:201904201629
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
-        - mkdir packages
-        - mv ../libdaedalus-core-perl*.deb packages/
+        - mkdir package
+        - mv ../libdaedalus-core-perl*.deb package/
     artifacts:
         paths:
-        - packages
+        - package
         expire_in: 5 minutes
 
 upload_package_to_repo:
@@ -92,7 +92,7 @@ upload_package_to_repo:
         - "curl -X PUT -H 'Content-Type: application/json' --data '{\"Snapshots\": [{\"Component\": \"testing\", \"Name\": \"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}]}' http://repo.daedalus-project.io:8000/api/publish/:./bionic || exit 1"
     artifacts:
         paths:
-        - packages
+        - package
         expire_in: 5 minutes
     dependencies:
     - create_package
