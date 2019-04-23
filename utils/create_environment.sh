@@ -100,34 +100,7 @@ function create_env_and_configs {
     done
 }
 
-function wait_for_redis {
-echo $REDIS_SERVICE
-    SLEEP=10
-    ATTEMPTS=5
-
-    counter=0
-
-    while [[ $counter < $ATTEMPTS ]]
-    do
-        redis-cli -h $REDIS_SERVICE ping #> /dev/null 2>&1
-        if [[ $? == 0 ]]; then
-            break
-        fi
-        let "counter++"
-        sleep $SLEEP
-    done
-
-    if [[ $counter == $ATTEMPTS ]]; then
-        exit 1
-    fi
-    exit 0
-}
-
-function test_redis {
-
-    echo "Hello" | redis-cli -h $REDIS_SERVICE -x set greeting
-    redis-cli -h $REDIS_SERVICE get greeting
-}
 ## Main
 
 check_required_environment_variables
+evalue_env_type
