@@ -8,8 +8,10 @@ integration_tests:
     stage: test
     image: daedalusproject/base_daedaluscore:201904201629
     before_script:
+        - ENV_TYPE="testing"
         - source utils/create_environment.sh
-        - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
+        - create_kube_config
+        - exit 1
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_TESTING_USER_TOKEN
         - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
         - kubectl config use-context default
