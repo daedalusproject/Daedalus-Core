@@ -8,7 +8,7 @@ integration_tests:
     stage: test
     image: daedalusproject/base_daedaluscore:201904201629
     before_script:
-        - ENV_TYPE="testing"
+        - export ENV_TYPE="testing"
         - source utils/create_environment.sh
         - create_kube_config
         - exit 1
