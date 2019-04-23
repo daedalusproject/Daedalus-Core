@@ -14,16 +14,8 @@ integration_tests:
         - source utils/create_environment.sh
         - evalue_env_type
         - create_kube_config
-        - exit 1
-        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_TESTING_USER_TOKEN
-        - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
-        - kubectl config use-context default
-        - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml --ignore-not-found=true
-        - kubectl -n daedalus-core-testing delete configmap redis-config --ignore-not-found=true
-        - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
-        - kubectl -n daedalus-core-testing create configmap redis-config --from-file kubernetes/config/redis/redis.conf
-        - kubectl -n daedalus-core-testing create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
-        - kubectl -n daedalus-core-testing apply -f kubernetes/daedalus-core-testing/testing-environment.yml
+        - delete_env_and_configs
+        - create_env_and_configs
         - export GOPATH=/usr/share/gocode
         - bash utils/test_redis.sh redis-daedalus-core-testing.daedalus-core-testing.svc.cluster.local 10 5
     script:
