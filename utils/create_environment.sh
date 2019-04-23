@@ -46,7 +46,7 @@ function evalue_env_type {
             KUBERNETES_USER_NAME="${KUBERNETES_TESTING_USER_NAME}"
             ENV_FOLDER="$KUBERNETES_CONFIG_FOLDER/daedalus-core-testing"
             ENV_FILES=("testing-environment.yml")
-            CONFIGMAP_NAMES=("redis-config", "rabbitmq-config")
+            CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-testing.daedalus-core-testing.svc.cluster.local"
             ;;
         develop)
@@ -55,7 +55,7 @@ function evalue_env_type {
             KUBERNETES_USER_NAME="${KUBERNETES_TESTING_USER_NAME}"#For the time being all envs use the same user
             ENV_FOLDER="$KUBERNETES_CONFIG_FOLDER/daedalus-core-develop"
             ENV_FILES=("develop-environment.yml")
-            CONFIGMAP_NAMES=("redis-config", "rabbitmq-config")
+            CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
             ;;
         *)
