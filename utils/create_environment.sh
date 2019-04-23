@@ -35,9 +35,9 @@ function check_required_environment_variables {
 
 function evalue_env_type {
 
-    declare -A CONFIGMAP_FILES
-    CONFIGMAP_FILES[redis-config]="$KUBERNETES_CONFIG_FOLDER/config/redis/redis.conf"
-    CONFIGMAP_FILES[rabbitmq-config]="$KUBERNETES_CONFIG_FOLDER/config/rabbitmq"
+    declare -g -A CONFIGMAP_FILES
+    CONFIGMAP_FILES["redis-config"]="$KUBERNETES_CONFIG_FOLDER/config/redis/redis.conf"
+    CONFIGMAP_FILES["rabbitmq-config"]="$KUBERNETES_CONFIG_FOLDER/config/rabbitmq"
 
     case $ENV_TYPE in
         testing)
