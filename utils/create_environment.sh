@@ -90,6 +90,7 @@ function create_env_and_configs {
 
     for configmap in ${CONFIGMAP_NAMES[@]}
     do
+        echo $configmap
         echo ${CONFIGMAP_FILES[$configmap]}
         kubectl -n $KUBERNETES_NAMESPACE create configmap $configmap --from-file ${CONFIGMAP_FILES[$configmap]}
     done
