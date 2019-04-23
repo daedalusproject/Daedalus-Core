@@ -17,10 +17,9 @@ integration_tests:
         - delete_env_and_configs
         - create_env_and_configs
         - export GOPATH=/usr/share/gocode
-        - bash utils/test_redis.sh redis-daedalus-core-testing.daedalus-core-testing.svc.cluster.local 10 5
+        - wait_for_redis
     script:
-        - echo "Hello" | redis-cli -h redis-daedalus-core-testing.daedalus-core-testing.svc.cluster.local -x set greeting
-        - redis-cli -h redis-daedalus-core-testing.daedalus-core-testing.svc.cluster.local get greeting
+        - test_redis
         - go run kubernetes/utils/send.go
         - go run kubernetes/utils/receive.go
         - perl --version
@@ -29,9 +28,7 @@ integration_tests:
         - make
         - make test
     after_script:
-        - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml
-        - kubectl -n daedalus-core-testing delete configmap redis-config
-        - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
+        - delete_env_and_configs
 
 cover:
     stage: coverage
