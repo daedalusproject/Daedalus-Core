@@ -109,7 +109,7 @@ function wait_for_redis {
 
     while [[ $counter < $ATTEMPTS ]]
     do
-        redis-cli -h $REDIS_SERVICE ping > /dev/null 2>&1
+        redis-cli -h $REDIS_SERVICE ping #> /dev/null 2>&1
         if [[ $? == 0 ]]; then
             break
         fi

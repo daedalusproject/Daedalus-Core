@@ -28,7 +28,9 @@ integration_tests:
         - make
         - make test
     after_script:
-        - delete_env_and_configs
+        - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml
+        - kubectl -n daedalus-core-testing delete configmap redis-config
+        - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
 
 cover:
     stage: coverage
