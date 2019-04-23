@@ -16,7 +16,6 @@ integration_tests:
         - create_kube_config
         - delete_env_and_configs
         - create_env_and_configs
-        - export GOPATH=/usr/share/gocode
         - bash utils/test_redis.sh $REDIS_SERVICE 5 5
     script:
         - perl --version
@@ -25,7 +24,11 @@ integration_tests:
         - make
         - make test
     after_script:
-        - source utils/create_environment.shA
+        - declare -a -g REQUIRED_VARIABLES
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
+        - ENV_TYPE="testing"
+        - source utils/create_environment.sh
+        - evalue_env_type
         - delete_env_and_configs
 
 cover:
