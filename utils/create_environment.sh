@@ -88,17 +88,15 @@ function delete_env_and_configs {
 
 function create_env_and_configs {
 
-    echo ${CONFIGMAP_FILES[redis-config]}
     for configmap in ${CONFIGMAP_NAMES[@]}
     do
-        echo $configmap
         echo ${CONFIGMAP_FILES[$configmap]}
         kubectl -n $KUBERNETES_NAMESPACE create configmap $configmap --from-file ${CONFIGMAP_FILES[$configmap]}
     done
 
     for file in ${ENV_FILES[@]}
     do
-        kubectl -n $KUBERNETES_NAMESPACE apply -f $ENV_FOLDER/$file --ignore-not-found=true
+        kubectl -n $KUBERNETES_NAMESPACE apply -f $ENV_FOLDER/$file
     done
 }
 
