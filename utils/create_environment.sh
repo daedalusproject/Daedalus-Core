@@ -19,11 +19,11 @@ show_error() {
 
 function check_required_environment_variables {
 
-   environment_variables=$@
    errors=0
 
-   for environment_variable in $environment_variables
+   for environment_variable in ${REQUIRED_VARIABLES[@]}
    do
+       echo $environment_variable
        if [[ -z ${!environment_variable} ]]; then
            show_error "$environment_variable is not defined"
            errors=1
@@ -130,9 +130,4 @@ function test_redis {
 }
 ## Main
 
-ENV_TYPE=$1
-
-check_required_environment_variables ENV_TYPE
-check_required_environment_variables KUBE_URL KUBE_TESTING_USER_TOKEN KUBE_TESTING_USER
-
-evalue_env_type
+check_required_environment_variables
