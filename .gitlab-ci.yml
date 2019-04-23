@@ -8,7 +8,7 @@ integration_tests:
     stage: test
     image: daedalusproject/base_daedaluscore:201904201629
     before_script:
-        - declare -a REQUIRED_VARIABLES
+        - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
@@ -17,20 +17,16 @@ integration_tests:
         - delete_env_and_configs
         - create_env_and_configs
         - export GOPATH=/usr/share/gocode
-        - wait_for_redis
+        - bash utils/test_redis.sh $REDIS_SERVICE 5 5
     script:
-        - test_redis
-        - go run kubernetes/utils/send.go
-        - go run kubernetes/utils/receive.go
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - make test
     after_script:
-        - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml
-        - kubectl -n daedalus-core-testing delete configmap redis-config
-        - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
+        - source utils/create_environment.shA
+        - delete_env_and_configs
 
 cover:
     stage: coverage
