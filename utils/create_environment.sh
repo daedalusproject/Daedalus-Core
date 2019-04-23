@@ -88,6 +88,7 @@ function delete_env_and_configs {
 
 function create_env_and_configs {
 
+    echo ${CONFIGMAP_FILES["redis-config"]}
     for configmap in ${CONFIGMAP_NAMES[@]}
     do
         echo $configmap
