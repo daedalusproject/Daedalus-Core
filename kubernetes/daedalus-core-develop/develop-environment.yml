@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-daedalus-core-testing
-  namespace: daedalus-core-testing
+  name: redis-daedalus-core-develop
+  namespace: daedalus-core-develop
   labels:
     app: redis
 spec:
@@ -11,7 +11,7 @@ spec:
       app: redis
       role: master
       tier: backend
-      environment: testing
+      environment: develop
   replicas: 1
   template:
     metadata:
@@ -19,17 +19,17 @@ spec:
         app: redis
         role: master
         tier: backend
-        environment: testing
+        environment: develop
     spec:
       containers:
       - name: redis
-        image: daedalusproject/base_redis_server:201904201629
+        image: daedalusproject/base_redis_server:201904181205
         command: ["redis-server"]
         args: ["--protected-mode no"]
         resources:
           requests:
-            cpu: 40m
-            memory: 40Mi
+            cpu: 50m
+            memory: 50Mi
         ports:
         - containerPort: 6379
         volumeMounts:
@@ -43,13 +43,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-daedalus-core-testing
-  namespace: daedalus-core-testing
+  name: redis-daedalus-core-develop
+  namespace: daedalus-core-develop
   labels:
     app: redis
     role: master
     tier: backend
-    environment: testing
+    environment: develop
 spec:
   ports:
   - port: 6379
@@ -58,13 +58,13 @@ spec:
     app: redis
     role: master
     tier: backend
-    environment: testing
+    environment: develop
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rabbitmq-daedalus-core-testing
-  namespace: daedalus-core-testing
+  name: rabbitmq-daedalus-core-develop
+  namespace: daedalus-core-develop
   labels:
     app: rabbitmq
 spec:
@@ -72,18 +72,18 @@ spec:
     matchLabels:
       app: rabbitmq
       tier: broker
-      environment: testing
+      environment: develop
   replicas: 1
   template:
     metadata:
       labels:
         app: rabbitmq
         tier: broker
-        environment: testing
+        environment: develop
     spec:
       containers:
       - name: rabbitmq
-        image: daedalusproject/base_rabbitmq_server:201904201629
+        image: daedalusproject/base_rabbitmq_server:201904181205
         env:
         - name: RABBITMQ_ENABLED_PLUGINS_FILE
           value: /etc/rabbitmq/enabled_plugins
@@ -107,12 +107,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: rabbitmq-daedalus-core-testing
-  namespace: daedalus-core-testing
+  name: rabbitmq-daedalus-core-develop
+  namespace: daedalus-core-develop
   labels:
     app: rabbitmq
     tier: broker
-    environment: testing
+    environment: develop
 spec:
   ports:
   - name: client-access-2
@@ -126,4 +126,4 @@ spec:
   selector:
     app: rabbitmq
     tier: broker
-    environment: testing
+    environment: develop

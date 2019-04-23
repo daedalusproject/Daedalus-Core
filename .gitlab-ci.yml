@@ -15,7 +15,7 @@ integration_tests:
         - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml --ignore-not-found=true
         - kubectl -n daedalus-core-testing delete configmap redis-config --ignore-not-found=true
         - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
-        - kubectl -n daedalus-core-testing create configmap redis-config --from-file kubernetes/config/redis.conf
+        - kubectl -n daedalus-core-testing create configmap redis-config --from-file kubernetes/config/redis/redis.conf
         - kubectl -n daedalus-core-testing create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-testing apply -f kubernetes/daedalus-core-testing/testing-environment.yml
         - export GOPATH=/usr/share/gocode
@@ -46,7 +46,7 @@ cover:
         - kubectl -n daedalus-core-testing delete -f kubernetes/daedalus-core-testing/testing-environment.yml --ignore-not-found=true
         - kubectl -n daedalus-core-testing delete configmap redis-config --ignore-not-found=true
         - kubectl -n daedalus-core-testing delete configmap rabbitmq-config --ignore-not-found=true
-        - kubectl -n daedalus-core-testing create configmap redis-config --from-file kubernetes/config/redis.conf
+        - kubectl -n daedalus-core-testing create configmap redis-config --from-file kubernetes/config/redis/redis.conf
         - kubectl -n daedalus-core-testing create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
         - kubectl -n daedalus-core-testing apply -f kubernetes/daedalus-core-testing/testing-environment.yml
         - export GOPATH=/usr/share/gocode
