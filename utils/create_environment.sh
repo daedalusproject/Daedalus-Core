@@ -23,7 +23,6 @@ function check_required_environment_variables {
 
    for environment_variable in ${REQUIRED_VARIABLES[@]}
    do
-       echo $environment_variable
        if [[ -z ${!environment_variable} ]]; then
            show_error "$environment_variable is not defined"
            errors=1
@@ -44,7 +43,7 @@ function evalue_env_type {
         testing)
             KUBERNETES_NAMESPACE="daedalus-core-testing"
             KUBERNETES_USER_TOKEN="${KUBERNETES_TESTING_USER_TOKEN}"
-            KUBERNETES_USER="${KUBERNETES_TESTING_USER_NAME}"
+            KUBERNETES_USER_NAME="${KUBERNETES_TESTING_USER_NAME}"
             ENV_FOLDER="$KUBERNETES_CONFIG_FOLDER/daedalus-core-testing"
             ENV_FILES=("testing-environment.yml")
             CONFIGMAP_NAMES=("redis-config", "rabbitmq-config")
@@ -53,7 +52,7 @@ function evalue_env_type {
         develop)
             KUBERNETES_NAMESPACE="daedalus-core-develop"
             KUBERNETES_USER_TOKEN="${KUBERNETES_TESTING_USER_TOKEN}"#For the time being all envs use the same user
-            KUBERNETES_USER="${KUBERNETES_TESTING_USER_NAME}"#For the time being all envs use the same user
+            KUBERNETES_USER_NAME="${KUBERNETES_TESTING_USER_NAME}"#For the time being all envs use the same user
             ENV_FOLDER="$KUBERNETES_CONFIG_FOLDER/daedalus-core-develop"
             ENV_FILES=("develop-environment.yml")
             CONFIGMAP_NAMES=("redis-config", "rabbitmq-config")
@@ -68,9 +67,9 @@ function evalue_env_type {
 
 function create_kube_config {
 
-    kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=$KUBE_CLUSTER_CRT
-    kubectl config set-credentials $KUBERNETES_USER --token=$KUBERNETES_USER_TOKEN
-    kubectl config set-context default --cluster=default --user=$KUBERNETES_USER
+    kubectl config set-cluster default --server=$KUBERNETES_URL --certificate-authority=$KUBERNETES_CLUSTER_CRT
+    kubectl config set-credentials $KUBERNETES_USER_NAME --token=$KUBERNETES_USER_TOKEN
+    kubectl config set-context default --cluster=default --user=$KUBERNETES_USER_NAME
     kubectl config use-context default
 }
 
