@@ -68,7 +68,6 @@ function evalue_env_type {
 function create_kube_config {
 
     kubectl config set-cluster default --server=$KUBERNETES_URL --certificate-authority=$KUBERNETES_CLUSTER_CRT
-    echo $KUBERNETES_USER_NAME
     kubectl config set-credentials $KUBERNETES_USER_NAME --token=$KUBERNETES_USER_TOKEN
     kubectl config set-context default --cluster=default --user=$KUBERNETES_USER_NAME
     kubectl config use-context default

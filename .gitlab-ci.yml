@@ -12,6 +12,7 @@ integration_tests:
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
+        - evalue_env_type
         - create_kube_config
         - exit 1
         - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_TESTING_USER_TOKEN
