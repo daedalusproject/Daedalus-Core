@@ -75,12 +75,12 @@ function create_kube_config {
 
 function delete_env_and_configs {
 
-    for file in {$ENV_FILES[@]}
+    for file in ${ENV_FILES[@]}
     do
         kubectl -n $KUBERNETES_NAMESPACE delete -f $ENV_FOLDER/$file --ignore-not-found=true
     done
 
-    for configmap in {$CONFIGMAP_NAMES[@]}
+    for configmap in ${CONFIGMAP_NAMES[@]}
     do
         kubectl -n $KUBERNETES_NAMESPACE delete configmap $configmap --ignore-not-found=true
     done
@@ -88,12 +88,12 @@ function delete_env_and_configs {
 
 function create_env_and_configs {
 
-    for configmap in {$CONFIGMAP_NAMES[@]}
+    for configmap in ${CONFIGMAP_NAMES[@]}
     do
         kubectl -n $KUBERNETES_NAMESPACE create configmap $configmap --from-file $CONFIGMAP_FILES[$configmap]
     done
 
-    for file in {$ENV_FILES[@]}
+    for file in ${ENV_FILES[@]}
     do
         kubectl -n $KUBERNETES_NAMESPACE apply -f $ENV_FOLDER/$file --ignore-not-found=true
     done
