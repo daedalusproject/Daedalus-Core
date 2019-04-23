@@ -9,7 +9,7 @@ integration_tests:
     image: daedalusproject/base_daedaluscore:201904201629
     before_script:
         - declare -a REQUIRED_VARIABLES
-        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBE_URL' 'KUBE_TESTING_USER_TOKEN' 'KUBE_TESTING_USER')
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN')
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
         - create_kube_config
