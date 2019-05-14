@@ -62,8 +62,8 @@ if ( $ENV{APP_TEST} ) {
     }
 }
 else {
-    __PACKAGE__->config(
-        'Plugin::ConfigLoader' => { file => __PACKAGE__->path_to('conf') } );
+    __PACKAGE__->config( 'Plugin::ConfigLoader' =>
+          { file => __PACKAGE__->path_to('/etc/daedalus-core') } );
 }
 
 __PACKAGE__->config(
