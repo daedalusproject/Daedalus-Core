@@ -13,6 +13,9 @@ spec:
     image: daedalusproject/base_develop_percona_server
     ports:
     - containerPort: 3306
+    envFrom:
+    - configMapRef:
+        name: percona-env-configmap
     lifecycle:
       postStart:
         exec:
@@ -20,14 +23,10 @@ spec:
             - "sh"
             - "-c"
             - >
-              while [ ! -S /var/run/mysqld/mysqld.sock ];
-              do
-              sleep 2 ;
-              done ;
-              /usr/bin/mysql -uroot -pletmein -Bse "ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass';";
-              /usr/bin/mysql -uroot -pMyNewPass -Bse "create databadse daedalus_core_realms";
-              /usr/bin/mysql -uroot -pMyNewPass -Bse "CREATE USER 'daedalus'@'%' IDENTIFIED BY 'password';";
-              /usr/bin/mysql -uroot -pMyNewPass -Bse "GRANT ALL ON daedalus.* TO 'daedalus'@'%' WITH GRANT OPTION;";
+              /usr/bin/daedalus-project-mysql-utils create_database ;
+              /usr/bin/daedalus-project-mysql-utils create_user ;
+              /usr/bin/daedalus-project-mysql-utils grant ;
+              /usr/bin/daedalus-project-mysql-utils change_root_password ;
 ---
 apiVersion: v1
 kind: Service

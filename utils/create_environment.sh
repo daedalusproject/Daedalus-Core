@@ -10,7 +10,7 @@ KUBERNETES_CONFIG_FOLDER="kubernetes"
 KUBE_CLUSTER_CRT="$KUBERNETES_CONFIG_FOLDER/windmaker.pem"
 ## Functions
 
-show_error() {
+function show_error {
 
   echo "$@" 1>&2
 }

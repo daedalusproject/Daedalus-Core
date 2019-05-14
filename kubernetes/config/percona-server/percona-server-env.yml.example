@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: percona-env-configmap
+  namespace: daedalus-core-develop
+data:
+  MYSQL_USER: "root"
+  MYSQL_PASSWORD: "letmein"
+  MYSQL_CONNECTION_RETRIES: "5"
+  MYSQL_CONNECTION_TIMEOUT: "10"
+  MYSQL_NEW_ROOT_PASSWORD: "newpass"
+  MYSQL_NEW_ROOT_HOST: "localhost"
+  MYSQL_DATABASE_NAME: "daedaluscorerealms"
+  MYSQL_NEW_USER: "daedalus"
+  MYSQL_NEW_USER_PASSWORD: "secret"
+  MYSQL_NEW_USER_HOST: "%"
+  MYSQL_GRANT_USER: "daedalus"
+  MYSQL_GRANT_DATABASE: "daedaluscorerealms"
+  MYSQL_GRANT_PRIV_TYPE: "ALL"
+  MYSQL_GRANT_OTHER_ACCOUNT_CHARACTERISTICS: "WITH GRANT OPTION"
+  LOCAL_ERROR_FILE: "/var/tmp/daedalus-project-mysql-utils-error.log"
