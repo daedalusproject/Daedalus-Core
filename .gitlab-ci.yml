@@ -3,7 +3,7 @@ stages:
     - coverage
     - package
     - update_repo
-	- docker_image
+    - docker_image
 
 integration_tests:
     stage: test
