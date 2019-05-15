@@ -102,3 +102,5 @@ create_develop_docker_image:
         - docker stop "${IMAGENAME}"
         - docker rm "${IMAGENAME}"
         - docker rmi "${IMAGENAME}"
+    tags:
+    - docker_build
