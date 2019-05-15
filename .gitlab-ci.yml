@@ -29,6 +29,8 @@ integration_tests:
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
         - delete_env_and_configs
+    tags:
+    - kubernetes
 
 cover:
     stage: coverage
@@ -56,6 +58,8 @@ cover:
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
         - delete_env_and_configs
+    tags:
+    - kubernetes
 
 create_package:
     stage: package
@@ -68,6 +72,8 @@ create_package:
         paths:
         - package
         expire_in: 5 minutes
+    tags:
+    - docker_build
 
 upload_package_to_testing_repo:
     stage: update_repo
@@ -85,6 +91,8 @@ upload_package_to_testing_repo:
         expire_in: 5 minutes
     dependencies:
     - create_package
+    tags:
+    - docker_build
 
 create_develop_docker_image:
     stage: docker_image
@@ -93,7 +101,7 @@ create_develop_docker_image:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop
         - RELEASEDATE=$(date)
-        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSIO=$PKG_VERSION -f containers/daedalus_core_develop/Dockerfile .
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/daedalus_core_develop/Dockerfile .
         - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
         - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
         - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
