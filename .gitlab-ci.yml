@@ -3,10 +3,11 @@ stages:
     - coverage
     - package
     - update_repo
+	- docker_image
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:201904201629
+    image: daedalusproject/base_daedaluscore:201905140355
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -15,7 +16,7 @@ integration_tests:
         - create_kube_config
         - delete_env_and_configs
         - create_env_and_configs
-        - bash utils/test_redis.sh $REDIS_SERVICE 5 5
+        - bash utils/test_redis.sh $REDIS_SERVICE 5 10
     script:
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
@@ -31,7 +32,7 @@ integration_tests:
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:201904201629
+    image: daedalusproject/base_daedaluscore:201905140355
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -40,7 +41,7 @@ cover:
         - create_kube_config
         - delete_env_and_configs
         - create_env_and_configs
-        - bash utils/test_redis.sh $REDIS_SERVICE 5 5
+        - bash utils/test_redis.sh $REDIS_SERVICE 5 10
     script:
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
@@ -68,7 +69,7 @@ create_package:
         - package
         expire_in: 5 minutes
 
-upload_package_to_repo:
+upload_package_to_testing_repo:
     stage: update_repo
     image: daedalusproject/base_curl:201904201629
     script:
@@ -84,3 +85,20 @@ upload_package_to_repo:
         expire_in: 5 minutes
     dependencies:
     - create_package
+
+create_develop_docker_image:
+    stage: docker_image
+    image: daedalusproject/base_docker:201905140355
+    script:
+        - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
+        - IMAGENAME=daedalus_core_develop
+        - RELEASEDATE=$(date)
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSIO=$PKG_VERSION -f containers/daedalus_core_develop/Dockerfile .
+        - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
+        - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
+        - docker commit -m "$RELEASEDATE" -a "Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>" "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${CI_COMMIT_REF_NAME}"
+        - docker push daedalusproject/"${IMAGENAME}":latest
+        - docker stop "${IMAGENAME}"
+        - docker rm "${IMAGENAME}"
+        - docker rmi "${IMAGENAME}"
