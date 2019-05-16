@@ -43,4 +43,5 @@ Depends: ${misc:Depends}, ${perl:Depends},
  libcatalyst-plugin-cache-perl,
  libredis-perl,
  libcache-redis-perl
+ libjson-xs-perl
 Description: Information system which also manages all other services, clients, organization and projects.
