@@ -1,12 +1,19 @@
+libdaedalus-core-perl (0.01-4) unstable; urgency=low
+
+  * Add libjson-xs-perl as dependence.
+  * Creates daedalus user.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 16 May 2019 16:57:08 +0000
+
 libdaedalus-core-perl (0.01-3) unstable; urgency=low
 
-  * Remove hardcoded cache info in Core.pm
+  * Remove hardcoded cache info in Core.pm.
 
  -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 16 May 2019 07:42:08 +0000
 
 libdaedalus-core-perl (0.01-2) unstable; urgency=low
 
-  * Change config folder
+  * Change config folder.
 
  -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 28 Mar 2019 05:13:08 +0000
 
