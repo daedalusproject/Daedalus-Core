@@ -39,6 +39,9 @@ function evalue_env_type {
     CONFIGMAP_FILES["redis-config"]="$KUBERNETES_CONFIG_FOLDER/config/redis/redis.conf"
     CONFIGMAP_FILES["rabbitmq-config"]="$KUBERNETES_CONFIG_FOLDER/config/rabbitmq"
 
+    declare -g -A CONFIGMAPS
+    CONFIGMAPS['percona-server']="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
+
     case $ENV_TYPE in
         testing)
             KUBERNETES_NAMESPACE="daedalus-core-testing"
