@@ -40,7 +40,6 @@ function evalue_env_type {
     CONFIGMAP_FILES["rabbitmq-config"]="$KUBERNETES_CONFIG_FOLDER/config/rabbitmq"
 
     declare -g -A CONFIGMAPS
-    CONFIGMAPS['percona-server']="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
 
     case $ENV_TYPE in
         testing)
@@ -60,6 +59,7 @@ function evalue_env_type {
             ENV_FILES=("develop-environment.yml")
             CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
+            CONFIGMAPS['percona-server']="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
             ;;
         *)
             show_error "Environment $ENV_TYPE not defined."
@@ -88,6 +88,17 @@ function delete_env_and_configs {
         kubectl -n $KUBERNETES_NAMESPACE delete configmap $configmap --ignore-not-found=true
     done
 
+    for configmap in ${CONFIGMAP_FILES[@]}
+    do
+        kubectl -n $KUBERNETES_NAMESPACE delete -f $configmap --ignore-not-found=true
+    done
+
+    for configmap in ${CONFIGMAPS[@]}
+    do
+        kubectl -n $KUBERNETES_NAMESPACE delete -f ${CONFIGMAP_FILES[$configmap]} --ignore-not-found=true
+    done
+
+
     if [[ $ENV_TYPE -eq "develop" ]]; then
         kubectl -n daedalus-core-develop delete secret generic percona-secrets --ignore-not-found=true
     fi
@@ -104,6 +115,11 @@ function create_env_and_configs {
     for file in ${ENV_FILES[@]}
     do
         kubectl -n $KUBERNETES_NAMESPACE apply -f $ENV_FOLDER/$file
+    done
+
+    for configmap in ${CONFIGMAPS[@]}
+    do
+        kubectl -n $KUBERNETES_NAMESPACE apply -f ${CONFIGMAP_FILES[$configmap]} --ignore-not-found=true
     done
 
     if [[ $ENV_TYPE -eq "develop" ]]; then
