@@ -119,7 +119,7 @@ develop_environment:
     image: daedalusproject/base_kubectl:201905161558
     script:
         - declare -a -g REQUIRED_VARIABLES
-        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_DEVELOP_USER_NAME' 'KUBERNETES_DEVELOP_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
         - ENV_TYPE="develop"
         - source utils/create_environment.sh
         - create_kube_config
