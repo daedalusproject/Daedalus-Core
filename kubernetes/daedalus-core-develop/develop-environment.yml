@@ -131,7 +131,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: percona-server
+  name: percona-server-develop
   namespace: daedalus-core-develop
   labels:
     app: percona-server
@@ -139,7 +139,7 @@ metadata:
     environment: develop
 spec:
   containers:
-  - name: percona-server
+  - name: percona-server-develop
     image: daedalusproject/base_develop_percona_server
     ports:
     - containerPort: 3306
@@ -163,7 +163,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: percona-server
+  name: percona-server-develop
   namespace: daedalus-core-develop
   labels:
     app: percona-server
