@@ -95,9 +95,9 @@ function delete_env_and_configs {
 
     for configmap in ${CONFIGMAPS[@]}
     do
+        echo ${CONFIGMAPS[$configmap]}
         kubectl -n $KUBERNETES_NAMESPACE delete -f ${CONFIGMAPS[$configmap]} --ignore-not-found=true
     done
-
 
     if [[ $ENV_TYPE -eq "develop" ]]; then
         kubectl -n daedalus-core-develop delete secret generic percona-secrets --ignore-not-found=true
