@@ -1,8 +1,6 @@
 #Conf Files
 daedalus_core.conf
 
-kubernetes/config/percona-server/percona-server-env.yml
-
 !Build/
 .last_cover_stats
 /META.yml
