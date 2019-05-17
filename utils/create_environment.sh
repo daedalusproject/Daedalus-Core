@@ -95,6 +95,7 @@ function delete_env_and_configs {
 
     echo "ENV_TYPE -> $ENV_TYPE"
     if [ "$ENV_TYPE" == "develop" ]; then
+        echo "delete secret"
         kubectl -n daedalus-core-develop delete secret generic percona-secrets --ignore-not-found=true
     fi
 }
