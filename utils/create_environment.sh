@@ -90,9 +90,6 @@ function delete_env_and_configs {
 
     for configmap in ${CONFIGMAPS[@]}
     do
-        echo "Deleting $configmap"
-        ls -lahrtR
-        ls $configmap
         kubectl -n $KUBERNETES_NAMESPACE delete -f $configmap --ignore-not-found=true
     done
 
@@ -116,7 +113,7 @@ function create_env_and_configs {
 
     for configmap in ${CONFIGMAPS[@]}
     do
-        kubectl -n $KUBERNETES_NAMESPACE apply -f ${CONFIGMAP_FILES[$configmap]} --ignore-not-found=true
+        kubectl -n $KUBERNETES_NAMESPACE delete -f $configmap --ignore-not-found=true
     done
 
     if [[ $ENV_TYPE -eq "develop" ]]; then
