@@ -39,6 +39,7 @@ function evalue_env_type {
     CONFIGMAP_FILES["redis-config"]="$KUBERNETES_CONFIG_FOLDER/config/redis/redis.conf"
     CONFIGMAP_FILES["rabbitmq-config"]="$KUBERNETES_CONFIG_FOLDER/config/rabbitmq"
 
+    declare -g -A CONFIGMAPS
 
     case $ENV_TYPE in
         testing)
@@ -58,9 +59,8 @@ function evalue_env_type {
             ENV_FILES=("develop-environment.yml")
             CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
-            declare -g -A CONFIGMAPS
             CONFIGMAPS['percona-server']="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
-            echo $CONFIGMAPS
+            echo "CONFIGMAPS: $CONFIGMAPS"
             ;;
         *)
             show_error "Environment $ENV_TYPE not defined."
