@@ -100,6 +100,11 @@ function delete_env_and_configs {
 
 function create_env_and_configs {
 
+    if [ "$ENV_TYPE" == "develop" ]; then
+        echo "create secret"
+        kubectl -n $KUBERNETES_NAMESPAC create secret generic percona-secrets --from-literal=MYSQL_NEW_ROOT_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD" --from-literal=MYSQL_NEW_USER_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_NEW_USER_HOST="$KUBE_CDIR"
+    fi
+
     for configmap in ${CONFIGMAP_NAMES[@]}
     do
         echo ${CONFIGMAP_FILES[$configmap]}
@@ -110,11 +115,6 @@ function create_env_and_configs {
     do
         kubectl -n $KUBERNETES_NAMESPACE apply -f $ENV_FOLDER/$file
     done
-
-    if [ "$ENV_TYPE" == "develop" ]; then
-        echo "create secret"
-        kubectl -n $KUBERNETES_NAMESPAC create secret generic percona-secrets --from-literal=MYSQL_NEW_ROOT_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD" --from-literal=MYSQL_NEW_USER_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_NEW_USER_HOST="$KUBE_CDIR"
-    fi
 }
 
 ## Main
