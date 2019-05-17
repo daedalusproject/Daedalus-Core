@@ -54,8 +54,8 @@ function evalue_env_type {
             ;;
         develop)
             KUBERNETES_NAMESPACE="daedalus-core-develop"
-            KUBERNETES_USER_TOKEN="${KUBERNETES_TESTING_USER_TOKEN}" 
-            KUBERNETES_USER_NAME="${KUBERNETES_TESTING_USER_NAME}" 
+            KUBERNETES_USER_TOKEN="${KUBERNETES_DEVELOP_USER_TOKEN}" 
+            KUBERNETES_USER_NAME="${KUBERNETES_DEVELOP_USER_NAME}" 
             ENV_FOLDER="$KUBERNETES_CONFIG_FOLDER/daedalus-core-develop"
             ENV_FILES=("develop-environment.yml")
             CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
