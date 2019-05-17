@@ -112,6 +112,7 @@ function create_env_and_configs {
 
     for configmap in ${CONFIGMAPS[@]}
     do
+        echo "location ${CONFIGMAPS[$configmap]}"
         kubectl -n $KUBERNETES_NAMESPACE apply -f ${CONFIGMAPS[$configmap]}
     done
 
