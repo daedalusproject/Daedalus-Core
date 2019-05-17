@@ -127,3 +127,53 @@ spec:
     app: rabbitmq
     tier: broker
     environment: develop
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: percona-server
+  namespace: daedalus-core-develop
+  labels:
+    app: percona-server
+    tier: bakend
+    environment: develop
+spec:
+  containers:
+  - name: percona-server
+    image: daedalusproject/base_develop_percona_server
+    ports:
+    - containerPort: 3306
+    envFrom:
+    - configMapRef:
+        name: percona-env-configmap
+    secretRef:
+        name: percona-secrets
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - "sh"
+            - "-c"
+            - >
+              /usr/bin/daedalus-project-mysql-utils create_database ;
+              /usr/bin/daedalus-project-mysql-utils create_user ;
+              /usr/bin/daedalus-project-mysql-utils grant ;
+              /usr/bin/daedalus-project-mysql-utils change_root_password ;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: percona-server
+  namespace: daedalus-core-develop
+  labels:
+    app: percona-server
+    environment: develop
+    tier: bakend
+spec:
+  ports:
+  - name: access
+    port: 3306
+  selector:
+    app: percona-server
+    tier: bakend
+    environment: develop
