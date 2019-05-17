@@ -98,7 +98,7 @@ metadata:
   namespace: daedalus-core-staging
 rules:
 - apiGroups: ["", "extensions", "apps"]
-  resources: ["deployments","pods","services", "configmaps"]
+  resources: ["deployments","pods","services", "configmaps", "secrets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: RoleBinding
@@ -122,7 +122,7 @@ metadata:
   namespace: daedalus-core
 rules:
 - apiGroups: ["", "extensions", "apps"]
-  resources: ["deployments","pods","services", "configmaps"]
+  resources: ["deployments","pods","services", "configmaps", "secrets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: RoleBinding
