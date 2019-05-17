@@ -110,10 +110,16 @@ function create_env_and_configs {
         kubectl -n $KUBERNETES_NAMESPACE create configmap $configmap --from-file ${CONFIGMAP_FILES[$configmap]}
     done
 
+    for configmap in ${CONFIGMAPS[@]}
+    do
+        kubectl -n $KUBERNETES_NAMESPACE apply -f ${CONFIGMAPS[$configmap]}
+    done
+
     for file in ${ENV_FILES[@]}
     do
         kubectl -n $KUBERNETES_NAMESPACE apply -f $ENV_FOLDER/$file
     done
+
 }
 
 ## Main
