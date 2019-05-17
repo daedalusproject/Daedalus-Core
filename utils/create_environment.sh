@@ -90,7 +90,7 @@ function delete_env_and_configs {
 
     for configmap in ${CONFIGMAPS[@]}
     do
-        echo ${CONFIGMAPS[$configmap]}
+        echo "Deleting $configmap"
         kubectl -n $KUBERNETES_NAMESPACE delete -f $configmap --ignore-not-found=true
     done
 
