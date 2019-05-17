@@ -59,7 +59,7 @@ function evalue_env_type {
             ENV_FILES=("develop-environment.yml")
             CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
-            CONFIGMAPS['percona-server']="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
+            CONFIGMAPS["percona-server"]="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
             echo "CONFIGMAPS: $CONFIGMAPS"
             ;;
         *)
