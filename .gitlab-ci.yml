@@ -4,6 +4,9 @@ stages:
 develop_environment:
     stage: deploy
     image: daedalusproject/base_kubectl:201905161558
+    before_script:
+        - kubectl -n daedalus-core-develop delete secret generic percona-secrets --ignore-not-found=true
+        - kubectl -n daedalus-core-develop create secret generic percona-secrets --from-literal=MYSQL_NEW_ROOT_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD" --from-literal=MYSQL_NEW_USER_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_NEW_USER_HOST="$KUBE_CDIR"
     script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_DEVELOP_USER_NAME' 'KUBERNETES_DEVELOP_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
