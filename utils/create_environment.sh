@@ -60,6 +60,7 @@ function evalue_env_type {
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
             declare -g -A CONFIGMAPS
             CONFIGMAPS['percona-server']="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
+            echo $CONFIGMAPS
             ;;
         *)
             show_error "Environment $ENV_TYPE not defined."
