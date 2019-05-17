@@ -60,7 +60,6 @@ function evalue_env_type {
             CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
             CONFIGMAPS["percona-server"]="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
-            echo "CONFIGMAPS: $CONFIGMAPS"
             ;;
         *)
             show_error "Environment $ENV_TYPE not defined."
@@ -92,7 +91,7 @@ function delete_env_and_configs {
     for configmap in ${CONFIGMAPS[@]}
     do
         echo ${CONFIGMAPS[$configmap]}
-        kubectl -n $KUBERNETES_NAMESPACE delete -f ${CONFIGMAPS[$configmap]} --ignore-not-found=true
+        kubectl -n $KUBERNETES_NAMESPACE delete -f $configmap --ignore-not-found=true
     done
 
     if [[ $ENV_TYPE -eq "develop" ]]; then
