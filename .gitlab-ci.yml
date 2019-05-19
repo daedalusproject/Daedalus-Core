@@ -3,7 +3,7 @@ stages:
     - deploy
 
 decode_daedalus_core_private_key:
-    stage: deploy
+    stage: decode_repo_secrets
     image: daedalusproject/base_openssl
     script:
         - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -in kubernetes/config/daedalus-core/secrets/encoded_secret -out kubernetes/config/daedalus-core/secrets/secret
