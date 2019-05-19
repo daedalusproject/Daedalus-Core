@@ -40,7 +40,6 @@ function evalue_env_type {
     CONFIGMAP_FILES["rabbitmq-config"]="$KUBERNETES_CONFIG_FOLDER/config/rabbitmq"
 
     declare -g -A CONFIGMAPS
-    declare -g -A SECRET_FILES
 
     case $ENV_TYPE in
         testing)
@@ -61,8 +60,7 @@ function evalue_env_type {
             CONFIGMAP_NAMES=("redis-config" "rabbitmq-config")
             REDIS_SERVICE="redis-daedalus-core-develop.daedalus-core-develop.svc.cluster.local"
             CONFIGMAPS["percona-server"]="$KUBERNETES_CONFIG_FOLDER/config/percona-server/percona-server-env.yml"
-            sed -i "s///g" $KUBERNETES_CONFIG_FOLDER/config/daedalus-core/
-            SECRET_FILES["daedalus-core"]="$KUBERNETES_CONFIG_FOLDER/config/daedalus-core"
+            sed -i "s/__DAEDALUS_CORE_DATABASE_PASSWORD__/$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD/g" $KUBERNETES_CONFIG_FOLDER/config/daedalus-core/daedalus_core_develop.conf
             ;;
         *)
             show_error "Environment $ENV_TYPE not defined."
@@ -98,6 +96,7 @@ function delete_env_and_configs {
 
     if [ "$ENV_TYPE" == "develop" ]; then
         kubectl -n daedalus-core-develop delete secret generic percona-secrets --ignore-not-found=true
+        kubectl -n daedalus-core-develop delete secret generic daedalus-core-secrets --ignore-not-found=true
     fi
 }
 
@@ -105,6 +104,7 @@ function create_env_and_configs {
 
     if [ "$ENV_TYPE" == "develop" ]; then
         kubectl -n $KUBERNETES_NAMESPACE create secret generic percona-secrets --from-literal=MYSQL_NEW_ROOT_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD" --from-literal=MYSQL_NEW_USER_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_NEW_USER_HOST="$KUBE_CDIR"
+        kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-secrets --from-file=$KUBERNETES_CONFIG_FOLDER/config/daedalus-core
     fi
 
     for configmap in ${CONFIGMAP_NAMES[@]}
