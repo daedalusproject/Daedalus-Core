@@ -6,14 +6,20 @@ decode_daedalus_core_private_key:
     stage: decode_repo_secrets
     image: daedalusproject/base_openssl
     script:
-        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -in kubernetes/config/daedalus-core/secrets/encoded_secret -out kubernetes/config/daedalus-core/secrets/secret
+        - mkdir decoded_secrets
+        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -in kubernetes/config/daedalus-core/secrets/encoded_secret -out decoded_secrets/secret
     tags:
     - docker_build
+    artifacts:
+        paths:
+        - decoded_secrets
+        expire_in: 5 minutes
 
 develop_environment:
     stage: deploy
     image: daedalusproject/base_kubectl:201905161822
     script:
+		- mv decoded_secrets/secret kubernetes/config/daedalus-core/secrets/secret
         - cat kubernetes/config/daedalus-core/secrets/secret
         - exit 1
         - declare -a -g REQUIRED_VARIABLES
@@ -24,5 +30,7 @@ develop_environment:
         - delete_env_and_configs
         - create_env_and_configs
         - bash utils/test_redis.sh $REDIS_SERVICE 5 10
+    dependencies:
+    - decode_daedalus_core_private_key
     tags:
     - kubernetes
