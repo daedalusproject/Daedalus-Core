@@ -22,6 +22,7 @@ develop_environment:
         - mv decoded_secrets/secret kubernetes/config/daedalus-core/secrets/secret
         - cat kubernetes/config/daedalus-core/secrets/secret
         - exit 1
+        - exit 1
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_DEVELOP_USER_NAME' 'KUBERNETES_DEVELOP_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT' 'DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD' 'DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD' 'KUBE_CDIR')
         - ENV_TYPE="develop"
