@@ -7,7 +7,7 @@ decode_daedalus_core_private_key:
     image: daedalusproject/base_openssl
     script:
         - mkdir decoded_secrets
-        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -in kubernetes/config/daedalus-core/secrets/encoded_secret -out decoded_secrets/secret
+        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/encoded_secret -out decoded_secrets/secret
     tags:
     - docker_build
     artifacts:
