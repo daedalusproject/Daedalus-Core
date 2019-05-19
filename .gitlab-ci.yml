@@ -19,7 +19,7 @@ develop_environment:
     stage: deploy
     image: daedalusproject/base_kubectl:201905161822
     script:
-		- mv decoded_secrets/secret kubernetes/config/daedalus-core/secrets/secret
+        - mv decoded_secrets/secret kubernetes/config/daedalus-core/secrets/secret
         - cat kubernetes/config/daedalus-core/secrets/secret
         - exit 1
         - declare -a -g REQUIRED_VARIABLES
