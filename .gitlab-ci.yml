@@ -17,7 +17,5 @@ develop_environment:
         - delete_env_and_configs
         - create_env_and_configs
         - bash utils/test_redis.sh $REDIS_SERVICE 5 10
-    dependencies:
-    - decode_daedalus_core_private_key
     tags:
     - kubernetes
