@@ -5,7 +5,7 @@ develop_environment:
     stage: deploy
     image: daedalusproject/base_kubectl
     script:
-        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/encoded_secret -out kubernetes/config/daedalus-core/secrets/encoded_secret
+        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/encoded_secret -out kubernetes/config/daedalus-core/secrets/secret
         - rm -f kubernetes/config/daedalus-core/secrets/encoded_secret
         - cat kubernetes/config/daedalus-core/secrets/secret
         - exit 1
