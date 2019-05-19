@@ -1,0 +1,10 @@
+<config>
+    <name>Daedalus::Core</name>
+    <Plugin name="Cache">
+        <backend>
+            <class>Cache::Redis</class>
+            <server>redis-daedalus-core-develop:6379</server>
+            <namespace>cache:</namespace>
+        </backend>
+    </Plugin>
+</config>
