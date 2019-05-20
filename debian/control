@@ -50,5 +50,6 @@ Depends: ${misc:Depends}, ${perl:Depends},
  libclass-dbi-pg-perl,
  libclass-dbi-sqlite-perl,
  libdbd-mysql-perl,
- libdbd-pg-perl
+ libdbd-pg-perl,
+ libsql-translator-perl
 Description: Information system which also manages all other services, clients, organization and projects.

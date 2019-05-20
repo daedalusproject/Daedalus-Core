@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-12) unstable; urgency=low
+
+  * Add libsql-translator-perl as dependence
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  mon, 20 may 2019 21:35:00 +0000
+
 libdaedalus-core-perl (0.01-11) unstable; urgency=low
 
   * Add more dependences
