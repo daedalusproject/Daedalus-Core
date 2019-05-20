@@ -2,4 +2,4 @@
 
 set -e
 
-adduser --system daedalus
+adduser  daedalus --shell /bin/bash
