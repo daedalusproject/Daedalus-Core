@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-9) unstable; urgency=low
+
+  * Fix mysql connection test script
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Mon, 20 May 2019 17:40:00 +0000
+
 libdaedalus-core-perl (0.01-8) unstable; urgency=low
 
   * Fix redis connection test script

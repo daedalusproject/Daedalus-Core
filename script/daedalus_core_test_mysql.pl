@@ -16,10 +16,11 @@ my $conection_timeout = int $ENV{'MYSQL_CONECTION_TIMEOUT'};
 
 my $succeded_conection = 0;
 
+my $dsn = "DBI:mysql:database=$database;host=$host;port=$port";
+
 for ( my $i = 0 ; $i < $conection_retries && $succeded_conection == 0 ; $i++ ) {
     try {
-        my $myConnection = DBI->connect( "DBI:mysql:$database:$host:$port",
-            "$username", "$password" );
+        my $myConnection = DBI->connect( $dsn, $username, $password );
         if ($myConnection) {
             $succeded_conection = 1;
         }
