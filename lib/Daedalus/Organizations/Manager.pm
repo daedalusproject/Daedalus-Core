@@ -118,7 +118,7 @@ sub create_organization {
           );
 
         my $organization_user_group =
-          $c->model('CoreRealms::OrgaizationUsersGroup')->create(
+          $c->model('CoreRealms::OrganizationUsersGroup')->create(
             {
                 group_id => $organization_group->id,
                 user_id  => $user_id,
@@ -314,7 +314,7 @@ sub get_organization_group_users {
 
     my $response = { data => {}, _hidden_data => {} };
 
-    my @users = $c->model('CoreRealms::OrgaizationUsersGroup')
+    my @users = $c->model('CoreRealms::OrganizationUsersGroup')
       ->search( { group_id => $organization_group_id } )->all;
 
     for my $user_from_group (@users) {
@@ -600,7 +600,7 @@ sub add_user_to_organization_group {
 
     my $response;
 
-    my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->create(
+    my $user_group = $c->model('CoreRealms::OrganizationUsersGroup')->create(
         {
             group_id => $group_id,
             user_id  => $user_id

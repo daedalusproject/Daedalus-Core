@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup;
+package Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup
+Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup
 
 =cut
 

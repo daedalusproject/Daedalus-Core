@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-13) unstable; urgency=low
+
+  * Fix typo
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  mon, 20 may 2019 22:01:00 +0000
+
 libdaedalus-core-perl (0.01-12) unstable; urgency=low
 
   * Add libsql-translator-perl as dependence

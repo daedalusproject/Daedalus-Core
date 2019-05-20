@@ -274,13 +274,13 @@ __PACKAGE__->add_unique_constraint( "user_token_unique", ["token"] );
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup>
 
 =cut
 
 __PACKAGE__->has_many(
     "orgaization_users_groups",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup",
     { "foreign.user_id" => "self.id" },
     { cascade_copy      => 0, cascade_delete => 0 },
 );
