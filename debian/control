@@ -45,5 +45,10 @@ Depends: ${misc:Depends}, ${perl:Depends},
  libcache-redis-perl,
  libjson-xs-perl,
  libfcgi-perl,
- libfcgi-procmanager-perl
+ libfcgi-procmanager-perl,
+ libclass-dbi-mysql-perl,
+ libclass-dbi-pg-perl,
+ libclass-dbi-sqlite-perl,
+ libdbd-mysql-perl,
+ libdbd-pg-perl
 Description: Information system which also manages all other services, clients, organization and projects.

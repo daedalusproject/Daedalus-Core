@@ -45,11 +45,9 @@ spec:
           - >
             /usr/bin/daedalus_core_test_redis.pl ;
             /usr/bin/daedalus_core_test_mysql.pl ;
-            /usr/bin/daedalus_core_deploy.pl mysql $MYSQL_DATABASE;$MYSQL_HOST;$MYSQL_PORT $MYSQL_USER $MYSQL_PASSWORD ;
+            /usr/bin/daedalus_core_deploy.pl mysql "$MYSQL_DATABASE;$MYSQL_HOST;$MYSQL_PORT" $MYSQL_USER $MYSQL_PASSWORD ;
         envFrom:
         - secretRef:
             name: daedalus-core-database
         - secretRef:
             name: daedalus-core-cache
----
-
