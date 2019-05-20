@@ -8,8 +8,8 @@ use Cache::Redis;
 my $host = $ENV{'REDIS_HOST'};
 my $port = $ENV{'REDIS_PORT'};
 
-my $conection_retries = $ENV{'REDIS_CONECTION_RETRIES'};
-my $conection_timeout = $ENV{'REDIS_CONECTION_TIMEOUT'};
+my $conection_retries = int $ENV{'REDIS_CONECTION_RETRIES'};
+my $conection_timeout = int $ENV{'REDIS_CONECTION_TIMEOUT'};
 
 my $succeded_conection = 0;
 
