@@ -1,3 +1,10 @@
+libdaedalus-core-perl (0.01-15) unstable; urgency=low
+
+  * Close mysql conection after test_mysql.
+  * Do no chrash if admin user already exists.
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Tue, 21 may 2019 17:12:00 +0000
+
 libdaedalus-core-perl (0.01-14) unstable; urgency=low
 
   * daedalus_core_create_admin_user_non_interactive

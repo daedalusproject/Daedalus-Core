@@ -49,87 +49,93 @@ my $auth_token = $pass->randpattern($patern64);
 my $salt       = $pass->randpattern($patern256);
 $admin_password = sha512_base64("$salt$admin_password");
 
-my $user = $schema->resultset('User')->create(
-    {
-        name       => $admin_name,
-        surname    => $admin_surname,
-        email      => $admin_email,
-        api_key    => $api_key,
-        password   => $admin_password,
-        salt       => $salt,
-        expires    => "3000-01-01",
-        active     => 1,
-        auth_token => $auth_token,
-    }
-);
+if ( !$schema->resultset('User')->find( { email => $admin_email } ) ) {
 
-# Create Roles
+    my $user = $schema->resultset('User')->create(
+        {
+            name       => $admin_name,
+            surname    => $admin_surname,
+            email      => $admin_email,
+            api_key    => $api_key,
+            password   => $admin_password,
+            salt       => $salt,
+            expires    => "3000-01-01",
+            active     => 1,
+            auth_token => $auth_token,
+        }
+    );
 
-my $organization_master_role =
-  $schema->resultset('Role')->create( { role_name => "organization_master", } );
-$schema->resultset('Role')->create( { role_name => "project_caretaker", } );
-$schema->resultset('Role')->create(
-    {
-        role_name => "health_watcher",
-    }
-);
-$schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
-$schema->resultset('Role')->create( { role_name => "maze_master", } );
-my $fireman =
-  $schema->resultset('Role')->create( { role_name => "fireman", } );
-$schema->resultset('Role')->create( { role_name => "fireman_commando", } );
-my $daedalus_manager =
-  $schema->resultset('Role')->create( { role_name => "daedalus_manager", } );
+    # Create Roles
 
-# Create organization
+    my $organization_master_role =
+      $schema->resultset('Role')
+      ->create( { role_name => "organization_master", } );
+    $schema->resultset('Role')->create( { role_name => "project_caretaker", } );
+    $schema->resultset('Role')->create(
+        {
+            role_name => "health_watcher",
+        }
+    );
+    $schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
+    $schema->resultset('Role')->create( { role_name => "maze_master", } );
+    my $fireman =
+      $schema->resultset('Role')->create( { role_name => "fireman", } );
+    $schema->resultset('Role')->create( { role_name => "fireman_commando", } );
+    my $daedalus_manager =
+      $schema->resultset('Role')
+      ->create( { role_name => "daedalus_manager", } );
 
-my $organization = $schema->resultset('Organization')->create(
-    {
-        name  => $organization_name,
-        token => $pass->randpattern($patern32)
-    }
-);
+    # Create organization
 
-# admin@daedalus-project.io belongs to ""Daedalus Project"" Organization
+    my $organization = $schema->resultset('Organization')->create(
+        {
+            name  => $organization_name,
+            token => $pass->randpattern($patern32)
+        }
+    );
 
-$schema->resultset('UserOrganization')->create(
-    {
-        organization_id => $organization->id,
-        user_id         => $user->id,
-    }
-);
+    # admin@daedalus-project.io belongs to ""Daedalus Project"" Organization
 
-my $organization_group = $schema->resultset('OrganizationGroup')->create(
-    {
-        organization_id => $organization->id,
-        group_name      => "$organization_name Super Administrators",
-        token           => $pass->randpattern($patern32),
-    }
-);
+    $schema->resultset('UserOrganization')->create(
+        {
+            organization_id => $organization->id,
+            user_id         => $user->id,
+        }
+    );
+
+    my $organization_group = $schema->resultset('OrganizationGroup')->create(
+        {
+            organization_id => $organization->id,
+            group_name      => "$organization_name Super Administrators",
+            token           => $pass->randpattern($patern32),
+        }
+    );
 
 # Daedalus Administrators has the following roles #  daedalus_manager #  organization_master
 
-my $organization_group_role =
-  $schema->resultset('OrganizationGroupRole')->create(
-    {
-        group_id => $organization_group->id,
-        role_id  => $daedalus_manager->id,
-    }
-  );
+    my $organization_group_role =
+      $schema->resultset('OrganizationGroupRole')->create(
+        {
+            group_id => $organization_group->id,
+            role_id  => $daedalus_manager->id,
+        }
+      );
 
-$schema->resultset('OrganizationGroupRole')->create(
-    {
-        group_id => $organization_group->id,
-        role_id  => $organization_master_role->id,
-    }
-);
+    $schema->resultset('OrganizationGroupRole')->create(
+        {
+            group_id => $organization_group->id,
+            role_id  => $organization_master_role->id,
+        }
+    );
 
-$schema->resultset('OrganizationUsersGroup')->create(
-    {
-        group_id => $organization_group->id,
-        user_id  => $user->id,
-    }
-);
+    $schema->resultset('OrganizationUsersGroup')->create(
+        {
+            group_id => $organization_group->id,
+            user_id  => $user->id,
+        }
+    );
 
-print "Admin user created.\n";
+    print "Admin user created.\n";
+
+}
 

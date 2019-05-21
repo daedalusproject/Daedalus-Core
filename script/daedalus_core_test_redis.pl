@@ -17,7 +17,7 @@ for ( my $i = 0 ; $i < $conection_retries && $succeded_conection == 0 ; $i++ ) {
     try {
         my $cache = Cache::Redis->new(
             server    => "$host:$port",
-            namespace => 'cache:',
+            namespace => '',
         );
         if ($cache) {
             $succeded_conection = 1;

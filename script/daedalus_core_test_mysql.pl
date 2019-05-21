@@ -23,6 +23,7 @@ for ( my $i = 0 ; $i < $conection_retries && $succeded_conection == 0 ; $i++ ) {
         my $myConnection = DBI->connect( $dsn, $username, $password );
         if ($myConnection) {
             $succeded_conection = 1;
+            $myConnection->disconnect();
         }
     }
     catch {
