@@ -114,6 +114,25 @@ create_develop_docker_image:
     tags:
     - docker_build
 
+create_develop_nginx_docker_image:
+    stage: docker_image
+    image: daedalusproject/base_docker:201905200351
+    script:
+        - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
+        - IMAGENAME=daedalus_core_develop_nginx
+        - RELEASEDATE=$(date)
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/daedalus_core_develop/Dockerfile .
+        - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
+        - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
+        - docker commit -m "$RELEASEDATE" -a "Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>" "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${CI_COMMIT_REF_NAME}"
+        - docker push daedalusproject/"${IMAGENAME}":latest
+        - docker stop "${IMAGENAME}"
+        - docker rm "${IMAGENAME}"
+        - docker rmi "${IMAGENAME}"
+    tags:
+    - docker_build
+
 develop_environment:
     stage: deploy
     image: daedalusproject/base_kubectl:201905200351
