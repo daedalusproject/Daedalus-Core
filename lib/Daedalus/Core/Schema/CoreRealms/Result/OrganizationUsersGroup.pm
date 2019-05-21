@@ -33,11 +33,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<orgaization_users_groups>
+=head1 TABLE: C<organization_users_groups>
 
 =cut
 
-__PACKAGE__->table("orgaization_users_groups");
+__PACKAGE__->table("organization_users_groups");
 
 =head1 ACCESSORS
 

@@ -108,7 +108,7 @@ sub create_organization {
             }
           );
 
-        # This group has orgaization_master role
+        # This group has organization_master role
         my $organization_group_role =
           $c->model('CoreRealms::OrganizationGroupRole')->create(
             {
