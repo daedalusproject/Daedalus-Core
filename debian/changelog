@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-14) unstable; urgency=low
+
+  * daedalus_core_create_admin_user_non_interactive
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Tue, 21 may 2019 06:58:00 +0000
+
 libdaedalus-core-perl (0.01-13) unstable; urgency=low
 
   * Fix typo

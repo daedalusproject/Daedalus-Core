@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: daedalus-core-develop
+  name: daedalus-core-develop-main
   namespace: daedalus-core-develop
   labels:
     app: daedalus-core
@@ -15,6 +15,8 @@ spec:
     metadata:
       labels:
         app: daedalus-core
+        tier: daedalus-core-backend
+        type: primary
         environment: develop
     spec:
       containers:
@@ -46,8 +48,81 @@ spec:
             /usr/bin/daedalus_core_test_redis.pl ;
             /usr/bin/daedalus_core_test_mysql.pl ;
             /usr/bin/daedalus_core_deploy.pl mysql "$MYSQL_DATABASE;$MYSQL_HOST;$MYSQL_PORT" $MYSQL_USER $MYSQL_PASSWORD ;
+            /usr/bin/daedalus_core_create_admin_user_non_interactive.pl;
         envFrom:
         - secretRef:
             name: daedalus-core-database
         - secretRef:
             name: daedalus-core-cache
+        - secretRef:
+            name: daedalus-core-admin-info
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: daedalus-core
+spec:
+  selector:
+    matchLabels:
+      app: daedalus-core
+      environment: develop
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: daedalus-core
+        tier: daedalus-core-backend
+        environment: develop
+    spec:
+      containers:
+      - name: daedalus-core
+        image: daedalusproject/daedalus_core_develop
+        command: ["daedalus_core_fastcgi.pl"]
+        args: ["-l", ":8080"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: daedalus-core-config
+          mountPath: /etc/daedalus-core/
+          readOnly: true
+      volumes:
+      - name: daedalus-core-config
+        secret:
+          secretName: daedalus-core-secrets
+      initContainers:
+      - name: daedalus-core-deployer
+        image: daedalusproject/daedalus_core_develop
+        command:
+          - "sh"
+          - "-c"
+          - >
+            /usr/bin/daedalus_core_test_redis.pl ;
+            /usr/bin/daedalus_core_test_mysql.pl ;
+        envFrom:
+        - secretRef:
+            name: daedalus-core-database
+        - secretRef:
+            name: daedalus-core-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: daedalus-core-develop-service
+  namespace: daedalus-core-develop
+  labels:
+    app: daedalus-core-develop-service
+spec:
+  ports:
+  - name: access
+    port: 8080
+  selector:
+    app: daedalus-core
+    tier: daedalus-core-backend
+    environment: develop
