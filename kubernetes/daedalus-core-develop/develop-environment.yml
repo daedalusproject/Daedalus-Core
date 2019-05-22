@@ -214,10 +214,16 @@ spec:
         - name: daedalus-core-config
           mountPath: /etc/daedalus-core/
           readOnly: true
+        - name: daedalus-core-rsa-keys
+          mountPath: /etc/daedalus-core/secrets
+          readOnly: true
       volumes:
       - name: daedalus-core-config
         secret:
           secretName: daedalus-core-secrets
+      - name: daedalus-core-rsa-keys
+        secret:
+          secretName: daedalus-core-rsa-keys
       initContainers:
       - name: daedalus-core-deployer
         image: daedalusproject/daedalus_core_develop
@@ -272,10 +278,16 @@ spec:
         - name: daedalus-core-config
           mountPath: /etc/daedalus-core/
           readOnly: true
+        - name: daedalus-core-rsa-keys
+          mountPath: /etc/daedalus-core/secrets
+          readOnly: true
       volumes:
       - name: daedalus-core-config
         secret:
           secretName: daedalus-core-secrets
+      - name: daedalus-core-rsa-keys
+        secret:
+          secretName: daedalus-core-rsa-keys
       initContainers:
       - name: daedalus-core-deployer
         image: daedalusproject/daedalus_core_develop

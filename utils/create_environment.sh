@@ -97,6 +97,7 @@ function delete_env_and_configs {
     if [ "$ENV_TYPE" == "develop" ]; then
         kubectl -n $KUBERNETES_NAMESPACE delete secret generic percona-secrets --ignore-not-found=true
         kubectl -n $KUBERNETES_NAMESPACE delete secret generic daedalus-core-secrets --ignore-not-found=true
+        kubectl -n $KUBERNETES_NAMESPACE delete secret generic daedalus-core-rsa-keys --ignore-not-found=true
         kubectl -n $KUBERNETES_NAMESPACE delete secret generic daedalus-core-database --ignore-not-found=true
         kubectl -n $KUBERNETES_NAMESPACE delete secret generic daedalus-core-cache --ignore-not-found=true
         kubectl -n $KUBERNETES_NAMESPACE delete secret generic daedalus-core-admin-info --ignore-not-found=true
@@ -108,6 +109,7 @@ function create_env_and_configs {
     if [ "$ENV_TYPE" == "develop" ]; then
         kubectl -n $KUBERNETES_NAMESPACE create secret generic percona-secrets --from-literal=MYSQL_NEW_ROOT_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD" --from-literal=MYSQL_NEW_USER_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_NEW_USER_HOST="$KUBE_CDIR"
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-secrets --from-file=$KUBERNETES_CONFIG_FOLDER/config/daedalus-core
+        kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-rsa-keys --from-file=$KUBERNETES_CONFIG_FOLDER/config/daedalus-core/secrets
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-database --from-literal=MYSQL_USER="daedalus" --from-literal=MYSQL_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_HOST="percona-server-develop" --from-literal=MYSQL_PORT="3306" --from-literal=MYSQL_DATABASE="daedalus_core_realms" --from-literal=MYSQL_CONECTION_RETRIES="7" --from-literal=MYSQL_CONECTION_TIMEOUT="10"
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-cache --from-literal=REDIS_HOST="redis-daedalus-core-develop" --from-literal=REDIS_PORT="6379" --from-literal=REDIS_CONECTION_RETRIES="5" --from-literal=REDIS_CONECTION_TIMEOUT="5"
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-admin-info --from-literal=ADMIN_NAME="$DEVELOP_ADMIN_NAME" --from-literal=ADMIN_SURNAME="$DEVELOP_ADMIN_SURNAME" --from-literal=ADMIN_EMAIL="$DEVELOP_ADMIN_EMAIL" --from-literal=ADMIN_PASSWORD="$DEVELOP_ADMIN_PASSWORD"
