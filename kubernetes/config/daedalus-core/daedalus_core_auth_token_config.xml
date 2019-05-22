@@ -3,6 +3,6 @@
     <authTokenConfig>
     <relative_exp>10</relative_exp>
     <rsa_private_key>/etc/daedalus-core/secrets/daedalus_core_rsa_key</rsa_private_key>
-    <rsa_public_key>/etc/daedalus-core/daedalus_core_rsa_key.pub</rsa_public_key>
+    <rsa_public_key>/etc/daedalus-core/secrets/daedalus_core_rsa_key.pub</rsa_public_key>
     </authTokenConfig>
 </config>
