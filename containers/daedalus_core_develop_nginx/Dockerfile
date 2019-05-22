@@ -6,7 +6,7 @@ COPY containers/daedalus_core_develop_nginx/nginx/nginx.conf /etc/nginx/nginx.co
 
 USER www-data
 
-EXPOSE 80
+EXPOSE 8080
 
 STOPSIGNAL SIGTERM
 
