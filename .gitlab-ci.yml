@@ -102,7 +102,7 @@ create_develop_docker_image:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop
         - RELEASEDATE=$(date)
-        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/daedalus_core_develop/Dockerfile .
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/${IMAGENAME}/Dockerfile .
         - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
         - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
         - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
@@ -121,7 +121,7 @@ create_develop_nginx_docker_image:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop_nginx
         - RELEASEDATE=$(date)
-        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/daedalus_core_develop/Dockerfile .
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/${IMAGENAME}/Dockerfile .
         - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
         - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
         - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
