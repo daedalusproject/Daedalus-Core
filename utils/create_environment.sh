@@ -112,7 +112,7 @@ function create_env_and_configs {
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-rsa-keys --from-file=$KUBERNETES_CONFIG_FOLDER/config/daedalus-core/secrets
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-database --from-literal=MYSQL_USER="daedalus" --from-literal=MYSQL_PASSWORD="$DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD" --from-literal=MYSQL_HOST="percona-server-develop" --from-literal=MYSQL_PORT="3306" --from-literal=MYSQL_DATABASE="daedalus_core_realms" --from-literal=MYSQL_CONECTION_RETRIES="7" --from-literal=MYSQL_CONECTION_TIMEOUT="10"
         kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-cache --from-literal=REDIS_HOST="redis-daedalus-core-develop" --from-literal=REDIS_PORT="6379" --from-literal=REDIS_CONECTION_RETRIES="5" --from-literal=REDIS_CONECTION_TIMEOUT="5"
-        kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-admin-info --from-literal=ADMIN_NAME="$DEVELOP_ADMIN_NAME" --from-literal=ADMIN_SURNAME="$DEVELOP_ADMIN_SURNAME" --from-literal=ADMIN_EMAIL="$DEVELOP_ADMIN_EMAIL" --from-literal=ADMIN_PASSWORD="$DEVELOP_ADMIN_PASSWORD"
+        kubectl -n $KUBERNETES_NAMESPACE create secret generic daedalus-core-admin-info --from-literal=ADMIN_NAME="$DEVELOP_ADMIN_NAME" --from-literal=ADMIN_SURNAME="$DEVELOP_ADMIN_SURNAME" --from-literal=ADMIN_EMAIL="$DEVELOP_ADMIN_EMAIL" --from-literal=ADMIN_PASSWORD="$DEVELOP_ADMIN_PASSWORD" --from-literal=ADMIN_ORGANIZATION_NAME="$DEVELOP_ADMIN_ORGANIZATION_NAME"
     fi
 
     for configmap in ${CONFIGMAP_NAMES[@]}
