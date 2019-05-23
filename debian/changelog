@@ -1,0 +1,91 @@
+libdaedalus-core-perl (0.01-15) unstable; urgency=low
+
+  * Close mysql conection after test_mysql.
+  * Do no chrash if admin user already exists.
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Tue, 21 may 2019 17:12:00 +0000
+
+libdaedalus-core-perl (0.01-14) unstable; urgency=low
+
+  * daedalus_core_create_admin_user_non_interactive
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Tue, 21 may 2019 06:58:00 +0000
+
+libdaedalus-core-perl (0.01-13) unstable; urgency=low
+
+  * Fix typo
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  mon, 20 may 2019 22:01:00 +0000
+
+libdaedalus-core-perl (0.01-12) unstable; urgency=low
+
+  * Add libsql-translator-perl as dependence
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  mon, 20 may 2019 21:35:00 +0000
+
+libdaedalus-core-perl (0.01-11) unstable; urgency=low
+
+  * Add more dependences
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  mon, 20 may 2019 20:54:00 +0000
+
+libdaedalus-core-perl (0.01-10) unstable; urgency=low
+
+  * daedalus user has shell
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  mon, 20 may 2019 19:53:00 +0000
+
+libdaedalus-core-perl (0.01-9) unstable; urgency=low
+
+  * Fix mysql connection test script
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Mon, 20 May 2019 17:40:00 +0000
+
+libdaedalus-core-perl (0.01-8) unstable; urgency=low
+
+  * Fix redis connection test script
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Mon, 20 May 2019 07:03:00 +0000
+
+libdaedalus-core-perl (0.01-7) unstable; urgency=low
+
+  * Test redis connection
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Mon, 20 May 2019 06:03:00 +0000
+
+libdaedalus-core-perl (0.01-6) unstable; urgency=low
+
+  * Test mysql connection
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Fri, 17 May 2019 23:47:00 +0000
+
+libdaedalus-core-perl (0.01-5) unstable; urgency=low
+
+  * Add libfcgi-perl and libfcgi-procmanager-perl as dependence.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 16 May 2019 17:55:00 +0000
+
+libdaedalus-core-perl (0.01-4) unstable; urgency=low
+
+  * Add libjson-xs-perl as dependence.
+  * Creates daedalus user.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 16 May 2019 16:57:08 +0000
+
+libdaedalus-core-perl (0.01-3) unstable; urgency=low
+
+  * Remove hardcoded cache info in Core.pm.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 16 May 2019 07:42:08 +0000
+
+libdaedalus-core-perl (0.01-2) unstable; urgency=low
+
+  * Change config folder.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 28 Mar 2019 05:13:08 +0000
+
+libdaedalus-core-perl (0.01-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 28 Mar 2019 05:13:08 +0000

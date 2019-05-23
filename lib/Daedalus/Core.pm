@@ -34,14 +34,6 @@ if ( $ENV{APP_TEST} ) {
         );
         __PACKAGE__->config( 'Plugin::ConfigLoader' =>
               { file => __PACKAGE__->path_to('t/lib/kubernetes_conf') } );
-
-        # Cache
-        __PACKAGE__->config->{'Plugin::Cache'}{backend} =
-          {    #This config must be placed into conf folder
-            class     => "Cache::Redis",
-            server    => "redis-daedalus-core-develop:6379",
-            namespace => "cache:",
-          };
     }
     else {
         __PACKAGE__->config(
@@ -51,18 +43,11 @@ if ( $ENV{APP_TEST} ) {
         );
         __PACKAGE__->config( 'Plugin::ConfigLoader' =>
               { file => __PACKAGE__->path_to('t/lib/conf') } );
-
-        # Cache
-        __PACKAGE__->config->{'Plugin::Cache'}{backend} = {
-            class     => "Cache::Redis",
-            server    => "127.0.0.1:6379",
-            namespace => "cache:",
-        };
     }
 }
 else {
     __PACKAGE__->config(
-        'Plugin::ConfigLoader' => { file => __PACKAGE__->path_to('conf') } );
+        'Plugin::ConfigLoader' => { file => '/etc/daedalus-core' } );
 }
 
 __PACKAGE__->config(

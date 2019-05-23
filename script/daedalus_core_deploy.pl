@@ -24,4 +24,3 @@ my $schema = Daedalus::Core::Schema::CoreRealms->connect(
 
 ## Call the deploy method on the schema object:
 $schema->deploy();
-
