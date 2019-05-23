@@ -97,7 +97,7 @@ sub remove_user_from_organization_group {
 
     my $response;
 
-    my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
+    my $user_group = $c->model('CoreRealms::OrganizationUsersGroup')->find(
         {
             group_id => $group_id,
             user_id  => $user_id
@@ -188,11 +188,12 @@ sub remove_organization_group {
 
     $roles_to_remove->delete() if ($roles_to_remove);
 
-    my $users_to_remove = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
+    my $users_to_remove =
+      $c->model('CoreRealms::OrganizationUsersGroup')->find(
         {
             group_id => $group_id,
         }
-    );
+      );
 
     $users_to_remove->delete() if ($users_to_remove);
 

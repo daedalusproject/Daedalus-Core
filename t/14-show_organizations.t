@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use HTTP::Request::Common;
 use MIME::Base64;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = "/organization/show";
 
@@ -50,6 +60,26 @@ my $superadmin_session_token =
 
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $superadmin_create_ultrashops_organization = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json( { name => "Ultrashops" } ),
+);
+
+is( $superadmin_create_ultrashops_organization->code(), 200, );
+#
+my $superadmin_create_ultrashops_organization_json =
+  decode_json( $superadmin_create_ultrashops_organization->content );
+
+is( $superadmin_create_ultrashops_organization_json->{status}, 1, );
+is(
+    $superadmin_create_ultrashops_organization_json->{message},
+    'Organization created.',
+);
+
+isnt( $superadmin_create_ultrashops_organization_json->{_hidden_data}, undef, );
 
 my $admin_two_organization = request(
     GET $endpoint,
@@ -139,6 +169,22 @@ my $admin_megashops_session_token =
 my $admin_megashops_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_megashops_session_token", '' );
 
+my $create_supershops = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_megashops_authorization_basic",
+    Content       => encode_json( { name => "Supershops" } ),
+);
+
+is( $create_supershops->code(), 200, );
+#
+my $create_supershops_json = decode_json( $create_supershops->content );
+
+is( $create_supershops_json->{status},  1, );
+is( $create_supershops_json->{message}, 'Organization created.', );
+
+is( $create_supershops_json->{_hidden_data}, undef, );
+
 my $admin_user_mega_shop_organization = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -222,3 +268,5 @@ is( $no_admin_user_mega_shop_organization_json->{_hidden_data},
     undef, 'Non Super admin users do no receive hidden data' );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common qw(GET PUT POST DELETE);
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/user/remove';
 
@@ -101,6 +111,42 @@ my $superadmin_session_token =
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
+my $success_superadmin_register = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'othernotanadmin@daedalus-project.io',
+            name     => 'Other',
+            surname  => 'Not Admin',
+        }
+    )
+);
+
+is( $success_superadmin_register->code(), 200, );
+
+my $success_superadmin_register_json =
+  decode_json( $success_superadmin_register->content );
+
+isnt( $success_superadmin_register_json->{data}->{new_user}->{token}, undef, );
+
+my $othernotanadmin_auth_token =
+  $success_superadmin_register_json->{_hidden_data}->{new_user}->{auth_token};
+
+my $othernotanadmin_confirms_registration = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token => $othernotanadmin_auth_token,
+            password   => 'val1d_Pa55w0rd',
+        }
+    )
+);
+
+is( $othernotanadmin_confirms_registration->code(), 200 );
+
 my $list_users = request(
     GET '/user/showregistered',
     Content_Type  => 'application/json',
@@ -113,7 +159,7 @@ my $list_users_json = decode_json( $list_users->content );
 
 is( $list_users_json->{status}, 1, 'Status success.' );
 is( keys %{ $list_users_json->{data}->{registered_users} },
-    4, 'This user has registered 4 users for the tiem being.' );
+    2, 'This user has registered 2 users.' );
 
 my $failed_non_existent_user = request(
     DELETE "$endpoint/invalidtoken_adddddoiuhjhgjhagds",
@@ -142,6 +188,12 @@ my $superadmin_get_active_users_json =
   decode_json( $superadmin_get_active_users->content );
 
 is( $superadmin_get_active_users_json->{status}, 1, );
+
+isnt(
+    $superadmin_get_active_users_json->{data}->{active_users}
+      ->{'othernotanadmin@daedalus-project.io'}->{token},
+    undef,
+);
 
 my $othernotanadmin_user_token =
   $superadmin_get_active_users_json->{data}->{active_users}
@@ -250,11 +302,8 @@ is( $remove_user_success->code(), 200, );
 
 my $remove_user_success_json = decode_json( $remove_user_success->content );
 
-is( $remove_user_success_json->{status}, 1, );
-is(
-    $remove_user_success_json->{message},
-    'Selected user has been removed from organization.',
-);
+is( $remove_user_success_json->{status},  1, );
+is( $remove_user_success_json->{message}, 'Selected user has been removed.', );
 
 is( $remove_user_success_json->{_hidden_data}, undef, );
 
@@ -270,7 +319,7 @@ my $list_users_again_json = decode_json( $list_users_again->content );
 
 is( $list_users_again_json->{status}, 1, 'Status success.' );
 is( keys %{ $list_users_again_json->{data}->{registered_users} },
-    3, 'noadmin@megashops.com has been deleted' );
+    1, 'noadmin@megashops.com has been deleted' );
 
 my $get_sysadmins = request(
     GET '/organization/showallgroups/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
@@ -304,7 +353,7 @@ my $superadmin_removes_marvin_json =
 is( $superadmin_removes_marvin_json->{status}, 1, );
 is(
     $superadmin_removes_marvin_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 my $already_removed_fail = request(
@@ -380,8 +429,23 @@ my $superadmin_removes_superboss_json =
 is( $superadmin_removes_superboss_json->{status}, 1, );
 is(
     $superadmin_removes_superboss_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
+
+my $success_register_megashops_user = request(
+    POST '/user/register',
+    Authorization => "Basic $admin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'shirorobot@megashops.com',
+            name     => 'Shiro',
+            surname  => 'Robot',
+        }
+    )
+);
+
+is( $success_register_megashops_user->code(), 200, );
 
 my $admin_get_inactive_users = request(
     GET "user/showinactive",
@@ -418,7 +482,7 @@ my $superadmin_removes_shiro_json =
 is( $superadmin_removes_shiro_json->{status}, 1, );
 is(
     $superadmin_removes_shiro_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 my $superadmin_removes_orphan = request(
@@ -435,7 +499,9 @@ my $superadmin_removes_orphan_json =
 is( $superadmin_removes_orphan_json->{status}, 1, );
 is(
     $superadmin_removes_orphan_json->{message},
-    'Selected user has been removed from organization.',
+    'Selected user has been removed.',
 );
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

@@ -1,3 +1,4 @@
+use v5.26;
 use strict;
 use warnings;
 use Test::More;
@@ -8,6 +9,15 @@ use Daedalus::Core::Controller::REST;
 use JSON::XS;
 use MIME::Base64;
 use HTTP::Request::Common;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use lib "$Bin/script";
+
+use DatabaseSetUpTearDown;
+
+DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::create_database();
 
 my $endpoint = '/organization/creategroup';
 
@@ -322,10 +332,9 @@ my $superadmin_authorization_basic =
 
 my $superadmin_create_group_success = request(
     POST $endpoint,
-    Content_Type => 'application/json',
-    Authorization =>
-      "Basic $superadmin_authorization_basic",    #Megashops Project token
-    Content => encode_json(
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
         {
             organization_token => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
             group_name         => 'Daedalus Core Sysadmins'
@@ -443,3 +452,5 @@ is(
 # Check groups
 
 done_testing();
+
+DatabaseSetUpTearDown::delete_database();

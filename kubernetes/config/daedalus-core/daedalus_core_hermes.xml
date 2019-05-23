@@ -1,0 +1,16 @@
+<config>
+    <name>Daedalus::Core</name>
+    <hermes>
+        <type>rabbitmq</type>
+        <user>daedalus</user>
+        <port>5672</port>
+        <host>rabbitmq-daedalus-core-develop.daedalus-core-develop.svc.cluster.local</host>
+        <password>daedalus</password>
+        <queues>
+            <daedalus_core_notifications purpose="daedalus_core_notifications" channel="45">
+                <queue_options durable="1"/>
+                <amqp_props delivery_mode="2"/>
+            </daedalus_core_notifications>
+        </queues>
+    </hermes>
+</config>

@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use Catalyst::ScriptRunner;
-Catalyst::ScriptRunner->run('Daedalus::Core', 'Test');
+Catalyst::ScriptRunner->run( 'Daedalus::Core', 'Test' );
 
 1;
 
@@ -34,7 +34,6 @@ Catalyst Contributors, see Catalyst.pm
 
 =head1 COPYRIGHT
 
-This library is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
+This library is free software. You can redistribute it and/or modify it under the same terms as Perl itself.
 
 =cut

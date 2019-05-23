@@ -1,0 +1,55 @@
+Source: libdaedalus-core-perl
+Section: perl
+Priority: optional
+Maintainer: root <@>
+Build-Depends: debhelper (>= 10)
+Build-Depends-Indep: perl
+Standards-Version: 4.1.3
+Homepage: https://git.daedalus-project.io/daedalusproject/Daedalus-Core
+
+Package: libdaedalus-core-perl
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends},
+ libcatalyst-perl,
+ libcatalyst-plugin-configloader-perl,
+ libcatalyst-plugin-static-simple-perl,
+ libcatalyst-action-renderview-perl,
+ libcatalyst-view-tt-perl,
+ libcatalyst-view-json-perl,
+ libnamespace-autoclean-perl,
+ libmoose-perl,
+ libmoosex-nonmoose-perl,
+ libconfig-general-perl,
+ libcatalyst-model-adaptor-perl,
+ libmoosex-markasmethods-perl,
+ libcatalyst-modules-perl,
+ libcatalyst-modules-extra-perl,
+ libcatalyst-model-adaptor-perl,
+ libdbix-class-encodedcolumn-perl,
+ libconfig-zomg-perl,
+ libterm-readkey-perl,
+ libstring-random-perl,
+ libdata-password-perl,
+ libdbix-class-timestamp-perl,
+ libcatalyst-action-rest-perl,
+ libdata-password-check-perl,
+ libdbix-class-validation-perl,
+ libdatetime-format-sqlite-perl,
+ libdaedalus-hermes-perl,
+ libcatalyst-plugin-configloader-multi-perl,
+ libcrypt-jwt-perl,
+ libdatetime-format-mysql-perl,
+ libnumber-phone-perl,
+ libcatalyst-plugin-cache-perl,
+ libredis-perl,
+ libcache-redis-perl,
+ libjson-xs-perl,
+ libfcgi-perl,
+ libfcgi-procmanager-perl,
+ libclass-dbi-mysql-perl,
+ libclass-dbi-pg-perl,
+ libclass-dbi-sqlite-perl,
+ libdbd-mysql-perl,
+ libdbd-pg-perl,
+ libsql-translator-perl
+Description: Information system which also manages all other services, clients, organization and projects.

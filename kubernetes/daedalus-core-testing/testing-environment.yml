@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-daedalus-core-testing
+  namespace: daedalus-core-testing
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+      tier: backend
+      environment: testing
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+        tier: backend
+        environment: testing
+    spec:
+      containers:
+      - name: redis
+        image: daedalusproject/base_redis_server:201905230353
+        command: ["redis-server"]
+        args: ["--protected-mode no"]
+        resources:
+          requests:
+            cpu: 40m
+            memory: 40Mi
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis/
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-daedalus-core-testing
+  namespace: daedalus-core-testing
+  labels:
+    app: redis
+    role: master
+    tier: backend
+    environment: testing
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+    role: master
+    tier: backend
+    environment: testing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-daedalus-core-testing
+  namespace: daedalus-core-testing
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+      tier: broker
+      environment: testing
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        tier: broker
+        environment: testing
+    spec:
+      containers:
+      - name: rabbitmq
+        image: daedalusproject/base_rabbitmq_server:201905230353
+        env:
+        - name: RABBITMQ_ENABLED_PLUGINS_FILE
+          value: /etc/rabbitmq/enabled_plugins
+        ports:
+        - name: clitool
+          containerPort: 25672
+        - name: client-access-2
+          containerPort: 5672
+        - name: client-access-1
+          containerPort: 5671
+        - name: epmd
+          containerPort: 4369
+        volumeMounts:
+        - name: rabbitmq-config
+          mountPath: /etc/rabbitmq/
+      volumes:
+        - name: rabbitmq-config
+          configMap:
+            name: rabbitmq-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-daedalus-core-testing
+  namespace: daedalus-core-testing
+  labels:
+    app: rabbitmq
+    tier: broker
+    environment: testing
+spec:
+  ports:
+  - name: client-access-2
+    port: 5672
+  - name: client-access-1
+    port: 5671
+  - name: clitool
+    port: 25672
+  - name: epmd
+    port: 4369
+  selector:
+    app: rabbitmq
+    tier: broker
+    environment: testing

@@ -1,13 +1,13 @@
 use utf8;
 
-package Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup;
+package Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrgaizationUsersGroup
+Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup
 
 =cut
 
@@ -33,11 +33,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
 
-=head1 TABLE: C<orgaization_users_groups>
+=head1 TABLE: C<organization_users_groups>
 
 =cut
 
-__PACKAGE__->table("orgaization_users_groups");
+__PACKAGE__->table("organization_users_groups");
 
 =head1 ACCESSORS
 

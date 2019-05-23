@@ -1,0 +1,402 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+      tier: backend
+      environment: develop
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+        tier: backend
+        environment: develop
+    spec:
+      containers:
+      - name: redis
+        image: daedalusproject/base_redis_server:201905230353
+        command: ["redis-server"]
+        args: ["--protected-mode no"]
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis/
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: redis
+    role: master
+    tier: backend
+    environment: develop
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+    role: master
+    tier: backend
+    environment: develop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+      tier: broker
+      environment: develop
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        tier: broker
+        environment: develop
+    spec:
+      containers:
+      - name: rabbitmq
+        image: daedalusproject/base_rabbitmq_server:201905230353
+        env:
+        - name: RABBITMQ_ENABLED_PLUGINS_FILE
+          value: /etc/rabbitmq/enabled_plugins
+        ports:
+        - name: clitool
+          containerPort: 25672
+        - name: client-access-2
+          containerPort: 5672
+        - name: client-access-1
+          containerPort: 5671
+        - name: epmd
+          containerPort: 4369
+        volumeMounts:
+        - name: rabbitmq-config
+          mountPath: /etc/rabbitmq/
+      volumes:
+        - name: rabbitmq-config
+          configMap:
+            name: rabbitmq-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: rabbitmq
+    tier: broker
+    environment: develop
+spec:
+  ports:
+  - name: client-access-2
+    port: 5672
+  - name: client-access-1
+    port: 5671
+  - name: clitool
+    port: 25672
+  - name: epmd
+    port: 4369
+  selector:
+    app: rabbitmq
+    tier: broker
+    environment: develop
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: percona-server-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: percona-server
+    tier: bakend
+    environment: develop
+spec:
+  containers:
+  - name: percona-server-develop
+    image: daedalusproject/base_percona_server:201905230353
+    ports:
+    - containerPort: 3306
+    envFrom:
+    - configMapRef:
+        name: percona-env-configmap
+    - secretRef:
+        name: percona-secrets
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - "sh"
+            - "-c"
+            - >
+              /usr/bin/daedalus-project-mysql-utils create_database ;
+              /usr/bin/daedalus-project-mysql-utils create_user ;
+              /usr/bin/daedalus-project-mysql-utils grant ;
+              /usr/bin/daedalus-project-mysql-utils change_root_password ;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: percona-server-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: percona-server
+    environment: develop
+    tier: bakend
+spec:
+  ports:
+  - name: access
+    port: 3306
+  selector:
+    app: percona-server
+    tier: bakend
+    environment: develop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: daedalus-core-develop-main
+  namespace: daedalus-core-develop
+  labels:
+    app: daedalus-core
+spec:
+  selector:
+    matchLabels:
+      app: daedalus-core
+      environment: develop
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: daedalus-core
+        tier: daedalus-core-backend
+        type: primary
+        environment: develop
+    spec:
+      containers:
+      - name: daedalus-core
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
+        command: ["daedalus_core_fastcgi.pl"]
+        args: ["-l", ":8080"]
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: daedalus-core-config
+          mountPath: /etc/daedalus-core/
+          readOnly: true
+        - name: daedalus-core-rsa-keys
+          mountPath: /etc/daedalus-core/secrets
+          readOnly: true
+      volumes:
+      - name: daedalus-core-config
+        secret:
+          secretName: daedalus-core-secrets
+      - name: daedalus-core-rsa-keys
+        secret:
+          secretName: daedalus-core-rsa-keys
+      initContainers:
+      - name: daedalus-core-deployer
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
+        command:
+          - "sh"
+          - "-c"
+          - >
+            /usr/bin/daedalus_core_test_redis.pl &&
+            /usr/bin/daedalus_core_test_mysql.pl &&
+            /usr/bin/daedalus_core_deploy.pl mysql "$MYSQL_DATABASE;$MYSQL_HOST;$MYSQL_PORT" "$MYSQL_USER" "$MYSQL_PASSWORD" &&
+            /usr/bin/daedalus_core_create_admin_user_non_interactive.pl
+        envFrom:
+        - secretRef:
+            name: daedalus-core-database
+        - secretRef:
+            name: daedalus-core-cache
+        - secretRef:
+            name: daedalus-core-admin-info
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: daedalus-core-develop
+  namespace: daedalus-core-develop
+  labels:
+    app: daedalus-core
+spec:
+  selector:
+    matchLabels:
+      app: daedalus-core
+      environment: develop
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: daedalus-core
+        tier: daedalus-core-backend
+        environment: develop
+    spec:
+      containers:
+      - name: daedalus-core
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
+        command: ["daedalus_core_fastcgi.pl"]
+        args: ["-l", ":8080"]
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: daedalus-core-config
+          mountPath: /etc/daedalus-core/
+          readOnly: true
+        - name: daedalus-core-rsa-keys
+          mountPath: /etc/daedalus-core/secrets
+          readOnly: true
+      volumes:
+      - name: daedalus-core-config
+        secret:
+          secretName: daedalus-core-secrets
+      - name: daedalus-core-rsa-keys
+        secret:
+          secretName: daedalus-core-rsa-keys
+      initContainers:
+      - name: daedalus-core-deployer
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
+        command:
+          - "sh"
+          - "-c"
+          - >
+            /usr/bin/daedalus_core_test_redis.pl &&
+            /usr/bin/daedalus_core_test_mysql.pl 
+        envFrom:
+        - secretRef:
+            name: daedalus-core-database
+        - secretRef:
+            name: daedalus-core-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: daedalus-core-develop-service
+  namespace: daedalus-core-develop
+  labels:
+    app: daedalus-core-develop-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: daedalus-core
+    tier: daedalus-core-backend
+    environment: develop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: daedalus-core-develop
+  name: daedalus-core-balancer
+  labels:
+    app: daedalus-core
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+      role: daedalus-core-balancer
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+        role: daedalus-core-balancer
+    spec:
+      containers:
+      - name: daedalus-core-nginx
+        image: daedalusproject/daedalus_core_develop_nginx:__PKG_VERSION__
+        resources:
+          limits:
+            cpu: 20m
+            memory: 20Mi
+          requests:
+            cpu: 10m
+            memory: 10Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: daedalus-core-develop
+  name: daedalus-core-nginx
+  labels:
+    app: nginx
+    role: daedalus-core-balancer
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: nginx
+    role: daedalus-core-balancer
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: daedalus-core-develop
+  name: daedalus-core-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-proxy-protocol: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+ rules:
+ - host: api-dev.daedalus-project.io
+   http:
+     paths:
+     - path: /
+       backend:
+         serviceName: daedalus-core-nginx
+         servicePort: 80
+ tls:
+ - hosts:
+   - api-dev.daedalus-project.io
+   secretName: daedalus-core-develop-cert

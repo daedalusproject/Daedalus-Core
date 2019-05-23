@@ -273,6 +273,10 @@ sub auth_user {
             $response->{data}         = $user_data->{data};
             $response->{_hidden_data} = $user_data->{_hidden_data};
 
+            $response->{data}->{user}->{api_key} =
+              $response->{_hidden_data}->{user}->{api_key};
+            delete( $response->{_hidden_data}->{user}->{api_key} );
+
             $response->{data}->{session_token} =
               Daedalus::Utils::Crypt::create_session_token(
                 $c->config->{authTokenConfig},
@@ -304,7 +308,7 @@ sub is_admin_of_any_organization {
     my $organization_master_role_id = $c->model('CoreRealms::Role')
       ->find( { role_name => "organization_master" } )->id;
 
-    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+    my $user_groups = $c->model('CoreRealms::OrganizationUsersGroup')
       ->search( { 'user_id' => $user_id } );
 
     my @user_groups_array = $user_groups->all;
@@ -370,7 +374,7 @@ sub is_super_admin {
     my $daedalus_manager_role_id = $c->model('CoreRealms::Role')
       ->find( { role_name => "daedalus_manager" } )->id;
 
-    my $user_groups = $c->model('CoreRealms::OrgaizationUsersGroup')
+    my $user_groups = $c->model('CoreRealms::OrganizationUsersGroup')
       ->search( { 'user_id' => $user_id } );
 
     #if ($user_groups) {
@@ -813,7 +817,7 @@ sub remove_user {
 
     my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
-    my $user_group = $c->model('CoreRealms::OrgaizationUsersGroup')->find(
+    my $user_group = $c->model('CoreRealms::OrganizationUsersGroup')->find(
         {
             user_id => $user_id
         }
