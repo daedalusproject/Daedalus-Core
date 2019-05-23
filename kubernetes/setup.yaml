@@ -2,7 +2,17 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: daedalus-core-testing
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: daedalus-core-develop
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: daedalus-core-staging
 ---
 apiVersion: v1
 kind: Namespace
@@ -13,7 +23,19 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-testing
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitlab-daedalus-core-deployer
   namespace: daedalus-core-develop
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-staging
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -25,10 +47,34 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: gitlab-daedalus-core-deployer
-  namespace: daedalus-core-develop
+  namespace: daedalus-core-testing
 rules:
 - apiGroups: ["", "extensions", "apps"]
   resources: ["deployments","pods","services", "configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-testing
+subjects:
+- kind: ServiceAccount
+  name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-testing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gitlab-daedalus-core-deployer
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-develop
+rules:
+- apiGroups: ["", "extensions", "apps"]
+  resources: ["deployments","pods","services", "configmaps", "secrets", "ingresses"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: RoleBinding
@@ -49,10 +95,34 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-staging
+rules:
+- apiGroups: ["", "extensions", "apps"]
+  resources: ["deployments","pods","services", "configmaps", "secrets", "ingresses"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-staging
+subjects:
+- kind: ServiceAccount
+  name: gitlab-daedalus-core-deployer
+  namespace: daedalus-core-staging
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gitlab-daedalus-core-deployer
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gitlab-daedalus-core-deployer
   namespace: daedalus-core
 rules:
 - apiGroups: ["", "extensions", "apps"]
-  resources: ["deployments","pods","services","configmaps"]
+  resources: ["deployments","pods","services", "configmaps", "secrets", "ingresses"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: RoleBinding
@@ -67,4 +137,4 @@ subjects:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: daedalus-core
+  name: gitlab-daedalus-core-deployer

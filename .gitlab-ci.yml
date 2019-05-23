@@ -2,59 +2,50 @@ stages:
     - test
     - coverage
     - package
+    - update_repo
+    - docker_image
+    - deploy
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:latest
+    image: daedalusproject/base_daedaluscore:201905230353
     before_script:
-        - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
-        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
-        - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
-        - kubectl config use-context default
-        - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml --ignore-not-found=true
-        - kubectl -n daedalus-core-develop delete configmap redis-config --ignore-not-found=true
-        - kubectl -n daedalus-core-develop delete configmap rabbitmq-config --ignore-not-found=true
-        - kubectl -n daedalus-core-develop create configmap redis-config --from-file kubernetes/config/redis.conf
-        - kubectl -n daedalus-core-develop create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
-        - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
-        - export GOPATH=/usr/share/gocode
-        - bash utils/test_redis.sh redis-daedalus-core-develop 5 5
+        - declare -a -g REQUIRED_VARIABLES
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
+        - ENV_TYPE="testing"
+        - source utils/create_environment.sh
+        - create_kube_config
+        - delete_env_and_configs
+        - create_env_and_configs
+        - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
-        - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
-        - redis-cli -h redis-daedalus-core-develop get greeting
-        - go run kubernetes/utils/send.go
-        - go run kubernetes/utils/receive.go
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - make test
     after_script:
-        - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml
-        - kubectl -n daedalus-core-develop delete configmap redis-config
-        - kubectl -n daedalus-core-develop delete configmap rabbitmq-config --ignore-not-found=true
+        - declare -a -g REQUIRED_VARIABLES
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
+        - ENV_TYPE="testing"
+        - source utils/create_environment.sh
+        - delete_env_and_configs
+    tags:
+    - kubernetes
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:latest
+    image: daedalusproject/base_daedaluscore:201905230353
     before_script:
-        - kubectl config set-cluster default --server=$KUBE_URL --certificate-authority=kubernetes/windmaker.pem
-        - kubectl config set-credentials gitlab-daedalus-core-deployer --token=$KUBE_DEVELOP_USER_TOKEN
-        - kubectl config set-context default --cluster=default --user=gitlab-daedalus-core-deployer
-        - kubectl config use-context default
-        - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml --ignore-not-found=true
-        - kubectl -n daedalus-core-develop delete configmap redis-config --ignore-not-found=true
-        - kubectl -n daedalus-core-develop delete configmap rabbitmq-config --ignore-not-found=true
-        - kubectl -n daedalus-core-develop create configmap redis-config --from-file kubernetes/config/redis.conf
-        - kubectl -n daedalus-core-develop create configmap rabbitmq-config --from-file kubernetes/config/rabbitmq
-        - kubectl -n daedalus-core-develop apply -f kubernetes/daedalus-core-develop/dev-environment.yml
-        - export GOPATH=/usr/share/gocode
-        - bash utils/test_redis.sh redis-daedalus-core-develop 5 5
+        - declare -a -g REQUIRED_VARIABLES
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
+        - ENV_TYPE="testing"
+        - source utils/create_environment.sh
+        - create_kube_config
+        - delete_env_and_configs
+        - create_env_and_configs
+        - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
-        - echo "Hello" | redis-cli -h redis-daedalus-core-develop -x set greeting
-        - redis-cli -h redis-daedalus-core-develop get greeting
-        - go run kubernetes/utils/send.go
-        - go run kubernetes/utils/receive.go
         - perl --version
         - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
@@ -63,18 +54,107 @@ cover:
         - cover -report codecov
     coverage: /Total\s+.+\s(\d+\.\d+?)$/
     after_script:
-        - kubectl -n daedalus-core-develop delete -f kubernetes/daedalus-core-develop/dev-environment.yml
-        - kubectl -n daedalus-core-develop delete configmap redis-config
-        - kubectl -n daedalus-core-develop delete configmap rabbitmq-config --ignore-not-found=true
+        - declare -a -g REQUIRED_VARIABLES
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
+        - ENV_TYPE="testing"
+        - source utils/create_environment.sh
+        - delete_env_and_configs
+    tags:
+    - kubernetes
 
 create_package:
     stage: package
-    image: daedalusproject/base_deb_perl_builder:201903280602
+    image: daedalusproject/base_deb_perl_builder:201905230353
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
-        - mkdir packages
-        - mv ../libdaedalus-core-perl*.deb packages/
+        - mkdir package
+        - mv ../libdaedalus-core-perl*.deb package/
     artifacts:
         paths:
-        - packages
+        - package
         expire_in: 5 minutes
+    tags:
+    - docker_build
+
+upload_package_to_testing_repo:
+    stage: update_repo
+    image: daedalusproject/base_curl:201905230353
+    script:
+        - SNAPSHOTDATE=$(date +%G%m%d%k%M%S)
+        - PACKAGE=$(ls package)
+        - curl -X POST -F file=@package/$PACKAGE http://repo.daedalus-project.io:8000/api/files/daedalus-core || exit 1
+        - curl -X POST http://repo.daedalus-project.io:8000/api/repos/daedalus-project-testing/file/daedalus-core || exit 1
+        - "curl -X POST -H 'Content-Type: application/json' --data '{\"Name\":\"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}' http://repo.daedalus-project.io:8000/api/repos/daedalus-project-testing/snapshots || exit 1"
+        - "curl -X PUT -H 'Content-Type: application/json' --data '{\"Snapshots\": [{\"Component\": \"testing\", \"Name\": \"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}]}' http://repo.daedalus-project.io:8000/api/publish/:./bionic || exit 1"
+    artifacts:
+        paths:
+        - package
+        expire_in: 5 minutes
+    dependencies:
+    - create_package
+    tags:
+    - docker_build
+
+create_develop_docker_image:
+    stage: docker_image
+    image: daedalusproject/base_docker:201905230353
+    script:
+        - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
+        - IMAGENAME=daedalus_core_develop
+        - RELEASEDATE=$(date)
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/${IMAGENAME}/Dockerfile .
+        - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
+        - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
+        - docker commit -m "$RELEASEDATE" -a "Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>" "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${CI_COMMIT_REF_NAME}"
+        - docker push daedalusproject/"${IMAGENAME}":latest
+        - docker push daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
+        - docker stop "${IMAGENAME}"
+        - docker rm "${IMAGENAME}"
+        - docker rmi "${IMAGENAME}"
+    tags:
+    - docker_build
+
+create_develop_nginx_docker_image:
+    stage: docker_image
+    image: daedalusproject/base_docker:201905230353
+    script:
+        - echo "set_real_ip_from  $KUBE_NETWORK;" > realip.conf
+        - echo "real_ip_header    X-Forwarded-For;" >> realip.conf
+        - echo "real_ip_recursive on;" >> realip.conf
+        - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
+        - IMAGENAME=daedalus_core_develop_nginx
+        - RELEASEDATE=$(date)
+        - docker build --network=host --no-cache -t "${IMAGENAME}" --build-arg CORE_VERSION=$PKG_VERSION -f containers/${IMAGENAME}/Dockerfile .
+        - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
+        - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
+        - docker commit -m "$RELEASEDATE" -a "Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>" "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${CI_COMMIT_REF_NAME}"
+        - docker push daedalusproject/"${IMAGENAME}":latest
+        - docker push daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
+        - docker stop "${IMAGENAME}"
+        - docker rm "${IMAGENAME}"
+        - docker rmi "${IMAGENAME}"
+    tags:
+    - docker_build
+
+develop_environment:
+    stage: deploy
+    image: daedalusproject/base_kubectl:201905230353
+    script:
+        - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
+        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
+        - rm -f kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc
+        - sed -i -e "s/__PKG_VERSION__/$PKG_VERSION/g" kubernetes/daedalus-core-develop/develop-environment.yml
+        - declare -a -g REQUIRED_VARIABLES
+        - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_DEVELOP_USER_NAME' 'KUBERNETES_DEVELOP_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT' 'DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD' 'DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD' 'KUBE_CDIR')
+        - ENV_TYPE="develop"
+        - source utils/create_environment.sh
+        - create_kube_config
+        - delete_env_and_configs
+        - create_env_and_configs
+        - bash utils/test_redis.sh $REDIS_SERVICE 5 15
+    tags:
+    - kubernetes

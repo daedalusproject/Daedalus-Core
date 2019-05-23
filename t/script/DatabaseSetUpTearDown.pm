@@ -147,7 +147,7 @@ sub populate_databse {
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $organization_group->id,
             user_id  => $user->id,
@@ -233,7 +233,7 @@ sub populate_databse {
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $admin_organization_group->id,
             user_id  => $admin_again->id,
@@ -267,7 +267,7 @@ sub populate_databse {
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $admin_organization_group->id,
             user_id  => $yet_another_admin->id,
@@ -367,7 +367,7 @@ sub populate_databse {
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $yet_other_organization_group->id,
             user_id  => $yet_other_user->id,
@@ -580,21 +580,21 @@ sub populate_databse {
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $bugstech_administrators_group->id,
             user_id  => $superboss->id,
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $bugstech_administrators_group->id,
             user_id  => $ultraboss->id,
         }
     );
 
-    $schema->resultset('OrgaizationUsersGroup')->create(
+    $schema->resultset('OrganizationUsersGroup')->create(
         {
             group_id => $bugstech_administrators_group->id,
             user_id  => $miniboss->id,

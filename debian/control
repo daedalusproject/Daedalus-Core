@@ -42,5 +42,14 @@ Depends: ${misc:Depends}, ${perl:Depends},
  libnumber-phone-perl,
  libcatalyst-plugin-cache-perl,
  libredis-perl,
- libcache-redis-perl
+ libcache-redis-perl,
+ libjson-xs-perl,
+ libfcgi-perl,
+ libfcgi-procmanager-perl,
+ libclass-dbi-mysql-perl,
+ libclass-dbi-pg-perl,
+ libclass-dbi-sqlite-perl,
+ libdbd-mysql-perl,
+ libdbd-pg-perl,
+ libsql-translator-perl
 Description: Information system which also manages all other services, clients, organization and projects.

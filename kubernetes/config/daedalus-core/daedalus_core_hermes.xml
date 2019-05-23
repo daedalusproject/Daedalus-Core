@@ -4,7 +4,7 @@
         <type>rabbitmq</type>
         <user>daedalus</user>
         <port>5672</port>
-        <host>rabbitmq-daedalus-core-testing.daedalus-core-testing.svc.cluster.local</host>
+        <host>rabbitmq-daedalus-core-develop.daedalus-core-develop.svc.cluster.local</host>
         <password>daedalus</password>
         <queues>
             <daedalus_core_notifications purpose="daedalus_core_notifications" channel="45">
