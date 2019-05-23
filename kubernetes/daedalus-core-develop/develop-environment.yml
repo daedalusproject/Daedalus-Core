@@ -206,8 +206,8 @@ spec:
         args: ["-l", ":8080"]
         resources:
           limits:
-            cpu: 300m
-            memory: 300Mi
+            cpu: 200m
+            memory: 200Mi
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -270,8 +270,8 @@ spec:
         args: ["-l", ":8080"]
         resources:
           limits:
-            cpu: 300m
-            memory: 300Mi
+            cpu: 200m
+            memory: 200Mi
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -346,8 +346,8 @@ spec:
             cpu: 20m
             memory: 20Mi
           requests:
-            cpu: 20m
-            memory: 20Mi
+            cpu: 10m
+            memory: 10Mi
         securityContext:
           allowPrivilegeEscalation: false
         ports:
