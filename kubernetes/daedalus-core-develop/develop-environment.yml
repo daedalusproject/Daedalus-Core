@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: daedalusproject/base_redis_server:201904181205
+        image: daedalusproject/base_redis_server:201905230353
         command: ["redis-server"]
         args: ["--protected-mode no"]
         resources:
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: rabbitmq
-        image: daedalusproject/base_rabbitmq_server:201904181205
+        image: daedalusproject/base_rabbitmq_server:201905230353
         env:
         - name: RABBITMQ_ENABLED_PLUGINS_FILE
           value: /etc/rabbitmq/enabled_plugins
@@ -140,7 +140,7 @@ metadata:
 spec:
   containers:
   - name: percona-server-develop
-    image: daedalusproject/base_develop_percona_server
+    image: daedalusproject/base_percona_server:201905230353
     ports:
     - containerPort: 3306
     envFrom:
@@ -201,7 +201,7 @@ spec:
     spec:
       containers:
       - name: daedalus-core
-        image: daedalusproject/daedalus_core_develop
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
         command: ["daedalus_core_fastcgi.pl"]
         args: ["-l", ":8080"]
         resources:
@@ -226,7 +226,7 @@ spec:
           secretName: daedalus-core-rsa-keys
       initContainers:
       - name: daedalus-core-deployer
-        image: daedalusproject/daedalus_core_develop
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
         command:
           - "sh"
           - "-c"
@@ -265,7 +265,7 @@ spec:
     spec:
       containers:
       - name: daedalus-core
-        image: daedalusproject/daedalus_core_develop
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
         command: ["daedalus_core_fastcgi.pl"]
         args: ["-l", ":8080"]
         resources:
@@ -290,7 +290,7 @@ spec:
           secretName: daedalus-core-rsa-keys
       initContainers:
       - name: daedalus-core-deployer
-        image: daedalusproject/daedalus_core_develop
+        image: daedalusproject/daedalus_core_develop:__PKG_VERSION__
         command:
           - "sh"
           - "-c"
@@ -340,7 +340,7 @@ spec:
     spec:
       containers:
       - name: daedalus-core-nginx
-        image: daedalusproject/daedalus_core_develop_nginx
+        image: daedalusproject/daedalus_core_develop_nginx:__PKG_VERSION__
         resources:
           limits:
             cpu: 20m

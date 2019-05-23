@@ -1,6 +1,6 @@
 server {
     listen 8080 default_server;
-
+    include realip.conf;
     location / {
 
         fastcgi_pass daedalus-core-develop-service:8080;

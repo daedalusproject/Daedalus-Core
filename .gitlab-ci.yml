@@ -8,7 +8,7 @@ stages:
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:201905200351
+    image: daedalusproject/base_daedaluscore:201905230353
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -35,7 +35,7 @@ integration_tests:
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:201905200351
+    image: daedalusproject/base_daedaluscore:201905230353
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -64,7 +64,7 @@ cover:
 
 create_package:
     stage: package
-    image: daedalusproject/base_deb_perl_builder:201905200351
+    image: daedalusproject/base_deb_perl_builder:201905230353
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
         - mkdir package
@@ -78,7 +78,7 @@ create_package:
 
 upload_package_to_testing_repo:
     stage: update_repo
-    image: daedalusproject/base_curl:201905200351
+    image: daedalusproject/base_curl:201905230353
     script:
         - SNAPSHOTDATE=$(date +%G%m%d%k%M%S)
         - PACKAGE=$(ls package)
@@ -97,7 +97,7 @@ upload_package_to_testing_repo:
 
 create_develop_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201905200351
+    image: daedalusproject/base_docker:201905230353
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop
@@ -106,8 +106,10 @@ create_develop_docker_image:
         - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
         - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
         - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
         - docker commit -m "$RELEASEDATE" -a "Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>" "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${CI_COMMIT_REF_NAME}"
         - docker push daedalusproject/"${IMAGENAME}":latest
+        - docker push daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
         - docker stop "${IMAGENAME}"
         - docker rm "${IMAGENAME}"
         - docker rmi "${IMAGENAME}"
@@ -116,8 +118,11 @@ create_develop_docker_image:
 
 create_develop_nginx_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201905200351
+    image: daedalusproject/base_docker:201905230353
     script:
+        - echo "set_real_ip_from  ${KUBE_NETWORK};" > realip.conf
+        - echo "real_ip_header    X-Forwarded-For;" >> realip.conf
+        - echo "real_ip_recursive on;" >> realip.conf
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop_nginx
         - RELEASEDATE=$(date)
@@ -125,8 +130,10 @@ create_develop_nginx_docker_image:
         - docker login --username "${DOCKERHUBUSER}" --password "${DOCKERHUBPASSWORD}"
         - docker create --name="${IMAGENAME}" -i "${IMAGENAME}"
         - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":latest
+        - docker tag "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
         - docker commit -m "$RELEASEDATE" -a "Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>" "${IMAGENAME}" daedalusproject/"${IMAGENAME}":"${CI_COMMIT_REF_NAME}"
         - docker push daedalusproject/"${IMAGENAME}":latest
+        - docker push daedalusproject/"${IMAGENAME}":"${PKG_VERSION}"
         - docker stop "${IMAGENAME}"
         - docker rm "${IMAGENAME}"
         - docker rmi "${IMAGENAME}"
@@ -135,10 +142,12 @@ create_develop_nginx_docker_image:
 
 develop_environment:
     stage: deploy
-    image: daedalusproject/base_kubectl:201905200351
+    image: daedalusproject/base_kubectl:201905230353
     script:
+        - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
         - rm -f kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc
+        - sed -i -e 's/__PKG_VERSION__/"${PKG_VERSION}"/g' kubernetes/daedalus-core-develop/develop-environment.yml
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_DEVELOP_USER_NAME' 'KUBERNETES_DEVELOP_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT' 'DAEDALUS_CORE_DEVELOP_NEW_ROOT_PASSWORD' 'DAEDALUS_CORE_DEVELOP_NEW_USER_PASSWORD' 'KUBE_CDIR')
         - ENV_TYPE="develop"
