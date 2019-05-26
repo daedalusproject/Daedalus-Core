@@ -60,7 +60,7 @@ cover:
         - source utils/create_environment.sh
         - delete_env_and_configs
     dependencies:
-    - test
+    - integration_tests
     tags:
     - kubernetes
 
@@ -76,7 +76,7 @@ create_package:
         - package
         expire_in: 5 minutes
     dependencies:
-    - test
+    - integration_tests
     tags:
     - docker_build
 
@@ -121,7 +121,7 @@ create_develop_docker_image:
         - docker rmi "${IMAGENAME}"
     dependencies:
     - create_package
-    - update_repo
+    - upload_package_to_testing_repo
     tags:
     - docker_build
     only:
@@ -150,7 +150,7 @@ create_develop_nginx_docker_image:
         - docker rmi "${IMAGENAME}"
     dependencies:
     - create_package
-    - update_repo
+    - upload_package_to_testing_repo
     tags:
     - docker_build
     only:
@@ -174,8 +174,9 @@ develop_environment:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     dependencies:
     - create_package
-    - update_repo
-    - docker_image
+    - upload_package_to_testing_repo
+    - create_develop_docker_image
+    - create_develop_nginx_docker_image
     tags:
     - kubernetes
     only:
