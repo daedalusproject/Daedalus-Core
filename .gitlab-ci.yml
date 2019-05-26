@@ -1,10 +1,19 @@
 stages:
+    - lint
     - test
     - coverage
     - package
     - update_repo
     - docker_image
     - deploy
+
+perlcritic:
+    stage: lint
+    image: daedalusproject/base_perl_utils
+    script:
+        - perlcritic --cruel lib
+    tags:
+    - docker_build
 
 integration_tests:
     stage: test
@@ -30,6 +39,8 @@ integration_tests:
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
         - delete_env_and_configs
+    dependencies:
+    - perlcritic
     tags:
     - kubernetes
 
@@ -60,6 +71,7 @@ cover:
         - source utils/create_environment.sh
         - delete_env_and_configs
     dependencies:
+    - perlcritic
     - integration_tests
     tags:
     - kubernetes
