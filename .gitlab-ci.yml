@@ -94,6 +94,8 @@ upload_package_to_testing_repo:
     - create_package
     tags:
     - docker_build
+    only:
+    - /^develop$/
 
 create_develop_docker_image:
     stage: docker_image
@@ -115,6 +117,8 @@ create_develop_docker_image:
         - docker rmi "${IMAGENAME}"
     tags:
     - docker_build
+    only:
+    - /^develop$/
 
 create_develop_nginx_docker_image:
     stage: docker_image
@@ -139,6 +143,8 @@ create_develop_nginx_docker_image:
         - docker rmi "${IMAGENAME}"
     tags:
     - docker_build
+    only:
+    - /^develop$/
 
 develop_environment:
     stage: deploy
@@ -158,3 +164,5 @@ develop_environment:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     tags:
     - kubernetes
+    only:
+    - /^develop$/
