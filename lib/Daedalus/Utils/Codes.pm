@@ -6,19 +6,26 @@ package Daedalus::Utils::Codes;
 
 Daedalus::Core::Utils::Codes
 
+=head1 DESCRIPTION
+
+Daedalus Core http codes
+
+
 =cut
 
 use strict;
 use warnings;
+
 use Const::Fast;
+use Moose;
 
-use Exporter;
-our @ISA    = qw/ Exporter /;
-our @EXPORT = qw/ $bad_request $forbidden /;
+require Exporter;
+our @ISA    = qw(Exporter);
+our @EXPORT = qw(    $bad_request
+  $forbidden
+);
 
-=head1 DESCRIPTION
-
-Daedalus Core http codes
+use namespace::clean -except => 'meta';
 
 =head1 VARIABLES
 
@@ -28,7 +35,7 @@ HTTP bad request code (400)
 
 =cut
 
-const my $bad_request => 400;
+const our $bad_request => 400;
 
 =head2 Forbidden
 
@@ -36,7 +43,7 @@ HTTP Forbidden code (403)
 
 =cut
 
-const my $forbidden => 403;
+const our $forbidden => 403;
 
 =encoding utf8
 
@@ -46,4 +53,5 @@ const my $forbidden => 403;
 
 =cut
 
+__PACKAGE__->meta->make_immutable;
 1;

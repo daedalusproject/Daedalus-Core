@@ -15,15 +15,9 @@ use Moose;
 use Email::Valid;
 use Daedalus::Utils::Crypt;
 use Daedalus::Messages::Manager qw(notify_new_user);
-use Daedalus::Utils::Codes;
+use Daedalus::Utils::Codes qw( $bad_request $forbidden );
 
 use namespace::clean -except => 'meta';
-
-=head1 NAME
-
-Daedalus::Users::Manager
-
-=cut
 
 =head1 SYNOPSIS
 
@@ -204,7 +198,7 @@ sub get_user_from_session_token {
         }
     }
 
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     return $response;
 }
 
@@ -225,7 +219,7 @@ sub is_admin_from_session_token {
         $response->{error_code} = $bad_request;
     }
     else {
-        $response->{error_code} = 403;
+        $response->{error_code} = $forbidden;
         if ( $user->{data}->{data}->{user}->{is_admin} ) {
             $response->{status} = 1;
             $response->{data}   = $user->{data};
@@ -254,7 +248,7 @@ sub auth_user {
     my $response;
     my $user_data;
 
-    $response->{error_code} = 403;
+    $response->{error_code} = $forbidden;
 
     # Get user from model
     my $user = get_user_from_email( $c, $required_data->{'e-mail'} );
@@ -577,7 +571,7 @@ sub confirm_registration {
     my $response = {
         status     => 0,
         message    => 'Invalid Auth Token.',
-        error_code => 400
+        error_code => $bad_request
     };
     my $auth_token = $required_data->{auth_token};
     if ( length($auth_token) == 63 ) {    # auth token lenght
