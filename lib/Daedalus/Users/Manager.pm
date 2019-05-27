@@ -15,7 +15,14 @@ use Moose;
 use Email::Valid;
 use Daedalus::Utils::Crypt;
 use Daedalus::Messages::Manager qw(notify_new_user);
-use Daedalus::Utils::Codes qw( $bad_request $forbidden );
+use Daedalus::Utils::Constants qw(
+  $bad_request
+  $forbidden
+  $api_key_length
+  $auth_token_length
+  $long_random_string_length
+  $user_token_length
+);
 
 use namespace::clean -except => 'meta';
 
@@ -426,11 +433,16 @@ sub register_new_user {
     else {
         #
         # Create a user
-        my $api_key    = Daedalus::Utils::Crypt::generate_random_string(32);
-        my $auth_token = Daedalus::Utils::Crypt::generate_random_string(63);
-        my $salt       = Daedalus::Utils::Crypt::generate_random_string(256);
-        my $password   = Daedalus::Utils::Crypt::generate_random_string(256);
-        my $user_token = Daedalus::Utils::Crypt::generate_random_string(32);
+        my $api_key =
+          Daedalus::Utils::Crypt::generate_random_string($api_key_length);
+        my $auth_token =
+          Daedalus::Utils::Crypt::generate_random_string($auth_token_length);
+        my $salt = Daedalus::Utils::Crypt::generate_random_string(
+            $long_random_string_length);
+        my $password = Daedalus::Utils::Crypt::generate_random_string(
+            $long_random_string_length);
+        my $user_token =
+          Daedalus::Utils::Crypt::generate_random_string($user_token_length);
         $password = Daedalus::Utils::Crypt::hash_password( $password, $salt );
 
         my $registered_user = $user_model->create(
@@ -504,7 +516,7 @@ sub show_registered_users {
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
-    my $response = { status => 1, message => "" };
+    my $response = { status => 1, message => q{} };
 
     my $user_model = $c->model('CoreRealms::RegisteredUser');
 
@@ -574,7 +586,7 @@ sub confirm_registration {
         error_code => $bad_request
     };
     my $auth_token = $required_data->{auth_token};
-    if ( length($auth_token) == 63 ) {    # auth token lenght
+    if ( length($auth_token) == $auth_token_length ) {    # auth token lenght
 
         #find user
         my $user_model = $c->model('CoreRealms::User');
@@ -595,9 +607,11 @@ sub confirm_registration {
                 else {
                     # Password is valid
                     my $new_auth_token =
-                      Daedalus::Utils::Crypt::generate_random_string(64);
+                      Daedalus::Utils::Crypt::generate_random_string(
+                        $auth_token_length);
                     my $new_salt =
-                      Daedalus::Utils::Crypt::generate_random_string(256);
+                      Daedalus::Utils::Crypt::generate_random_string(
+                        $long_random_string_length);
                     $password =
                       Daedalus::Utils::Crypt::hash_password( $password,
                         $new_salt );
@@ -634,14 +648,14 @@ sub show_active_users {
     my $registered_users_respose =
       show_registered_users( $c, $admin_user_data );
 
-    my $response;
+    my $response = {};
 
     my $registered_users_data =
       $registered_users_respose->{data}->{registered_users};
 
     my @active_user_email =
       map { $registered_users_data->{$_}->{active} == 1 ? ($_) : () }
-      keys %$registered_users_data;
+      keys %{$registered_users_data};
 
     $response = {
         status       => 1,
@@ -681,7 +695,7 @@ sub show_inactive_users {
 
     my @inactive_user_email =
       map { $registered_users_data->{$_}->{active} == 0 ? ($_) : () }
-      keys %$registered_users_data;
+      keys %{$registered_users_data};
 
     $response = {
         status       => 1,
@@ -778,7 +792,7 @@ sub show_orphan_users {
     my $registered_users_hidden_data =
       $registered_users_respose->{_hidden_data}->{registered_users};
 
-    for my $user_email ( keys %$registered_users_hidden_data ) {
+    for my $user_email ( keys %{$registered_users_hidden_data} ) {
         if ( $registered_users_data->{$user_email}->{active} == 1 ) {
             if (
                 scalar(
@@ -815,6 +829,8 @@ sub remove_user {
     my $c         = shift;
     my $user_data = shift;
 
+    my $response = { status => 1, };
+
     my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my $user_group = $c->model('CoreRealms::OrganizationUsersGroup')->find(
@@ -823,7 +839,13 @@ sub remove_user {
         }
     );
 
-    $user_group->delete() if ($user_group);
+    if ($user_group) {
+        $user_group->delete();
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $user_organization = $c->model('CoreRealms::UserOrganization')->find(
         {
@@ -831,7 +853,14 @@ sub remove_user {
         }
     );
 
-    $user_organization->delete() if ($user_organization);
+    if ($user_organization) {
+
+        $user_organization->delete();
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $registrator_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
@@ -841,8 +870,13 @@ sub remove_user {
 
     #Daedalus-Core admin becomes registrator
 
-    $registrator_user->update( { registrator_user => 1 } )
-      if ($registrator_user);
+    if ($registrator_user) {
+        $registrator_user->update( { registrator_user => 1 } );
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $registered_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
@@ -850,13 +884,21 @@ sub remove_user {
         }
     );
 
-    $registered_user->delete() if ($registered_user);
+    if ($registered_user) {
+        $registered_user->delete();
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $user = $c->model('CoreRealms::User')->find(
         {
             id => $user_id
         }
     )->delete();
+
+    return $response;
 
 }
 
@@ -871,12 +913,15 @@ sub update_user_data {
     my $user_data      = shift;
     my $data_to_update = shift;
 
+    my $response = { status => 1, };
+
     $c->model('CoreRealms::User')->find(
         {
             id => $user_data->{_hidden_data}->{user}->{id},
         }
     )->update($data_to_update);
 
+    return $response;
 }
 
 =encoding utf8

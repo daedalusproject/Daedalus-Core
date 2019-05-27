@@ -1,0 +1,113 @@
+perltidy version 20180220 log file on a linux system, OLD_PERL_VERSION=5.026001
+Configuration and command line parameters for this run:
+-q
+To find error messages search for 'WARNING' with your editor
+Indentation will be with 4 spaces
+Line 1 implies starting-indentation-level = 0
+Entering POD section
+Exiting POD section
+Start multi-line quote or pattern ending in )
+End of multi-line quote or pattern
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+########################  WARNING  #########################
+############################################################
+########################  WARNING  #########################
+############################################################
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+passing VERSION line; -npvl deactivates
+The nesting depths in the table below are at the start of the lines.
+The indicated output line numbers are not always exact.
+ci = levels of continuation indentation; bk = 1 if in BLOCK, 0 if not.
+
+in:out indent c b  nesting   code + messages; (messages begin with >>>)
+lines  levels i k            (code begins with one '.' per indent level)
+------  ----- - - --------   -------------------------------------------
+L1:1     i0:0 0 1            package Daedalus::Users::Manager;
+L49:49   i0:0 0 1            sub check_email_valid {
+L63:63   i0:0 0 1            sub check_user_passwrd {
+L81:81   i0:0 0 1            sub get_user_from_email {
+L96:96   i0:0 0 1            sub get_user_from_token {
+L111:111 i0:0 0 1            sub get_user_from_id {
+L126:126 i0:0 0 1            sub get_user_data {
+L148:147 i1:1 1 1 {          >>>Line length exceeded by 37 characters
+L161:161 i0:0 0 1            sub get_user_from_session_token {
+L200:200 i3:3 0 1 {{{        >>>Line length exceeded by 10 characters
+L217:217 i0:0 0 1            sub is_admin_from_session_token {
+L250:250 i0:0 0 1            sub auth_user {
+L272:263 i2:2 0 1 {{         >>>List: auto formatting with 2 fields/row
+L300:299 i1:1 0 1 {          .return $response;
+L309:309 i0:0 0 1            sub is_admin_of_any_organization {
+L347:347 i0:0 0 1            sub is_organization_member {
+L367:367 i0:0 0 1 {          >>>Line length exceeded by 11 characters
+L375:375 i0:0 0 1            sub is_super_admin {
+L415:415 i0:0 0 1            sub register_new_user {
+L466:466 i2:2 0 1 {{         ..my $user_registered = $registered ....
+L512:512 i0:0 0 1            sub show_registered_users {
+L562:560 i2:2 1 1 {{         ..$user->{_hidden_data}->{registere ....
+L579:579 i0:0 0 1            sub confirm_registration {
+L629:622 i5:5 1 1 {{{{{(     .....);
+L643:643 i0:0 0 1            sub show_active_users {
+L683:684 i0:0 0 1 {)}        sub show_inactive_users {
+L723:725 i0:0 0 1 {)}        sub get_organization_users {
+L777:779 i0:0 0 1 {)}        sub show_orphan_users {
+L828:831 i0:0 0 1 {)}        sub remove_user {
+L883:886 i0:0 0 1 {)}        sub update_user_data {
+L894:897 i0:0 0 1 {)}{       >>>Line length exceeded by 58 characters
+L894:897 i0:0 0 1 {)}{       >>>Line length exceeded by 143 characters
+L931:934 i0:0 0 1 {)}        >>>Last line
+
+No indentation disagreement seen
+
+5 long lines were outdented:
+  First at output line 146
+   Last at output line 196
+  use -noll to prevent outdenting, -l=n to increase line length
+
+5 output lines exceeded 80 characters:
+ First at line 146 by 37 characters
+ Maximum at line 925 by 143 characters
+ Last at line 925 by 143 characters
