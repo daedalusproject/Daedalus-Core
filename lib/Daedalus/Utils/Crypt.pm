@@ -18,8 +18,6 @@ use Digest::SHA qw(sha512_base64);
 use Crypt::JWT qw(decode_jwt encode_jwt);
 use Try::Tiny;
 
-use Data::Dumper;
-
 use namespace::clean -except => 'meta';
 
 =head1 DESCRIPTION

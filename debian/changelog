@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-16) unstable; urgency=low
+
+  * Add libconst-fast-perl as dependence.
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Tue, 27 may 2019 06:34:00 +0000
+
 libdaedalus-core-perl (0.01-15) unstable; urgency=low
 
   * Close mysql conection after test_mysql.

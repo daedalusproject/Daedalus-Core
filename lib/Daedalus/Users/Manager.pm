@@ -15,7 +15,7 @@ use Moose;
 use Email::Valid;
 use Daedalus::Utils::Crypt;
 use Daedalus::Messages::Manager qw(notify_new_user);
-use Data::Dumper;
+use Daedalus::Utils::Codes;
 
 use namespace::clean -except => 'meta';
 
@@ -25,6 +25,10 @@ Daedalus::Users::Manager
 
 =cut
 
+=head1 SYNOPSIS
+
+Daedalus Users Manager
+
 =head1 DESCRIPTION
 
 Daedalus Users Manager
@@ -32,6 +36,8 @@ Daedalus Users Manager
 =head1 METHODS
 
 =cut
+
+our $VERSION = '0.01';
 
 =head2 check_email_valid
 
@@ -156,7 +162,7 @@ sub get_user_from_session_token {
 
     my $response = {
         status  => 0,
-        message => "",
+        message => q{},
     };
     my $token_data;
     my $user;
@@ -175,7 +181,7 @@ sub get_user_from_session_token {
             $session_token );
         if ( $token_data->{status} != 1 ) {
             $response->{status} = 0;
-            if ( $token_data->{message} =~ m/invalid/ ) {
+            if ( $token_data->{message} =~ /invalid/ms ) {
                 $response->{message} = "Session token invalid.";
             }
             else {
@@ -216,7 +222,7 @@ sub is_admin_from_session_token {
 
     if ( $user->{status} == 0 ) {
         $response = $user;
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
     }
     else {
         $response->{error_code} = 403;
@@ -318,7 +324,7 @@ sub is_admin_of_any_organization {
         my $group_id    = $user_group->group_id;
         my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
           ->search( { group_id => $group_id } )->all();
-        my $roles = "";
+        my $roles = q{};
         foreach (@roles_array) {
 
             if ( $_->role_id == $organization_master_role_id ) {
@@ -385,7 +391,7 @@ sub is_super_admin {
         my $group_id    = $user_group->group_id;
         my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
           ->search( { group_id => $group_id } )->all();
-        my $roles = "";
+        my $roles = q{};
         foreach (@roles_array) {
 
             if ( $_->role_id == $daedalus_manager_role_id ) {
@@ -413,7 +419,7 @@ sub register_new_user {
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
-    my $response = { status => 1, message => "" };
+    my $response = { status => 1, message => q{} };
 
     my $user_model = $c->model('CoreRealms::User');
     my $user =
@@ -880,6 +886,32 @@ sub update_user_data {
 }
 
 =encoding utf8
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+
+If APP_TEST env is enabled, Core reads its configuration from t/ folder, by default config files we be read rom /etc/daedalus-core folder.
+
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 
