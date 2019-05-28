@@ -18,8 +18,7 @@ use warnings;
 use Const::Fast;
 use Moose;
 
-require Exporter;
-our @ISA       = qw(Exporter);
+use base qw(Exporter);
 our @EXPORT_OK = qw(
   $bad_request
   $forbidden
@@ -32,6 +31,16 @@ our @EXPORT_OK = qw(
 );
 
 use namespace::clean -except => 'meta';
+
+our $VERSION = '0.01';
+
+=head1 SYNOPSIS
+
+Daedalus Core Constants
+
+=head1 DESCRIPTION
+
+Daedalus Core Constant variables
 
 =head1 VARIABLES
 
@@ -100,6 +109,34 @@ Constant that sets organization group Token length (32)
 const our $organization_group_token_length => 32;
 
 =encoding utf8
+
+=head1 METHODS
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>, L<https://git.daedalus-project.io/daedalusproject/Hermes-Perl?nav_source=navbar|Hermes>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+
+/etc/daedalus-core must contain Hermes config.
+
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
+
 
 =head1 AUTHOR
 

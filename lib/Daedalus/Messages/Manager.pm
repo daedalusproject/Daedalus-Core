@@ -77,6 +77,7 @@ sub notify_new_user {
     return 1;
 }
 
+=encoding utf8
 =head1 SEE ALSO
 
 L<https://docs.daedalus-project.io/|Daedalus Project Docs>, L<https://git.daedalus-project.io/daedalusproject/Hermes-Perl?nav_source=navbar|Hermes>
