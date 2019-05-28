@@ -26,6 +26,8 @@ use Daedalus::Utils::Constants qw(
 
 use namespace::clean -except => 'meta';
 
+our $VERSION = '0.01';
+
 =head1 SYNOPSIS
 
 Daedalus Users Manager
@@ -37,8 +39,6 @@ Daedalus Users Manager
 =head1 METHODS
 
 =cut
-
-our $VERSION = '0.01';
 
 =head2 check_email_valid
 

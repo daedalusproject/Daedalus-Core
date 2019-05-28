@@ -5,7 +5,6 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON::XS;
-use Data::Dumper;
 
 use base qw(Daedalus::Core::Controller::REST);
 
