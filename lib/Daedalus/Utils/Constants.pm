@@ -19,14 +19,16 @@ use Const::Fast;
 use Moose;
 
 require Exporter;
-our @ISA    = qw(Exporter);
-our @EXPORT = qw(
+our @ISA       = qw(Exporter);
+our @EXPORT_OK = qw(
   $bad_request
   $forbidden
   $api_key_length
   $auth_token_length
   $long_random_string_length
   $user_token_length
+  $organization_token_length
+  $organization_group_token_length
 );
 
 use namespace::clean -except => 'meta';
@@ -80,6 +82,22 @@ Constant that sets User Token length (32)
 =cut
 
 const our $user_token_length => 32;
+
+=head2 Organization token lenght
+
+Constant that sets organization Token length (32)
+
+=cut
+
+const our $organization_token_length => 32;
+
+=head2 Organization group token lenght
+
+Constant that sets organization group Token length (32)
+
+=cut
+
+const our $organization_group_token_length => 32;
 
 =encoding utf8
 
