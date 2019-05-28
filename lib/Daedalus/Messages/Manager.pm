@@ -13,10 +13,9 @@ use warnings;
 use Moose;
 use Daedalus::Hermes;
 use JSON::XS;
-use base qw(Exporter);
 
-our @ISA    = qw(Exporter);
-our @EXPORT = qw(notify_new_user);
+use base qw(Exporter);
+our @EXPORT_OK = qw(notify_new_user);
 
 use namespace::clean -except => 'meta';
 
@@ -74,6 +73,8 @@ sub notify_new_user {
 
     undef $hermes;
     undef $HERMES;
+
+    return 1;
 }
 
 =head1 SEE ALSO
