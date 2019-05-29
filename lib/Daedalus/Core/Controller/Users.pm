@@ -678,11 +678,11 @@ sub user_data_PUT {
         if ($valid_update) {
             Daedalus::Users::Manager::update_user_data( $c, $user_data,
                 $data_to_update );
-            $data_to_update_names =~ s/^\s+|\s+$//g;
-            $data_to_update_names =~ s/,$//g;
-            $response->{message} = "Data updated: $data_to_update_names."
-              unless ( $data_to_update_names eq "" );
-
+            $data_to_update_names =~ s/^\s+|\s+$//smxg;
+            $data_to_update_names =~ s/,$//smxg;
+            if ( $data_to_update_names ne q{} ) {
+                $response->{message} = "Data updated: $data_to_update_names.";
+            }
         }
     }
 
