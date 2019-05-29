@@ -20,8 +20,10 @@ use Moose;
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(
+  $success
   $bad_request
   $forbidden
+  $not_found
   $api_key_length
   $auth_token_length
   $long_random_string_length
@@ -44,7 +46,15 @@ Daedalus Core Constant variables
 
 =head1 VARIABLES
 
-=head2 BAD_REQUEST
+=head2 Success
+
+HTTP success request code (200)
+
+=cut
+
+const our $success => 200;
+
+=head2 Bad Request
 
 HTTP bad request code (400)
 
@@ -59,6 +69,14 @@ HTTP Forbidden code (403)
 =cut
 
 const our $forbidden => 403;
+
+=head2 Not found
+
+HTTP not found request code (404)
+
+=cut
+
+const our $not_found => 404;
 
 =head2 API key lenght
 
