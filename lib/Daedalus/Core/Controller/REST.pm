@@ -6,7 +6,11 @@ use Moose;
 use namespace::autoclean;
 use JSON::XS;
 use Number::Phone;
-use Data::Dumper;
+use Daedalus::Utils::Constants qw(
+  $bad_request
+  $success
+  $forbidden
+);
 
 use base qw(Catalyst::Controller::REST);
 
@@ -16,17 +20,35 @@ use Daedalus::Users::Manager;
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
 
+our $VERSION = '0.01';
+
 BEGIN { extends 'Catalyst::Controller::REST' }
 
 =head1 NAME
 
 Daedalus::Core::Controller::REST - Catalyst Controller
 
+=head1 SYNOPSIS
+
+Daedalus::Core Root Controller.
+
+
 =head1 DESCRIPTION
 
 Daedalus::Core REST Controller.
 
-=head1 METHODS
+Here is where main requests validator resides.
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+
+=head1 SUBROUTINES/METHODS
 
 =cut
 
@@ -38,6 +60,7 @@ Returns "pong"
 
 sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 ping_GET
@@ -69,11 +92,10 @@ Returns forbidden status using custom response based on controller $response
 =cut
 
 sub status_forbidden_entity {
-    my $self = shift;
-    my $c    = shift;
-    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
+    my ( $self, $c, @params ) = @_;
+    my %p = Params::Validate::validate( @params, { entity => 1, }, );
 
-    $c->response->status(403);
+    $c->response->status($forbidden);
     $self->_set_entity( $c, $p{'entity'} );
     return 1;
 }
@@ -85,11 +107,11 @@ Returns bad requests status using custom response based on controller $response
 =cut
 
 sub status_bad_request_entity {
-    my $self = shift;
-    my $c    = shift;
-    my %p    = Params::Validate::validate( @_, { entity => 1, }, );
 
-    $c->response->status(400);
+    my ( $self, $c, @params ) = @_;
+    my %p = Params::Validate::validate( @params, { entity => 1, }, );
+
+    $c->response->status($bad_request);
     $self->_set_entity( $c, $p{'entity'} );
     return 1;
 }
@@ -108,7 +130,9 @@ sub return_response {
     my $error_code = $response->{error_code};
     delete $response->{error_code};
 
-    $response->{message} =~ s/^\s+|\s+$//g if ( exists $response->{message} );
+    if ( exists $response->{message} ) {
+        $response->{message} =~ s/^\s+|\s+$//smxg;
+    }
 
     if ( $response->{_hidden_data} && $response->{_hidden_data}->{user} ) {
         if ( $response->{_hidden_data}->{user}->{is_super_admin} != 1 ) {
@@ -124,7 +148,7 @@ sub return_response {
         delete $response->{_hidden_data};
         delete $response->{data};
 
-        if ( $error_code == 403 ) {
+        if ( $error_code == $forbidden ) {
 
             return $self->status_forbidden_entity( $c, entity => $response, );
         }
@@ -155,7 +179,7 @@ sub authorize_and_validate {
     my $response;
     my $data;
 
-    $response->{message} = "";
+    $response->{message} = q{};
     $response->{status}  = 1;
 
     # Authorize
@@ -182,7 +206,7 @@ sub authorize_and_validate {
 #if ( $data_properties->{required} == 1 ) { for the time being this field is always required
             if ( !( defined $value ) ) {
                 $response->{status}     = 0;
-                $response->{error_code} = 400;
+                $response->{error_code} = $bad_request;
                 $response->{message} =
                   $response->{message} . " No organization_token provided.";
             }
@@ -243,7 +267,7 @@ sub authorize_and_validate {
               );
             if ( $organization_member->{status} == 0 ) {
                 $response->{status}     = 0;
-                $response->{error_code} = 400;
+                $response->{error_code} = $bad_request;
                 $response->{message}    = "Invalid organization token.";
             }
 
@@ -264,7 +288,7 @@ sub authorize_and_validate {
                       join( ' ', @{ $auth->{organization_roles} } );
                     $prety_role_name =~ s/_/ /g;
                     $response->{status}     = 0;
-                    $response->{error_code} = 403;
+                    $response->{error_code} = $forbidden;
                     $response->{message} =
 "Your organization roles does not match with the following roles: $prety_role_name.";
                 }
@@ -291,7 +315,7 @@ sub authorize_and_validate {
             if ( $data_properties->{required} == 1 ) {
                 if ( !( defined $value ) ) {
                     $response->{status}     = 0;
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                     $response->{message}    = $response->{message}
                       . " No $required_data_name provided.";
                 }
@@ -304,7 +328,7 @@ sub authorize_and_validate {
                     if ( !Daedalus::Users::Manager::check_email_valid($value) )
                     {
                         $response->{status}     = 0;
-                        $response->{error_code} = 400;
+                        $response->{error_code} = $bad_request;
                         $response->{message}    = $response->{message}
                           . " $required_data_name is invalid.";
                     }
@@ -320,7 +344,7 @@ sub authorize_and_validate {
                         $c->config->{tokens}->{user_token_length} )
                     {
                         $response->{status}     = 0;
-                        $response->{error_code} = 400;
+                        $response->{error_code} = $bad_request;
                         $response->{message}    = $response->{message}
                           . " $required_data_name is invalid.";
                     }
@@ -330,7 +354,7 @@ sub authorize_and_validate {
                             $value );
                         if ( !$registered_user ) {
                             $response->{status}     = 0;
-                            $response->{error_code} = 400;
+                            $response->{error_code} = $bad_request;
                             $response->{message}    = $response->{message}
                               . "There is no registered user with that token.";
                         }
@@ -346,7 +370,7 @@ sub authorize_and_validate {
                               )
                             {
                                 $response->{status}     = 0;
-                                $response->{error_code} = 400;
+                                $response->{error_code} = $bad_request;
                                 $response->{message} =
                                   $response->{message}
                                   . "Required user is not active.";
@@ -372,7 +396,7 @@ sub authorize_and_validate {
                                   );
                                 if ( $is_organization_member->{status} == 0 ) {
                                     $response->{status}     = 0;
-                                    $response->{error_code} = 400;
+                                    $response->{error_code} = $bad_request;
                                     $response->{message}    = "Invalid user.";
                                 }
                             }
@@ -399,7 +423,7 @@ sub authorize_and_validate {
                         }
                         if ( $valid_phone == 0 ) {
                             $response->{status}     = 0;
-                            $response->{error_code} = 400;
+                            $response->{error_code} = $bad_request;
                             $response->{message} =
                               "Invalid $required_data_name.";
                         }
@@ -422,14 +446,28 @@ sub authorize_and_validate {
     return $response;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 =encoding utf8
+
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
 
 =cut
-
-__PACKAGE__->meta->make_immutable;
 
 1;

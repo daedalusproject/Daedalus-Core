@@ -78,6 +78,8 @@ Attempt to render a view, if needed.
 
 sub end : ActionClass('RenderView') { return; }
 
+__PACKAGE__->meta->make_immutable;
+
 =encoding utf8
 
 =head1 DIAGNOSTICS
@@ -99,7 +101,5 @@ Copying and distribution of this file, with or without modification, are permitt
 Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
 
 =cut
-
-__PACKAGE__->meta->make_immutable;
 
 1;
