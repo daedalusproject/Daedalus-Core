@@ -283,10 +283,9 @@ sub authorize_and_validate {
                   );
                 if ( $user_match_role->{status} == 0 ) {
 
-                    #my $prety_role_name = $auth->{role_name} =~ s/_/ /g;
                     my $prety_role_name =
-                      join( ' ', @{ $auth->{organization_roles} } );
-                    $prety_role_name =~ s/_/ /g;
+                      join( q{ }, @{ $auth->{organization_roles} } );
+                    $prety_role_name =~ s/_/ /smg;
                     $response->{status}     = 0;
                     $response->{error_code} = $forbidden;
                     $response->{message} =
