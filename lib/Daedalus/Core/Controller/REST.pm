@@ -159,6 +159,96 @@ sub return_response {
     }
 }
 
+=head2 check_registered_user
+
+Checks registered user.
+
+=cut
+
+sub check_registered_user {
+    my $c               = shift;
+    my $data            = shift;
+    my $data_properties = shift;
+    my $registered_user = shift;
+    my $response        = shift;
+    if (
+        (
+               $data_properties->{type} eq "active_user_token"
+            or $data_properties->{type} eq "organization_user"
+        )
+        and $registered_user->active == 0
+      )
+    {
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+        $response->{message} =
+          $response->{message} . "Required user is not active.";
+    }
+    $data->{'registered_user_token'} =
+      Daedalus::Users::Manager::get_user_data( $c, $registered_user );
+    if (    ( $data_properties->{type} eq "organization_user" )
+        and ( $response->{status} == 1 ) )
+    {
+        check_user_organization_member( $c, $data, $response );
+    }
+
+    return;
+}
+
+=head2 check_user_organization_member
+
+Checks if given user is an organization member.
+
+=cut
+
+sub check_user_organization_member {
+    my $c        = shift;
+    my $data     = shift;
+    my $response = shift;
+
+    my $is_organization_member =
+      Daedalus::Users::Manager::is_organization_member(
+        $c,
+        $data->{'registered_user_token'}->{_hidden_data}->{user}->{id},
+        $data->{organization}->{_hidden_data}->{organization}->{id}
+      );
+
+    if ( $is_organization_member->{status} == 0 ) {
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+        $response->{message}    = "Invalid user.";
+    }
+
+    return;
+}
+
+=head2 check_phone_number
+
+Checks phone number.
+
+=cut
+
+sub check_phone_number {
+    my $response           = shift;
+    my $phone_candidate    = shift;
+    my $required_data_name = shift;
+
+    if ($phone_candidate) {
+        my $phone       = Number::Phone->new($phone_candidate);
+        my $valid_phone = 1;
+
+        if ( !( defined $phone ) ) {
+            $valid_phone = 0;
+        }
+        if ( $valid_phone == 0 ) {
+            $response->{status}     = 0;
+            $response->{error_code} = $bad_request;
+            $response->{message}    = "Invalid $required_data_name.";
+        }
+    }
+    return;
+}
+
 =head2 authorize_and_validate
 
 Checks user or admin user, stops request processing if it is not valid.
@@ -358,75 +448,15 @@ sub authorize_and_validate {
                               . "There is no registered user with that token.";
                         }
                         else {
-                            if (
-                                (
-                                    $data_properties->{type} eq
-                                    "active_user_token"
-                                    or $data_properties->{type} eq
-                                    "organization_user"
-                                )
-                                and $registered_user->active == 0
-                              )
-                            {
-                                $response->{status}     = 0;
-                                $response->{error_code} = $bad_request;
-                                $response->{message} =
-                                  $response->{message}
-                                  . "Required user is not active.";
-                            }
-                            $data->{'registered_user_token'} =
-                              Daedalus::Users::Manager::get_user_data( $c,
-                                $registered_user );
-                            if (
-                                (
-                                    $data_properties->{type} eq
-                                    "organization_user"
-                                )
-                                and ( $response->{status} == 1 )
-                              )
-                            {
-                                my $is_organization_member =
-                                  Daedalus::Users::Manager::is_organization_member(
-                                    $c,
-                                    $data->{'registered_user_token'}
-                                      ->{_hidden_data}->{user}->{id},
-                                    $data->{organization}->{_hidden_data}
-                                      ->{organization}->{id}
-                                  );
-                                if ( $is_organization_member->{status} == 0 ) {
-                                    $response->{status}     = 0;
-                                    $response->{error_code} = $bad_request;
-                                    $response->{message}    = "Invalid user.";
-                                }
-                            }
+                            check_registered_user( $c, $data, $data_properties,
+                                $registered_user, $response );
                         }
                     }
                 }
 
                 elsif ( $data_properties->{type} eq "phone" ) {
-                    if ($value) {
-                        my $phone       = Number::Phone->new($value);
-                        my $valid_phone = 1;
-
-                        #if ( defined $phone ) {
-                        #    if ( $phone->is_valid != 1 ) {
-                        #        $valid_phone = 0;
-                        #    }
-
-                        #}
-                        #else {
-                        #    $valid_phone = 0;
-                        #}
-                        if ( !( defined $phone ) ) {
-                            $valid_phone = 0;
-                        }
-                        if ( $valid_phone == 0 ) {
-                            $response->{status}     = 0;
-                            $response->{error_code} = $bad_request;
-                            $response->{message} =
-                              "Invalid $required_data_name.";
-                        }
-                    }
+                    check_phone_number( $response, $value,
+                        $required_data_name );
                 }
 
                 if ( $response->{status} == 1 ) {
