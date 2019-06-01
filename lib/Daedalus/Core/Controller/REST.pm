@@ -11,6 +11,7 @@ use Daedalus::Utils::Constants qw(
   $success
   $forbidden
 );
+use Data::Dumper;
 
 use base qw(Catalyst::Controller::REST);
 
@@ -159,6 +160,103 @@ sub return_response {
     }
 }
 
+=head2 check_organization_token
+
+Checks organization token
+
+=cut
+
+sub check_organization_token {
+    my $response;
+
+    $response->{message} = q{};
+    $response->{status}  = 1;
+
+}
+
+=head2 manage_auth
+
+Manages auth
+
+=cut
+
+sub manage_auth {
+
+    my $c        = shift;
+    my $auth     = shift;
+    my $data     = shift;
+    my $response = shift;
+
+    my $user;
+    my $check_organization_roles = 0;
+
+    if ( $auth->{type} eq "user" or $auth->{type} eq "organization" ) {
+        $user = Daedalus::Users::Manager::get_user_from_session_token($c);
+        if ( $auth->{type} eq "organization" ) {
+            $check_organization_roles = 1;
+        }
+    }
+    else {    #elsif ( $auth->{type} eq "admin" ) {
+        $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
+    }
+
+    if ( $user->{status} == 0 ) {
+        $response->{status} = 0;
+        $response = $user;
+    }
+    else {    #elsif ( $user->{status} == 1 ) {
+        $data->{user_data} = $user->{data};
+    }
+    return $response, $user, $check_organization_roles, $data;
+
+}
+
+=head2 check_user_token
+
+  Checks if user token is valid .
+
+=cut
+
+sub check_user_token {
+
+    my $c                    = shift;
+    my $user_token_candidate = shift;
+    my $data                 = shift;
+    my $data_properties      = shift;
+    my $required_data_name   = shift;
+
+    my $response;
+
+    $response->{message} = q{};
+    $response->{status}  = 1;
+
+    if (
+        length($user_token_candidate) !=
+        $c->config->{tokens}->{user_token_length} )
+    {
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+        $response->{message} =
+          $response->{message} . " $required_data_name is invalid.";
+    }
+    else {
+        my $registered_user =
+          Daedalus::Users::Manager::get_user_from_token( $c,
+            $user_token_candidate );
+        if ( !$registered_user ) {
+            $response->{status}     = 0;
+            $response->{error_code} = $bad_request;
+            $response->{message}    = $response->{message}
+              . "There is no registered user with that token.";
+        }
+        else {
+            check_registered_user( $c, $data, $data_properties,
+                $registered_user, $response );
+        }
+    }
+    return $response;
+}
+
 =head2 check_registered_user
 
 Checks registered user.
@@ -166,11 +264,13 @@ Checks registered user.
 =cut
 
 sub check_registered_user {
+
     my $c               = shift;
     my $data            = shift;
     my $data_properties = shift;
     my $registered_user = shift;
     my $response        = shift;
+
     if (
         (
                $data_properties->{type} eq "active_user_token"
@@ -281,11 +381,12 @@ sub authorize_and_validate {
 
     my $organization_token_check = { status => 1 };
 
-    # If exists check organiation token first, yes, I have recopy code....
+    # If exists check organization token first. Code copied again.
     if ( exists $required_data->{organization_token} )
 
      #  and ( $required_data->{organization_token}->{type} eq "organization" ) )
     {
+        check_organization_token();
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
             $value = $data_properties->{value};
@@ -322,23 +423,9 @@ sub authorize_and_validate {
     }
 
     if ($auth) {
-        if ( $auth->{type} eq "user" or $auth->{type} eq "organization" ) {
-            $user = Daedalus::Users::Manager::get_user_from_session_token($c);
-            if ( $auth->{type} eq "organization" ) {
-                $check_organization_roles = 1;
-            }
-        }
-        else {    #elsif ( $auth->{type} eq "admin" ) {
-            $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-        }
 
-        if ( $user->{status} == 0 ) {
-            $response->{status} = 0;
-            $response = $user;
-        }
-        else {    #elsif ( $user->{status} == 1 ) {
-            $data->{user_data} = $user->{data};
-        }
+        ( $response, $user, $check_organization_roles, $data ) =
+          manage_auth( $c, $auth, $data, $response );
     }
 
     if (    $response->{status} == 1
@@ -428,30 +515,9 @@ sub authorize_and_validate {
                     or $data_properties->{type} eq "organization_user" )
                 {
                     # Check users token length
-                    if (
-                        length($value) !=
-                        $c->config->{tokens}->{user_token_length} )
-                    {
-                        $response->{status}     = 0;
-                        $response->{error_code} = $bad_request;
-                        $response->{message}    = $response->{message}
-                          . " $required_data_name is invalid.";
-                    }
-                    else {
-                        my $registered_user =
-                          Daedalus::Users::Manager::get_user_from_token( $c,
-                            $value );
-                        if ( !$registered_user ) {
-                            $response->{status}     = 0;
-                            $response->{error_code} = $bad_request;
-                            $response->{message}    = $response->{message}
-                              . "There is no registered user with that token.";
-                        }
-                        else {
-                            check_registered_user( $c, $data, $data_properties,
-                                $registered_user, $response );
-                        }
-                    }
+                    $response =
+                      check_user_token( $c, $value, $data, $data_properties,
+                        $required_data_name );
                 }
 
                 elsif ( $data_properties->{type} eq "phone" ) {
