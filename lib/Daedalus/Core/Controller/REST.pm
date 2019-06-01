@@ -31,7 +31,7 @@ Daedalus::Core::Controller::REST - Catalyst Controller
 
 =head1 SYNOPSIS
 
-Daedalus::Core Root Controller.
+Daedalus::Core REST Controller.
 
 
 =head1 DESCRIPTION
@@ -156,7 +156,6 @@ sub return_response {
         else {    # 400
             return $self->status_bad_request_entity( $c, entity => $response, );
         }
-
     }
 }
 
@@ -171,12 +170,12 @@ sub check_organization_token {
 
     $response->{message} = q{};
     $response->{status}  = 1;
-
+    return;
 }
 
 =head2 manage_auth
 
-Manages auth
+Checks auth
 
 =cut
 
@@ -208,6 +207,61 @@ sub manage_auth {
         $data->{user_data} = $user->{data};
     }
     return $response, $user, $check_organization_roles, $data;
+
+}
+
+=head2 check_organization_roles_valid
+
+Checks if user roles are valid for given organization
+
+=cut
+
+sub check_organization_roles_valid {
+
+    my $c        = shift;
+    my $response = shift;
+    my $auth     = shift;
+    my $data     = shift;
+
+    #Check if user is organization memeber
+    my $organization_member = Daedalus::Users::Manager::is_organization_member(
+        $c,
+        $data->{user_data}->{_hidden_data}->{user}->{id},
+        $data->{organization}->{_hidden_data}->{organization}->{id}
+    );
+    if ( $organization_member->{status} == 0 ) {
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+        $response->{message}    = "Invalid organization token.";
+    }
+
+    if ( $response->{status} == 1
+        and exists( $auth->{organization_roles} ) )
+    {
+        my $user_match_role =
+          Daedalus::OrganizationGroups::Manager::user_match_role(
+            $c,
+            $data->{user_data}->{data}->{user}->{'e-mail'},
+            $data->{organization}->{_hidden_data}->{organization}->{id},
+            $auth->{organization_roles}
+          );
+        if ( $user_match_role->{status} == 0 ) {
+
+            my $prety_role_name =
+              join( q{ }, @{ $auth->{organization_roles} } );
+            $prety_role_name =~ s/_/ /smg;
+            $response->{status}     = 0;
+            $response->{error_code} = $forbidden;
+            $response->{message} =
+"Your organization roles does not match with the following roles: $prety_role_name.";
+        }
+        else {
+            $data->{organization_groups} =
+              $user_match_role->{'organization_groups'};
+        }
+    }
+
+    return $response, $data;
 
 }
 
@@ -434,45 +488,8 @@ sub authorize_and_validate {
 
         # Check check_organization_roles
         if ( $check_organization_roles == 1 ) {
-
-            #Check if user is organization memeber
-            my $organization_member =
-              Daedalus::Users::Manager::is_organization_member(
-                $c,
-                $data->{user_data}->{_hidden_data}->{user}->{id},
-                $data->{organization}->{_hidden_data}->{organization}->{id}
-              );
-            if ( $organization_member->{status} == 0 ) {
-                $response->{status}     = 0;
-                $response->{error_code} = $bad_request;
-                $response->{message}    = "Invalid organization token.";
-            }
-
-            if ( $response->{status} == 1
-                and exists( $auth->{organization_roles} ) )
-            {
-                my $user_match_role =
-                  Daedalus::OrganizationGroups::Manager::user_match_role(
-                    $c,
-                    $data->{user_data}->{data}->{user}->{'e-mail'},
-                    $data->{organization}->{_hidden_data}->{organization}->{id},
-                    $auth->{organization_roles}
-                  );
-                if ( $user_match_role->{status} == 0 ) {
-
-                    my $prety_role_name =
-                      join( q{ }, @{ $auth->{organization_roles} } );
-                    $prety_role_name =~ s/_/ /smg;
-                    $response->{status}     = 0;
-                    $response->{error_code} = $forbidden;
-                    $response->{message} =
-"Your organization roles does not match with the following roles: $prety_role_name.";
-                }
-                else {
-                    $data->{organization_groups} =
-                      $user_match_role->{'organization_groups'};
-                }
-            }
+            ( $response, $data ) =
+              check_organization_roles_valid( $c, $response, $auth, $data );
         }
     }
 
