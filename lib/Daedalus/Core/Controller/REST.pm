@@ -11,7 +11,6 @@ use Daedalus::Utils::Constants qw(
   $success
   $forbidden
 );
-use Data::Dumper;
 
 use base qw(Catalyst::Controller::REST);
 
@@ -376,6 +375,73 @@ sub check_user_organization_member {
     return;
 }
 
+=head2 check_required_data
+
+Checks required data
+
+=cut
+
+sub check_required_data {
+
+    my $c                  = shift;
+    my $response           = shift;
+    my $required_data      = shift;
+    my $required_data_name = shift;
+    my $data               = shift;
+
+    my $value;
+
+    my $data_properties = $required_data->{$required_data_name};
+
+    if ( $data_properties->{given} == 1 ) {
+        $value = $data_properties->{value};
+    }
+    else {
+        $value = $c->{request}->{data}->{$required_data_name};
+    }
+    if ( $data_properties->{required} == 1 ) {
+        if ( !( defined $value ) ) {
+            $response->{status}     = 0;
+            $response->{error_code} = $bad_request;
+            $response->{message} =
+              $response->{message} . " No $required_data_name provided.";
+        }
+    }
+
+    if ( $response->{status} == 1 ) {
+
+        #Check Type
+        if ( $data_properties->{type} eq "e-mail" ) {
+            if ( !Daedalus::Users::Manager::check_email_valid($value) ) {
+                $response->{status}     = 0;
+                $response->{error_code} = $bad_request;
+                $response->{message} =
+                  $response->{message} . " $required_data_name is invalid.";
+            }
+        }
+
+        elsif ($data_properties->{type} eq "registered_user_token"
+            or $data_properties->{type} eq "active_user_token"
+            or $data_properties->{type} eq "organization_user" )
+        {
+            # Check users token length
+            $response =
+              check_user_token( $c, $value, $data, $data_properties,
+                $required_data_name );
+        }
+
+        elsif ( $data_properties->{type} eq "phone" ) {
+            check_phone_number( $response, $value, $required_data_name );
+        }
+
+        if ( $response->{status} == 1 ) {
+            $data->{required_data}->{$required_data_name} = $value;
+        }
+    }
+
+    return $response, $data;
+}
+
 =head2 check_phone_number
 
 Checks phone number.
@@ -497,56 +563,11 @@ sub authorize_and_validate {
 
         # Auth passed, check required_data
         for my $required_data_name ( sort ( keys %{$required_data} ) ) {
-            my $data_properties = $required_data->{$required_data_name};
 
-            if ( $data_properties->{given} == 1 ) {
-                $value = $data_properties->{value};
-            }
-            else {
-                $value = $c->{request}->{data}->{$required_data_name};
-            }
-            if ( $data_properties->{required} == 1 ) {
-                if ( !( defined $value ) ) {
-                    $response->{status}     = 0;
-                    $response->{error_code} = $bad_request;
-                    $response->{message}    = $response->{message}
-                      . " No $required_data_name provided.";
-                }
-            }
-
-            if ( $response->{status} == 1 ) {
-
-                #Check Type
-                if ( $data_properties->{type} eq "e-mail" ) {
-                    if ( !Daedalus::Users::Manager::check_email_valid($value) )
-                    {
-                        $response->{status}     = 0;
-                        $response->{error_code} = $bad_request;
-                        $response->{message}    = $response->{message}
-                          . " $required_data_name is invalid.";
-                    }
-                }
-
-                elsif ($data_properties->{type} eq "registered_user_token"
-                    or $data_properties->{type} eq "active_user_token"
-                    or $data_properties->{type} eq "organization_user" )
-                {
-                    # Check users token length
-                    $response =
-                      check_user_token( $c, $value, $data, $data_properties,
-                        $required_data_name );
-                }
-
-                elsif ( $data_properties->{type} eq "phone" ) {
-                    check_phone_number( $response, $value,
-                        $required_data_name );
-                }
-
-                if ( $response->{status} == 1 ) {
-                    $data->{required_data}->{$required_data_name} = $value;
-                }
-            }
-        }    # for required data
+            ( $response, $data ) =
+              check_required_data( $c, $response, $required_data,
+                $required_data_name, $data );
+        }
 
         if ( $organization_token_check->{status} == 0 ) {
             $response = $organization_token_check;

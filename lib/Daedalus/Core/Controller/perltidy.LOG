@@ -1,0 +1,95 @@
+perltidy version 20180220 log file on a linux system, OLD_PERL_VERSION=5.026001
+Configuration and command line parameters for this run:
+-q
+To find error messages search for 'WARNING' with your editor
+Indentation will be with 4 spaces
+Line 1 implies starting-indentation-level = 0
+Start multi-line quote or pattern ending in )
+End of multi-line quote or pattern
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+Entering POD section
+Exiting POD section
+########################  WARNING  #########################
+############################################################
+Entering POD section
+Exiting POD section
+passing VERSION line; -npvl deactivates
+The nesting depths in the table below are at the start of the lines.
+The indicated output line numbers are not always exact.
+ci = levels of continuation indentation; bk = 1 if in BLOCK, 0 if not.
+
+in:out indent c b  nesting   code + messages; (messages begin with >>>)
+lines  levels i k            (code begins with one '.' per indent level)
+------  ----- - - --------   -------------------------------------------
+L1:1     i0:0 0 1            package Daedalus::Core::Controller: ....
+L61:61   i0:0 0 1            sub ping : Path('/ping') : Args(0)  ....
+L72:72   i0:0 0 1            sub ping_GET {
+L94:94   i0:0 0 1            sub status_forbidden_entity {
+L109:109 i0:0 0 1            sub status_bad_request_entity {
+L125:125 i0:0 0 1            sub return_response {
+L167:167 i0:0 0 1            sub check_organization_token {
+L181:181 i0:0 0 1            sub manage_auth {
+L218:218 i0:0 0 1            sub check_organization_roles_valid  ....
+L246:240 i2:2 1 1 {{(        >>>List: auto formatting with 1 fields/row
+L255:254 i0:3 1 1 {{{        >>>Line length exceeded by 5 characters
+L273:273 i0:0 0 1            sub check_user_token {
+L319:319 i0:0 0 1            sub check_registered_user {
+L357:357 i0:0 0 1            sub check_user_organization_member  ....
+L384:384 i0:0 0 1            sub check_required_data {
+L434:434 i2:2 0 1 {{         ..if ( $response->{status} == 1 ) {
+L434:434 i2:2 0 1 {{         >>>(No else block)
+L448:448 i0:0 0 1            sub check_phone_number {
+L467:467 i0:0 0 1 {          >>>Line length exceeded by 38 characters
+L478:478 i0:0 0 1            sub authorize_and_validate {
+L515:515 i3:3 0 1 {{{        >>>Line length exceeded by 12 characters
+L529:529 i3:3 0 1 {{{        ...delete $required_data->{organiza ....
+L568:568 i3:3 0 1 {{{        >>>Line length exceeded by 7 characters
+L574:574 i3:3 0 1 {{{        >>>Line length exceeded by 5 characters
+L579:579 i3:3 0 1 {{{        ...###                    $response ....
+L580:580 i3:3 0 1 {{{        >>>Line length exceeded by 1 characters
+L627:627 i0:-1 0 1            >>>Start indentation disagreement: input=0; output=-1
+L629:629 i0:-1 0 1 }          __PACKAGE__->meta->make_immutable;
+L653:653 i0:-1 0 1 }          >>>Last line
+
+First indentation disagreement seen at input line 627
+Ending with indentation disagreement which started at input line 627
+Note: Indentation disagreement detection is not accurate for outdenting and -lp.
+
+3 long lines were outdented:
+  First at output line 255
+   Last at output line 514
+  use -noll to prevent outdenting, -l=n to increase line length
+
+14 output lines exceeded 80 characters:
+ First at line 255 by 5 characters
+ Maximum at line 645 by 143 characters
+ Last at line 645 by 143 characters
