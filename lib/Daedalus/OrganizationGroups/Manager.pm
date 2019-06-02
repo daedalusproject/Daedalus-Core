@@ -11,23 +11,27 @@ Daedalus::OrganizationGroups::Manager
 use strict;
 use warnings;
 use Moose;
+use List::MoreUtils qw(any uniq);
 
 use Daedalus::Organizations::Manager;
-use Data::Dumper;
+use Daedalus::Utils::Constants qw(
+  $bad_request
+);
 
 use namespace::clean -except => 'meta';
 
-=head1 NAME
+our $VERSION = '0.01';
 
-Daedalus::OrganizationGroups::Manager
+=head1 SYNOPSIS
 
-=cut
+Daedalus Organization Groups Manager
+
 
 =head1 DESCRIPTION
 
 Daedalus Organization Groups Manager
 
-=head1 METHODS
+=head1 SUBROUTINES/METHODS
 
 =cut
 
@@ -46,7 +50,12 @@ sub count_roles {
     my $count = 0;
 
     for my $group_name ( keys %{$groups} ) {
-        if ( grep( /^$role_name$/, @{ $groups->{$group_name}->{roles} } ) ) {
+        if (
+            any { /^$role_name$/sxm }
+            uniq @{ $groups->{$group_name}->{roles} }
+          )
+
+        {
             $count = $count + 1;
         }
     }
@@ -71,7 +80,11 @@ sub count_organization_admins {
     my @groups_with_selected_role;
 
     for my $group_name ( keys %{$groups} ) {
-        if ( grep( /^$role_name$/, @{ $groups->{$group_name}->{roles} } ) ) {
+        if (    #grep( /^$role_name$/, @{ $groups->{$group_name}->{roles} } ) )
+            any { /^$role_name$/sxm }
+            uniq @{ $groups->{$group_name}->{roles} }
+          )
+        {
             push @groups_with_selected_role, $group_name;
         }
     }
@@ -105,7 +118,7 @@ sub remove_user_from_organization_group {
     )->delete();
 
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Required user has been removed from organization group.';
 
@@ -135,11 +148,6 @@ sub user_match_role {
 
     for my $group_name ( keys %{ $response->{organization_groups}->{data} } ) {
         if (
-    #            grep( /^$user_email$/,
-    #                @{
-    #                    $response->{organization_groups}->{data}->{$group_name}
-    #                      ->{users}
-    #                } )
             exists(
                 $response->{organization_groups}->{data}->{$group_name}
                   ->{users}->{$user_email}
@@ -186,7 +194,9 @@ sub remove_organization_group {
         }
     );
 
-    $roles_to_remove->delete() if ($roles_to_remove);
+    if ($roles_to_remove) {
+        $roles_to_remove->delete();
+    }
 
     my $users_to_remove =
       $c->model('CoreRealms::OrganizationUsersGroup')->find(
@@ -195,7 +205,9 @@ sub remove_organization_group {
         }
       );
 
-    $users_to_remove->delete() if ($users_to_remove);
+    if ($users_to_remove) {
+        $users_to_remove->delete();
+    }
 
     $c->model('CoreRealms::OrganizationGroup')->find(
         {
@@ -203,7 +215,7 @@ sub remove_organization_group {
         }
     )->delete();
 
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{status}     = 1;
     $response->{message} = 'Selected group has been removed from organization.';
 
@@ -223,7 +235,7 @@ sub get_organization_group_from_token {
 
     my $response;
     $response->{status}     = 0;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message}    = 'Invalid organization group token.';
 
     my $organization_group = $c->model('CoreRealms::OrganizationGroup')
@@ -262,6 +274,31 @@ sub get_organization_group_from_token {
 
     return $response;
 }
+
+=encoding utf8
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 
