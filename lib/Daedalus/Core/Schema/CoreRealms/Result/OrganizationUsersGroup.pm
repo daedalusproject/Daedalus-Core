@@ -1,6 +1,6 @@
-use utf8;
-
 package Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup;
+
+use utf8;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
@@ -23,9 +23,9 @@ extends 'DBIx::Class::Core';
 
 =over 4
 
-=item * L<DBIx::Class::InflateColumn::DateTime>
+=item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp>
+=item * L<DBIx::Class::TimeStamp|TimeStamp>
 
 =back
 
@@ -106,7 +106,7 @@ __PACKAGE__->set_primary_key( "user_id", "group_id" );
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup|OrganizationGroup>
 
 =cut
 
@@ -121,7 +121,7 @@ __PACKAGE__->belongs_to(
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User|User>
 
 =cut
 
@@ -147,4 +147,37 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->meta->make_immutable;
+
+our $VERSION = '0.01';
+
+=encoding utf8
+
+=head1 SYNOPSIS
+=head1 DESCRIPTION
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=cut
+
 1;

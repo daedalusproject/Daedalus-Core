@@ -13,15 +13,22 @@ use warnings;
 use Moose;
 
 use Daedalus::Utils::Crypt;
-use Data::Dumper;
+use List::MoreUtils qw(any uniq);
+use Daedalus::Utils::Constants qw(
+  $bad_request
+  $forbidden
+  $organization_token_length
+  $organization_group_token_length
+);
 
 use namespace::clean -except => 'meta';
 
-=head1 NAME
+our $VERSION = '0.01';
 
-Daedalus::Organizations::Manager
+=head1 SYNOPSIS
 
-=cut
+Daedalus Users Manager
+
 
 =head1 DESCRIPTION
 
@@ -60,10 +67,10 @@ sub create_organization {
         push @organization_names, $user_organization->organization()->name;
     }
 
-    if ( grep( /^$request_organization_name$/, @organization_names ) ) {
+    if ( any { /^$request_organization_name$/sxm } uniq @organization_names ) {
         $response = {
             status     => 0,
-            error_code => 400,
+            error_code => $bad_request,
             message    => 'Duplicated organization name.',
         };
 
@@ -78,7 +85,8 @@ sub create_organization {
         # Create Organization
 
         my $organization_token =
-          Daedalus::Utils::Crypt::generate_random_string(32);
+          Daedalus::Utils::Crypt::generate_random_string(
+            $organization_token_length);
         my $organization = $c->model('CoreRealms::Organization')->create(
             {
                 name  => $request_organization_name,
@@ -97,7 +105,8 @@ sub create_organization {
 
         # Create an organization admin group
         my $organization_admin_group_token =
-          Daedalus::Utils::Crypt::generate_random_string(32);
+          Daedalus::Utils::Crypt::generate_random_string(
+            $organization_group_token_length);
 
         my $organization_group =
           $c->model('CoreRealms::OrganizationGroup')->create(
@@ -171,9 +180,6 @@ sub get_organizations_from_user {
     my @user_organizations = $c->model('CoreRealms::UserOrganization')
       ->search( { user_id => $user_id } )->all();
 
-    my @organizations_names;
-    my %organizations;
-
     if ( $short_key eq 'token' ) {
         for my $user_organization (@user_organizations) {
             my $organization = $c->model('CoreRealms::Organization')
@@ -212,7 +218,7 @@ sub get_organization_from_token {
 
     my $response;
     $response->{status}     = 0;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message}    = 'Invalid organization token.';
 
     my $organization = $c->model('CoreRealms::Organization')
@@ -487,7 +493,8 @@ sub create_organization_group {
     my $organization_group;
 
     my $organization_group_token =
-      Daedalus::Utils::Crypt::generate_random_string(32);
+      Daedalus::Utils::Crypt::generate_random_string(
+        $organization_group_token_length);
 
     $organization_group = $c->model('CoreRealms::OrganizationGroup')->create(
         {
@@ -498,7 +505,7 @@ sub create_organization_group {
     );
 
     $response->{status}                      = 1;
-    $response->{error_code}                  = 400;
+    $response->{error_code}                  = $bad_request;
     $response->{data}->{organization_groups} = {
         "group_name"  => $organization_group->group_name,
         "group_token" => $organization_group->token
@@ -550,7 +557,7 @@ sub add_role_to_organization_group {
         }
     );
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Selected role has been added to organization group.';
     $response->{_hidden_data}->{organization_group_role}->{id} =
@@ -578,7 +585,7 @@ sub remove_role_from_organization_group {
         }
     )->delete();
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Selected role has been removed from organization group.';
 
@@ -607,12 +614,40 @@ sub add_user_to_organization_group {
         }
     );
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Required user has been added to organization group.';
 
     return $response;
 }
+
+=encoding utf8
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+
+If APP_TEST env is enabled, Core reads its configuration from t/ folder, by default config files we be read rom /etc/daedalus-core folder.
+
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 

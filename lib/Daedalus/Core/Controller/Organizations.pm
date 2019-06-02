@@ -5,7 +5,10 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON::XS;
-use Data::Dumper;
+use List::MoreUtils qw(any uniq);
+use Daedalus::Utils::Constants qw(
+  $bad_request
+);
 
 use base qw(Daedalus::Core::Controller::REST);
 
@@ -15,19 +18,31 @@ use Daedalus::OrganizationGroups::Manager;
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
 
-BEGIN { extends 'Daedalus::Core::Controller::REST' }
+BEGIN { extends 'Daedalus::Core::Controller::REST'; return; }
+
+our $VERSION = '0.01';
 
 =head1 NAME
 
-Daedalus::Core::Controller::REST - Catalyst Controller
+Daedalus::Core::Controller::Organizations - Catalyst Controller
+
+=head1 SYNOPSIS
+
+Daedalus::Core Organizations Controller.
 
 =head1 DESCRIPTION
 
-Daedalus::Core REST Controller.
+Daedalus::Core /organization endpoint.
 
-=head1 METHODS
+=head1 SEE ALSO
 
-=cut
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
 
 =head2 begin
 
@@ -37,6 +52,7 @@ Begin function
 
 sub begin : ActionClass('Deserialize') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 create_organization
@@ -52,6 +68,7 @@ Required data:   - Organation name
 sub create_organization : Path('/organization/create') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 create_organization_POST
@@ -97,7 +114,7 @@ sub create_organization_POST {
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
     }
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_organizations
@@ -109,6 +126,7 @@ Users are allowed to show their organizations
 sub show_organizations : Path('/organization/show') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_organizations_GET
@@ -143,7 +161,7 @@ sub show_organizations_GET {
         $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_organization_users
@@ -157,6 +175,7 @@ Required data:   - Organation token as request argument
 sub show_organization_users : Path('/organization/showusers') : Args(1) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_organization_users_GET
@@ -206,7 +225,7 @@ sub show_organization_users_GET {
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 add_user_to_organization
@@ -222,6 +241,7 @@ Required data:   - User Token   - Organation token
 sub add_user_to_organization : Path('/organization/adduser') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 add_user_to_organization_POST
@@ -239,7 +259,7 @@ sub add_user_to_organization_POST {
     my $organization;
     my $target_user;
 
-    $response->{message} = "";
+    $response->{message} = q{};
     $response->{status}  = 1;
 
     my $authorization_and_validatation = $self->authorize_and_validate(
@@ -274,10 +294,10 @@ sub add_user_to_organization_POST {
         $response =
           Daedalus::Organizations::Manager::add_user_to_organization( $c,
             $target_user, $organization, );
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 
 }
 
@@ -292,6 +312,7 @@ Data is separated by organization.
 sub show_organizations_groups : Path('/organization/showusergroups') : Args(0)
   : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_organizations_groups_GET
@@ -326,7 +347,7 @@ sub show_organizations_groups_GET {
             $user_data );
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_organization_groups
@@ -338,6 +359,7 @@ Same behaviour than show_organizations_groups but this function only show groups
 sub show_organization_groups : Path('/organization/showorganizationusergroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_organization_groups_GET
@@ -380,16 +402,16 @@ sub show_organization_groups_GET {
           Daedalus::Organizations::Manager::get_user_organization_groups( $c,
             $user_data, $organization );
 
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
         $response->{status}     = 1;
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_all_organization_groups
 
-Admin sers are allowed to view all their organization groups.
+Admin users are allowed to view all their organization groups.
 
 For each group, their users and roles are shown.
 
@@ -400,6 +422,7 @@ OrganizationToken is required
 sub show_all_organization_groups : Path('/organization/showallgroups')
   : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_all_organization_groups_GET
@@ -450,13 +473,12 @@ sub show_all_organization_groups_GET {
         $response->{data}->{groups}         = $groups->{data};
         $response->{_hidden_data}->{groups} = $groups->{_hidden_data};
         $response->{status}                 = 1;
-        $response->{error_code}             = 400;
+        $response->{error_code}             = $bad_request;
 
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
-
+    return $self->return_response( $c, $response );
 }
 
 =head2 create_organization_group
@@ -472,6 +494,7 @@ Required data:   - Organation token   - Unique group name
 sub create_organization_group : Path('/organization/creategroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 create_organization_group_POST
@@ -525,7 +548,7 @@ sub create_organization_group_POST {
           Daedalus::Organizations::Manager::get_organization_groups( $c,
             $organization->{_hidden_data}->{organization}->{id} );
 
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
         if ( exists $groups->{data}->{$group_name} ) {
             $response->{status}  = 0;
             $response->{message} = "Duplicated group name.";
@@ -539,8 +562,7 @@ sub create_organization_group_POST {
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
-
+    return $self->return_response( $c, $response );
 }
 
 =head2 add_role_to_group
@@ -556,6 +578,7 @@ Required data:   - Organation token   - Group token   - Role name
 sub add_role_to_group : Path('/organization/addroletogroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 add_role_to_group_POST
@@ -621,7 +644,7 @@ sub add_role_to_group_POST {
         if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
-            $response->{error_code} = 400;
+            $response->{error_code} = $bad_request;
         }
 
         else {
@@ -630,18 +653,19 @@ sub add_role_to_group_POST {
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
-                $response->{error_code} = 400;
+                $response->{error_code} = $bad_request;
             }
             else {
                 if (
-                    grep( /^$role_name$/,
-                        @{ $group->{data}->{$group_token}->{roles} } )
+                    any { /^$role_name$/sxm }
+                    uniq @{ $group->{data}->{$group_token}->{roles} }
                   )
+
                 {
                     $response->{status} = 0;
                     $response->{message} =
                       "Required role is already assigned to this group.";
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                 }
                 else {
                     # Check role, name
@@ -652,7 +676,7 @@ sub add_role_to_group_POST {
                     {
                         $response->{status}  = 0;
                         $response->{message} = "Required role does not exist.";
-                        $response->{error_code} = 400;
+                        $response->{error_code} = $bad_request;
                     }
                     else {
                         $response =
@@ -668,7 +692,7 @@ sub add_role_to_group_POST {
 
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 
 }
 
@@ -685,9 +709,101 @@ are still allowed to perform this action.
 
 =cut
 
-sub remove_role_group : Path('/organization/removerolefromgroup') : Args(3) :
-  ActionClass('REST') {
+sub remove_role_group : Path('/organization/removerolefromgroup') : Args(3)
+  : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 remove_existent_role
+
+Removes existent role from group
+
+=cut
+
+sub remove_existent_role {
+
+    my $c    = shift;
+    my $data = shift;
+
+    my $group_token     = $data->{group_token};
+    my $available_roles = $data->{available_roles};
+    my $groups          = $data->{groups};
+    my $group           = $data->{group};
+    my $organization    = $data->{organization};
+    my $role_name       = $data->{role_name};
+    my $user_data       = $data->{user_data};
+
+    my $count_roles;
+    my $removal_allowed = 1;
+
+    my $response;
+    $response->{status}  = 1;
+    $response->{message} = q{};
+
+    if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
+        $organization->{_hidden_data}->{organization}->{id} )
+    {
+        $response->{status}     = 0;
+        $response->{message}    = "Required group does not exist.";
+        $response->{error_code} = $bad_request;
+    }
+    else {
+        $available_roles = Daedalus::Organizations::Manager::list_roles($c);
+
+        if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
+            $response->{status}     = 0;
+            $response->{message}    = "Required role does not exist.";
+            $response->{error_code} = $bad_request;
+        }
+        else {
+            if (
+                any { /^$role_name$/sxm }
+                uniq @{ $group->{data}->{$group_token}->{roles} }
+              )
+            {
+
+                if (   $role_name eq 'organization_master'
+                    && $user_data->{_hidden_data}->{user}->{is_super_admin} ==
+                    0 )
+                {
+                    $groups =
+                      Daedalus::Organizations::Manager::get_organization_groups(
+                        $c,
+                        $organization->{_hidden_data}->{organization}->{id} );
+
+                    $count_roles =
+                      Daedalus::OrganizationGroups::Manager::count_roles( $c,
+                        $groups->{data}, 'organization_master' );
+                    if ( $count_roles < 2 ) {
+                        $removal_allowed        = 0;
+                        $response->{status}     = 0;
+                        $response->{error_code} = $bad_request;
+                        $response->{message} =
+'Cannot remove this role, no more admin roles will left in this organization.';
+                    }
+                }
+                if ($removal_allowed) {
+                    $response =
+                      Daedalus::Organizations::Manager::remove_role_from_organization_group(
+                        $c,
+                        $group->{_hidden_data}->{$group_token}->{id},
+                        $available_roles->{_hidden_data}->{$role_name}->{id}
+                      );
+                    $response->{error_code} = $bad_request;
+                }
+            }
+            else {
+                $response->{status} = 0;
+                $response->{message} =
+                  "Required role is not assigned to this group.";
+                $response->{error_code} = $bad_request;
+
+            }
+        }
+
+    }
+    return $response;
 }
 
 =head2 remove_role_group_DELETE
@@ -749,7 +865,8 @@ sub remove_role_group_DELETE {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
 
-        $group_token = $authorization_and_validatation->{data}->{required_data}
+        $group_token =
+          $authorization_and_validatation->{data}->{required_data}
           ->{group_token};
         $role_name =
           $authorization_and_validatation->{data}->{required_data}->{role_name};
@@ -760,79 +877,26 @@ sub remove_role_group_DELETE {
         if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
-            $response->{error_code} = 400;
+            $response->{error_code} = $bad_request;
         }
         else {
-            if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
-                $organization->{_hidden_data}->{organization}->{id} )
-            {
-                $response->{status}     = 0;
-                $response->{message}    = "Required group does not exist.";
-                $response->{error_code} = 400;
-            }
-            else {
-                $available_roles =
-                  Daedalus::Organizations::Manager::list_roles($c);
-
-                if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
-                    $response->{status}     = 0;
-                    $response->{message}    = "Required role does not exist.";
-                    $response->{error_code} = 400;
+            $response = remove_existent_role(
+                $c,
+                {
+                    'group_token'     => $group_token,
+                    'available_roles' => $available_roles,
+                    'group_token'     => $group_token,
+                    'groups'          => $groups,
+                    'group'           => $group,
+                    'organization'    => $organization,
+                    'role_name'       => $role_name,
+                    'user_data'       => $user_data,
                 }
-                else {
-                    if (
-                        grep( /^$role_name$/,
-                            @{ $group->{data}->{$group_token}->{roles} } )
-                      )
-                    {
-
-                        if (   $role_name eq 'organization_master'
-                            && $user_data->{_hidden_data}->{user}
-                            ->{is_super_admin} == 0 )
-                        {
-                            $groups =
-                              Daedalus::Organizations::Manager::get_organization_groups(
-                                $c,
-                                $organization->{_hidden_data}->{organization}
-                                  ->{id}
-                              );
-
-                            $count_roles =
-                              Daedalus::OrganizationGroups::Manager::count_roles(
-                                $c, $groups->{data}, 'organization_master' );
-                            if ( $count_roles lt 2 ) {
-                                $removal_allowed        = 0;
-                                $response->{status}     = 0;
-                                $response->{error_code} = 400;
-                                $response->{message} =
-'Cannot remove this role, no more admin roles will left in this organization.';
-                            }
-                        }
-                        if ($removal_allowed) {
-                            $response =
-                              Daedalus::Organizations::Manager::remove_role_from_organization_group(
-                                $c,
-                                $group->{_hidden_data}->{$group_token}->{id},
-                                $available_roles->{_hidden_data}->{$role_name}
-                                  ->{id}
-                              );
-                            $response->{error_code} = 400;
-                        }
-                    }
-                    else {
-                        $response->{status} = 0;
-                        $response->{message} =
-                          "Required role is not assigned to this group.";
-                        $response->{error_code} = 400;
-
-                    }
-                }
-
-            }
+            );
         }
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 
 }
 
@@ -849,6 +913,7 @@ Required data:   - Organation token   - Group token   - User Token
 sub add_user_to_group : Path('/organization/addusertogroup') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 add_user_to_group_POST
@@ -868,9 +933,6 @@ sub add_user_to_group_POST {
 
     my $group;
     my $group_token;
-
-    my $required_user;
-    my $required_user_data;
 
     my $user_email;
     my $target_user;
@@ -907,7 +969,8 @@ sub add_user_to_group_POST {
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
           $authorization_and_validatation->{data}->{'registered_user_token'};
-        $group_token = $authorization_and_validatation->{data}->{required_data}
+        $group_token =
+          $authorization_and_validatation->{data}->{required_data}
           ->{group_token};
 
         $user_email = $target_user->{data}->{user}->{'e-mail'};
@@ -919,7 +982,7 @@ sub add_user_to_group_POST {
         if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
-            $response->{error_code} = 400;
+            $response->{error_code} = $bad_request;
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
@@ -927,7 +990,7 @@ sub add_user_to_group_POST {
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
-                $response->{error_code} = 400;
+                $response->{error_code} = $bad_request;
             }
             else {
 
@@ -942,7 +1005,7 @@ sub add_user_to_group_POST {
                     $response->{status} = 0;
                     $response->{message} =
                       "Required user is already assigned to this group.";
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                 }
                 else {
                     $response =
@@ -958,7 +1021,7 @@ sub add_user_to_group_POST {
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 
 }
 
@@ -975,9 +1038,10 @@ still allowed to perform this action.
 
 =cut
 
-sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(3) :
-  ActionClass('REST') {
+sub remove_user_group : Path('/organization/removeuserfromgroup') : Args(3)
+  : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 remove_user_group_DELETE
@@ -1041,7 +1105,8 @@ sub remove_user_group_DELETE {
         $organization = $authorization_and_validatation->{data}->{organization};
         $target_user =
           $authorization_and_validatation->{data}->{'registered_user_token'};
-        $group_token = $authorization_and_validatation->{data}->{required_data}
+        $group_token =
+          $authorization_and_validatation->{data}->{required_data}
           ->{group_token};
         $user_email = $target_user->{data}->{user}->{'e-mail'};
 
@@ -1052,20 +1117,18 @@ sub remove_user_group_DELETE {
         if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
-            $response->{error_code} = 400;
+            $response->{error_code} = $bad_request;
         }
         else {
             if (
-                #grep( /^$user_email$/,
-                #    @{ $group->{data}->{$group_token}->{users} } )
                 exists(
                     $group->{data}->{$group_token}->{users}->{$user_email}
                 )
               )
             {
                 if (
-                    grep ( /^organization_master$/,
-                        @{ $group->{data}->{$group_token}->{roles} } )
+                    any { /^organization_master$/sxm }
+                    uniq @{ $group->{data}->{$group_token}->{roles} }
                   )
                 {
                     $groups =
@@ -1075,7 +1138,7 @@ sub remove_user_group_DELETE {
                     $count_organization_admins =
                       Daedalus::OrganizationGroups::Manager::count_organization_admins(
                         $c, $groups->{data}, 'organization_master' );
-                    if (   $count_organization_admins lt 2
+                    if (   $count_organization_admins < 2
                         && $user_data->{_hidden_data}->{user}->{is_super_admin}
                         == 0 )
                     {
@@ -1090,11 +1153,11 @@ sub remove_user_group_DELETE {
                         $group->{_hidden_data}->{$group_token}->{id},
                         $target_user->{_hidden_data}->{user}->{id}
                       );
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                 }
                 else {
                     $response->{status}     = 0;
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                     $response->{message} =
 'Cannot remove this user, no more admin users will left in this organization.';
 
@@ -1104,7 +1167,7 @@ sub remove_user_group_DELETE {
                 $response->{status} = 0;
                 $response->{message} =
                   'Required user does not belong to this group.';
-                $response->{error_code} = 400;
+                $response->{error_code} = $bad_request;
 
             }
         }
@@ -1112,7 +1175,7 @@ sub remove_user_group_DELETE {
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 remove_organization_group
@@ -1128,9 +1191,11 @@ are still allowed to perform this action.
 
 =cut
 
-sub remove_organization_group : Path('/organization/removeorganizationgroup') :
-  Args(2) : ActionClass('REST') {
+sub remove_organization_group :
+  Path('/organization/removeorganizationgroup') : Args(2) :
+  ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 remove_organization_group_DELETE
@@ -1185,7 +1250,8 @@ sub remove_organization_group_DELETE {
     else {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
-        $group_token  = $authorization_and_validatation->{data}->{required_data}
+        $group_token =
+          $authorization_and_validatation->{data}->{required_data}
           ->{group_token};
 
         $group =
@@ -1195,7 +1261,7 @@ sub remove_organization_group_DELETE {
         if ( !exists $group->{data}->{$group_token} ) {
             $response->{status}     = 0;
             $response->{message}    = "Required group does not exist.";
-            $response->{error_code} = 400;
+            $response->{error_code} = $bad_request;
         }
         else {
             if ( $group->{_hidden_data}->{$group_token}->{organization_id} !=
@@ -1203,12 +1269,12 @@ sub remove_organization_group_DELETE {
             {
                 $response->{status}     = 0;
                 $response->{message}    = "Required group does not exist.";
-                $response->{error_code} = 400;
+                $response->{error_code} = $bad_request;
             }
             else {
                 if (
-                    grep ( /^organization_master$/,
-                        @{ $group->{data}->{$group_token}->{roles} } )
+                    any { /^organization_master$/sxm }
+                    uniq @{ $group->{data}->{$group_token}->{roles} }
                   )
                 {
                     $groups =
@@ -1219,7 +1285,7 @@ sub remove_organization_group_DELETE {
                     $count_organization_admins =
                       Daedalus::OrganizationGroups::Manager::count_organization_admins(
                         $c, $groups->{data}, 'organization_master' );
-                    if (   $count_organization_admins lt 2
+                    if (   $count_organization_admins < 2
                         && $user_data->{_hidden_data}->{user}->{is_super_admin}
                         == 0 )
                     {
@@ -1232,11 +1298,11 @@ sub remove_organization_group_DELETE {
                       Daedalus::OrganizationGroups::Manager::remove_organization_group(
                         $c, $group->{_hidden_data}->{$group_token}->{id},
                       );
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                 }
                 else {
                     $response->{status}     = 0;
-                    $response->{error_code} = 400;
+                    $response->{error_code} = $bad_request;
                     $response->{message} =
 'Cannot remove this group, no more admin users will left in this organization.';
                 }
@@ -1246,11 +1312,30 @@ sub remove_organization_group_DELETE {
     }
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
-    $self->return_response( $c, $response );
-
+    return $self->return_response( $c, $response );
 }
 
 =encoding utf8
+
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=cut
 
 =head1 AUTHOR
 
