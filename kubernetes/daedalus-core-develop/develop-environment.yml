@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: daedalusproject/base_redis_server:201905230353
+        image: daedalusproject/base_redis_server:201906021138
         command: ["redis-server"]
         args: ["--protected-mode no"]
         resources:
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: rabbitmq
-        image: daedalusproject/base_rabbitmq_server:201905230353
+        image: daedalusproject/base_rabbitmq_server:201906021138
         env:
         - name: RABBITMQ_ENABLED_PLUGINS_FILE
           value: /etc/rabbitmq/enabled_plugins
@@ -140,7 +140,7 @@ metadata:
 spec:
   containers:
   - name: percona-server-develop
-    image: daedalusproject/base_percona_server:201905230353
+    image: daedalusproject/base_percona_server:201906021138
     ports:
     - containerPort: 3306
     envFrom:
