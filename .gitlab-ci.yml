@@ -29,7 +29,6 @@ integration_tests:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
         - perl --version
-        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - make test
@@ -58,7 +57,6 @@ cover:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
         - perl --version
-        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - cover -test
