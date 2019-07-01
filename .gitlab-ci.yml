@@ -17,7 +17,7 @@ perlcritic:
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:201906021138
+    image: daedalusproject/base_daedaluscore
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -29,7 +29,6 @@ integration_tests:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
         - perl --version
-        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - make test
@@ -46,7 +45,7 @@ integration_tests:
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:201906021138
+    image: daedalusproject/base_daedaluscore
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -58,11 +57,9 @@ cover:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
         - perl --version
-        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - cover -test
-        - cover -report codecov
     coverage: /Total\s+.+\s(\d+\.\d+?)$/
     after_script:
         - declare -a -g REQUIRED_VARIABLES
@@ -78,7 +75,7 @@ cover:
 
 create_package:
     stage: package
-    image: daedalusproject/base_deb_perl_builder:201906021138
+    image: daedalusproject/base_deb_perl_builder:201906201803
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
         - mkdir package
@@ -94,7 +91,7 @@ create_package:
 
 upload_package_to_testing_repo:
     stage: update_repo
-    image: daedalusproject/base_curl:201906021138
+    image: daedalusproject/base_curl:201906201803
     script:
         - SNAPSHOTDATE=$(date +%G%m%d%k%M%S)
         - PACKAGE=$(ls package)
@@ -115,7 +112,7 @@ upload_package_to_testing_repo:
 
 create_develop_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201906021138
+    image: daedalusproject/base_docker:201906201803
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop
@@ -141,7 +138,7 @@ create_develop_docker_image:
 
 create_develop_nginx_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201906021138
+    image: daedalusproject/base_docker:201906201803
     script:
         - echo "set_real_ip_from  $KUBE_NETWORK;" > realip.conf
         - echo "real_ip_header    X-Forwarded-For;" >> realip.conf
@@ -170,7 +167,7 @@ create_develop_nginx_docker_image:
 
 develop_environment:
     stage: deploy
-    image: daedalusproject/base_kubectl:201906021138
+    image: daedalusproject/base_kubectl:201906201803
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
