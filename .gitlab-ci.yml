@@ -10,7 +10,7 @@ stages:
 
 perlcritic:
     stage: lint
-	image: daedalusproject/base_perl_utils:201906201803
+    image: daedalusproject/base_perl_utils:201906201803
     script:
         - perlcritic --cruel lib
     tags:
@@ -18,7 +18,7 @@ perlcritic:
 
 integration_tests:
     stage: test
-	image: daedalusproject/base_daedaluscore:201906201803
+    image: daedalusproject/base_daedaluscore:201906201803
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -46,7 +46,7 @@ integration_tests:
 
 cover:
     stage: coverage
-	image: daedalusproject/base_daedaluscore:201906201803
+    image: daedalusproject/base_daedaluscore:201906201803
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
