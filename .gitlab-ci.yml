@@ -5,11 +5,12 @@ stages:
     - package
     - update_repo
     - docker_image
+    - private_key
     - deploy
 
 perlcritic:
     stage: lint
-    image: daedalusproject/base_perl_utils
+    image: daedalusproject/base_perl_utils:201906201803
     script:
         - perlcritic --cruel lib
     tags:
@@ -17,7 +18,7 @@ perlcritic:
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore
+    image: daedalusproject/base_daedaluscore:201906201803
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -45,7 +46,7 @@ integration_tests:
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore
+    image: daedalusproject/base_daedaluscore:201906201803
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -165,12 +166,28 @@ create_develop_nginx_docker_image:
     only:
     - /^develop$/
 
+decrypt_develop_private_key:
+    stage: private_key
+    image: daedalusproject/base_openssl:201906201803
+    script:
+        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
+        - mkdir secret_key
+        - mv kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key secret_key/daedalus_core_rsa_key
+    artifacts:
+        paths:
+        - secret_key
+        expire_in: 5 minutes
+    tags:
+    - docker_build
+    only:
+    - /^develop$/
+
 develop_environment:
     stage: deploy
     image: daedalusproject/base_kubectl:201906201803
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
-        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
+        - mv secret_key/daedalus_core_rsa_key kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
         - rm -f kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc
         - sed -i -e "s/__PKG_VERSION__/$PKG_VERSION/g" kubernetes/daedalus-core-develop/develop-environment.yml
         - declare -a -g REQUIRED_VARIABLES
@@ -186,6 +203,7 @@ develop_environment:
     - upload_package_to_testing_repo
     - create_develop_docker_image
     - create_develop_nginx_docker_image
+    - decrypt_develop_private_key
     tags:
     - kubernetes
     only:
