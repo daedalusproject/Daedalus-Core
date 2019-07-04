@@ -31,6 +31,7 @@ sub ask_filed {
     my $error = 0;
 
     my $pwcheck;
+    my $response;
 
     do {
         $error = 0;
@@ -67,7 +68,7 @@ sub ask_filed {
         elsif ( $options->{field_type} eq "email" ) {
             if ( !( Email::Valid->address($field) ) ) {
                 $response->{status} = "Failed";
-                $response->{message} .= "No $data supplied.";
+                $response->{message} .= "No $options->{field_name} supplied.";
             }
         }
     } while ($error);
@@ -173,6 +174,16 @@ my $password = fill_field(
     }
 );
 
+my $organization_name = fill_field(
+    {
+        field_name   => 'name',
+        field_type   => 'name',
+        secret       => 0,
+        message      => "Enter your organization name",
+        confirmation => 0,
+    }
+);
+
 my $pass     = new String::Random;
 my $patern32 = "sssssssssssssssssssssssssssssss";
 my $patern64 =
@@ -185,7 +196,7 @@ my $auth_token = $pass->randpattern($patern64);
 my $salt       = $pass->randpattern($patern256);
 $password = sha512_base64("$salt$password");
 
-$schema->resultset('User')->create(
+my $user = $schema->resultset('User')->create(
     {
         name       => $name,
         surname    => $surname,
@@ -196,9 +207,71 @@ $schema->resultset('User')->create(
         expires    => "3000-01-01",
         active     => 1,
         auth_token => $auth_token,
-        is_admin   => 1,
+    }
+);
+
+# Create Roles
+
+my $organization_master_role =
+  $schema->resultset('Role')->create( { role_name => "organization_master", } );
+$schema->resultset('Role')->create( { role_name => "project_caretaker", } );
+$schema->resultset('Role')->create(
+    {
+        role_name => "health_watcher",
+    }
+);
+$schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
+$schema->resultset('Role')->create( { role_name => "maze_master", } );
+my $fireman =
+  $schema->resultset('Role')->create( { role_name => "fireman", } );
+$schema->resultset('Role')->create( { role_name => "fireman_commando", } );
+my $daedalus_manager =
+  $schema->resultset('Role')->create( { role_name => "daedalus_manager", } );
+
+# Create organization
+
+my $organization = $schema->resultset('Organization')->create(
+    {
+        name  => $organization_name,
+        token => $pass->randpattern($patern32)
+    }
+);
+
+$schema->resultset('UserOrganization')->create(
+    {
+        organization_id => $organization->id,
+        user_id         => $user->id,
+    }
+);
+
+my $organization_group = $schema->resultset('OrganizationGroup')->create(
+    {
+        organization_id => $organization->id,
+        group_name      => "$organization_name Super Administrators",
+        token           => $pass->randpattern($patern32),
+    }
+);
+
+my $organization_group_role =
+  $schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $organization_group->id,
+        role_id  => $daedalus_manager->id,
+    }
+  );
+
+$schema->resultset('OrganizationGroupRole')->create(
+    {
+        group_id => $organization_group->id,
+        role_id  => $organization_master_role->id,
+    }
+);
+
+$schema->resultset('OrganizationUsersGroup')->create(
+    {
+        group_id => $organization_group->id,
+        user_id  => $user->id,
     }
 );
 
 print "Admin user created.\n";
-
