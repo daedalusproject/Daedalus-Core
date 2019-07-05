@@ -399,12 +399,24 @@ sub check_required_data {
     else {
         $value = $c->{request}->{data}->{$required_data_name};
     }
-    if ( $data_properties->{required} == 1 ) {
-        if ( !( defined $value ) ) {
-            $response->{status}     = 0;
-            $response->{error_code} = $bad_request;
-            $response->{message} =
-              $response->{message} . " No $required_data_name provided.";
+
+    if (   defined($value)
+        && $data_properties->{forbid_empty} == 1
+        && length($value) == 0 )
+    {
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+        $response->{message} =
+          $response->{message} . " $required_data_name field is empty.";
+    }
+    else {
+        if ( $data_properties->{required} == 1 ) {
+            if ( !( defined $value ) ) {
+                $response->{status}     = 0;
+                $response->{error_code} = $bad_request;
+                $response->{message} =
+                  $response->{message} . " No $required_data_name provided.";
+            }
         }
     }
 

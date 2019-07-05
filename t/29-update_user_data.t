@@ -170,7 +170,7 @@ is( $check_name_and_surname_json->{data}->{user}->{name}, 'Felix', );
 
 is( $check_name_and_surname_json->{data}->{user}->{surname}, 'Rodriguez', );
 
-my $update_invalidvalid_number = request(
+my $update_invalid_number = request(
     PUT $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -181,13 +181,12 @@ my $update_invalidvalid_number = request(
     )
 );
 
-is( $update_invalidvalid_number->code(), 400, );
+is( $update_invalid_number->code(), 400, );
 
-my $update_invalidvalid_number_json =
-  decode_json( $update_invalidvalid_number->content );
+my $update_invalid_number_json = decode_json( $update_invalid_number->content );
 
-is( $update_invalidvalid_number_json->{status},  0, );
-is( $update_invalidvalid_number_json->{message}, 'Invalid phone.', );
+is( $update_invalid_number_json->{status},  0, );
+is( $update_invalid_number_json->{message}, 'Invalid phone.', );
 
 $check_name_and_surname = request(
     GET $endpoint,
@@ -282,6 +281,47 @@ is( $check_all_data_json->{data}->{user}->{name}, 'Curro', );
 is( $check_all_data_json->{data}->{user}->{surname}, 'Jimenez', );
 
 is( $check_all_data_json->{data}->{user}->{phone}, '+34962525478', );
+
+my $update_empty_data = request(
+    PUT $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            name    => '',
+            surname => '',
+        }
+    )
+);
+
+is( $update_empty_data->code(), 400, );
+
+my $update_empty_data_json = decode_json( $update_empty_data->content );
+
+is( $update_empty_data_json->{status}, 0, );
+is(
+    $update_empty_data_json->{message},
+    'name field is empty. surname field is empty.',
+);
+
+my $check_empty_data = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $check_empty_data->code(), 200, );
+
+my $check_empty_data_json = decode_json( $check_empty_data->content );
+
+is( $check_empty_data_json->{status},  1, );
+is( $check_empty_data_json->{message}, undef, );
+
+is( $check_empty_data_json->{data}->{user}->{name}, 'Curro', );
+
+is( $check_empty_data_json->{data}->{user}->{surname}, 'Jimenez', );
+
+is( $check_empty_data_json->{data}->{user}->{phone}, '+34962525478', );
 
 done_testing();
 
