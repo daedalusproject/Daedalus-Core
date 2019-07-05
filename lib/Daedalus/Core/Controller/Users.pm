@@ -608,20 +608,24 @@ sub user_data_PUT {
 
     my $required_data = {
         name => {
-            type     => 'string',
-            required => 0,
+            type         => 'string',
+            required     => 0,
+            forbid_empty => 1,
         },
         surname => {
-            type     => "string",
-            required => 0,
+            type         => "string",
+            required     => 0,
+            forbid_empty => 1,
         },
         phone => {
-            type     => "phone",
-            required => 0,
+            type         => "phone",
+            required     => 0,
+            forbid_empty => 1,
         },
         password => {
-            type     => "password",
-            required => 0,
+            type         => "password",
+            required     => 0,
+            forbid_empty => 1,
         },
     };
 
