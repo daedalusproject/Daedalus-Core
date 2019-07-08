@@ -24,13 +24,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp|TimeStamp>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<users>
 
@@ -147,49 +145,49 @@ __PACKAGE__->add_columns(
     "email",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 255
     },
     "name",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 50
     },
     "surname",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 100
     },
     "phone",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 1,
         size          => 22
     },
     "api_key",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 33
     },
     "password",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 128
     },
     "salt",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 256
     },
@@ -216,14 +214,14 @@ __PACKAGE__->add_columns(
     "auth_token",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 64
     },
     "token",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 33
     },
@@ -329,8 +327,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GF+mFywsZHJagY+U8Gy3mA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-07 13:34:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HLxkHWJdNb0ei729v1AB7A
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

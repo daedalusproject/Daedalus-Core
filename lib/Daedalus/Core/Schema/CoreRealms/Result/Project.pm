@@ -24,13 +24,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp|TimeStamp>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<projects>
 
@@ -60,6 +58,13 @@ __PACKAGE__->table("projects");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 organization_owner
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_foreign_key: 1
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -73,7 +78,7 @@ __PACKAGE__->add_columns(
     "name",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 200
     },
@@ -82,6 +87,13 @@ __PACKAGE__->add_columns(
         data_type                 => "datetime",
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
+    },
+    "organization_owner",
+    {
+        data_type      => "bigint",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
     },
 );
 
@@ -98,6 +110,21 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
+
+=head2 organization_owner
+
+Type: belongs_to
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization|Organization>
+
+=cut
+
+__PACKAGE__->belongs_to(
+    "organization_owner",
+    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
+    { id            => "organization_owner" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
+);
 
 =head2 organization_project_organizations
 
@@ -144,8 +171,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2EY1go1usoaH7t2hc7TGWA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-07 13:34:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FLuZQBoI/8l+nqIgU3tA+A
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 

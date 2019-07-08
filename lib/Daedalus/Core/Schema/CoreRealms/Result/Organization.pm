@@ -24,13 +24,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp|TimeStamp>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<organizations>
 
@@ -86,7 +84,7 @@ __PACKAGE__->add_columns(
     "name",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 100
     },
@@ -105,7 +103,7 @@ __PACKAGE__->add_columns(
     "token",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 33
     },
@@ -170,6 +168,21 @@ __PACKAGE__->has_many(
     { cascade_copy                        => 0, cascade_delete => 0 },
 );
 
+=head2 projects
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Project|Project>
+
+=cut
+
+__PACKAGE__->has_many(
+    "projects",
+    "Daedalus::Core::Schema::CoreRealms::Result::Project",
+    { "foreign.organization_owner" => "self.id" },
+    { cascade_copy                 => 0, cascade_delete => 0 },
+);
+
 =head2 user_organizations
 
 Type: has_many
@@ -185,8 +198,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Y6vnKdHPKmDsM8HZgxUwsg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-07 13:34:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Vah+yRTpS/iem8IWS4h2Ig
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

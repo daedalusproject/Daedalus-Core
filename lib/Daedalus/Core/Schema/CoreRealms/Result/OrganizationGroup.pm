@@ -24,13 +24,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp|TimeStamp>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<organization_groups>
 
@@ -94,7 +92,7 @@ __PACKAGE__->add_columns(
     "group_name",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 255
     },
@@ -107,7 +105,7 @@ __PACKAGE__->add_columns(
     "token",
     {
         data_type     => "varchar",
-        default_value => q{},
+        default_value => qw(),
         is_nullable   => 0,
         size          => 33
     },
@@ -140,21 +138,6 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->add_unique_constraint( "unique_token", ["token"] );
 
 =head1 RELATIONS
-
-=head2 organization_users_groups
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup|OrganizationUsersGroup>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_users_groups",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup",
-    { "foreign.group_id" => "self.id" },
-    { cascade_copy       => 0, cascade_delete => 0 },
-);
 
 =head2 organization
 
@@ -201,8 +184,23 @@ __PACKAGE__->has_many(
     { cascade_copy                              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:s9w4Q0165ONqKY8YkWpx8w
+=head2 organization_users_groups
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup|OrganizationUsersGroup>
+
+=cut
+
+__PACKAGE__->has_many(
+    "organization_users_groups",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup",
+    { "foreign.group_id" => "self.id" },
+    { cascade_copy       => 0, cascade_delete => 0 },
+);
+
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-07 13:34:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Tgix4f06a5nwwRiuPIe0fg
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
