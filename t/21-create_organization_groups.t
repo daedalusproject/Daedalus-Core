@@ -93,7 +93,7 @@ is( $failed_no_admin_json->{status}, 0, );
 is(
     $failed_no_admin_json->{message},
     'Invalid organization token.',
-    "Actually your aer not and admin user but API is not going to tell you."
+    "Actually your are not an admin user but API is not going to tell you."
 );
 
 my $admin_success = request(
