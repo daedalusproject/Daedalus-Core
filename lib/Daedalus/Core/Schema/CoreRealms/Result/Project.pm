@@ -126,36 +126,6 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-=head2 organization_project_organizations
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject|OrganizationProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_project_organizations",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject",
-    { "foreign.organization_id" => "self.id" },
-    { cascade_copy              => 0, cascade_delete => 0 },
-);
-
-=head2 organization_project_projects
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject|OrganizationProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_project_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject",
-    { "foreign.project_id" => "self.id" },
-    { cascade_copy         => 0, cascade_delete => 0 },
-);
-
 =head2 organization_share_projects
 
 Type: has_many
@@ -171,8 +141,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-07 13:34:55
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FLuZQBoI/8l+nqIgU3tA+A
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-08 06:29:24
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:y9EAQ/NTvaUAkfB+ATmILg
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
