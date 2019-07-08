@@ -92,7 +92,7 @@ __PACKAGE__->add_columns(
     "group_name",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 255
     },
@@ -105,7 +105,7 @@ __PACKAGE__->add_columns(
     "token",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 33
     },

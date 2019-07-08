@@ -13,7 +13,7 @@ Information system which also manages all other services, clients, organizations
 Environment variable *APP_TEST* must exists and be set to *1*.
 
 ``` bash
-rm META.yml ; 
+rm META.yml
 rm -f /var/tmp/daedalus_core_realms.db
 perl script/daedalus_core_deploy.pl SQLite /var/tmp/daedalus_core_realms.db
 perl t/script/DatabaseSetUpTearDown.pm

@@ -145,49 +145,49 @@ __PACKAGE__->add_columns(
     "email",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 255
     },
     "name",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 50
     },
     "surname",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 100
     },
     "phone",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 1,
         size          => 22
     },
     "api_key",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 33
     },
     "password",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 128
     },
     "salt",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 256
     },
@@ -214,14 +214,14 @@ __PACKAGE__->add_columns(
     "auth_token",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 64
     },
     "token",
     {
         data_type     => "varchar",
-        default_value => qw(),
+        default_value => q{},
         is_nullable   => 0,
         size          => 33
     },
