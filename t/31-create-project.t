@@ -109,23 +109,23 @@ my $failed_no_admin = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_name'       => 'megashopsblog',
+            'name'               => 'megashopsblog',
         }
     )
 );
 
-is( $failed_no_admin->code(), 400, );
+is( $failed_no_admin->code(), 403, );
 
 my $failed_no_admin_json = decode_json( $failed_no_admin->content );
 
 is( $failed_no_admin_json->{status}, 0, );
 is(
     $failed_no_admin_json->{message},
-    'Invalid organization token.',
-    "Actually your are not an admin user but API is not going to tell you."
+'Your organization roles does not match with the following roles: organization master.',
+    "You are not your organization admin"
 );
 
-my $failed_no_project_name = request(
+my $failed_no_name = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -134,13 +134,31 @@ my $failed_no_project_name = request(
     ),
 );
 
-is( $failed_no_project_name->code(), 400, );
+is( $failed_no_name->code(), 400, );
 #
-my $failed_no_project_name_json =
-  decode_json( $failed_no_project_name->content );
+my $failed_no_name_json = decode_json( $failed_no_name->content );
 
-is( $failed_no_project_name_json->{status},  0, );
-is( $failed_no_project_name_json->{message}, 'No project_name provided.', );
+is( $failed_no_name_json->{status},  0, );
+is( $failed_no_name_json->{message}, 'No name provided.', );
+
+my $failed_empty_name = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            name               => ''
+        }
+    ),
+);
+
+is( $failed_empty_name->code(), 400, );
+
+my $failed_empty_name_json = decode_json( $failed_empty_name->content );
+
+is( $failed_empty_name_json->{status},  0, );
+is( $failed_empty_name_json->{message}, 'name field is empty.', );
 
 my $failed_non_existent_organization_token = request(
     POST $endpoint,
@@ -149,7 +167,7 @@ my $failed_non_existent_organization_token = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942PAf',
-            'project_name'       => 'megashopsblog',
+            'name'               => 'megashopsblog',
         }
     )
 );
@@ -173,7 +191,7 @@ my $create_project_success = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_name'       => 'megashopsblog',
+            'name'               => 'megashopsblog',
         }
     )
 );
@@ -193,7 +211,7 @@ my $failed_project_with_same_name = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_name'       => 'megashopsblog',
+            'name'               => 'megashopsblog',
         }
     )
 );
@@ -217,19 +235,19 @@ my $failed_project_not_my_organization = request(
     Content       => encode_json(
         {
             'organization_token' => 'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',
-            'project_name'       => 'megashopsshop',
+            'name'               => 'megashopsshop',
         }
     )
 );
 
-is( $failed_project_with_same_name->code(), 400, );
+is( $failed_project_not_my_organization->code(), 400, );
 
-my $failed_project_with_same_name_json =
-  decode_json( $failed_project_with_same_name->content );
+my $failed_project_not_my_organization_json =
+  decode_json( $failed_project_not_my_organization->content );
 
-is( $failed_non_existent_organization_token_json->{status}, 0, );
-is( $failed_non_existent_organization_token_json->{message},
-    'Required project name already exists inside this organization.', "" );
+is( $failed_project_not_my_organization_json->{status}, 0, );
+is( $failed_project_not_my_organization_json->{message},
+    'Invalid organization token.', '' );
 
 my $superadmin_login = request(
     POST '/user/login',
@@ -261,7 +279,7 @@ my $superadmin_create_project_success = request(
         {
             'organization_token' =>
               'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    # Daedalus Project Token
-            'project_name' => 'DaedalusGorgon',
+            'name' => 'DaedalusGorgon',
         }
     )
 );
@@ -282,7 +300,7 @@ my $superadmin_create_duplicated_project_fail = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_name'       => 'megashopsshop',
+            'name'               => 'megashopsshop',
         }
     )
 );
@@ -304,7 +322,7 @@ my $superadmin_create_project_other_organization_success = request(
         {
             'organization_token' =>
               'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Daedalus Project Token
-            'project_name' => 'megashopsshop2',
+            'name' => 'megashopsshop2',
         }
     )
 );
@@ -320,4 +338,4 @@ is( $superadmin_create_project_other_organization_success_json->{message},
 
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
