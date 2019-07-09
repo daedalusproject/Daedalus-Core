@@ -19,7 +19,7 @@ use DatabaseSetUpTearDown;
 DatabaseSetUpTearDown::delete_database();
 DatabaseSetUpTearDown::create_database();
 
-my $endpoint = '/project';
+my $endpoint = '/project/create';
 
 my $non_admin_login_success = request(
     POST '/user/login',
