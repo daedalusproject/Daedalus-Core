@@ -65,6 +65,13 @@ __PACKAGE__->table("projects");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 token
+
+  data_type: 'varchar'
+  default_value: (empty string)
+  is_nullable: 0
+  size: 33
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -94,6 +101,13 @@ __PACKAGE__->add_columns(
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
+    },
+    "token",
+    {
+        data_type     => "varchar",
+        is_nullable   => 0,
+        default_value => q{},
+        , size => 33
     },
 );
 
@@ -141,8 +155,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-08 06:29:24
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:y9EAQ/NTvaUAkfB+ATmILg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 17:36:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9/XkgdjEH2YQk0jlQwxwBg
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
