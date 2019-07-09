@@ -300,7 +300,7 @@ my $superadmin_create_duplicated_project_fail = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'name'               => 'megashopsshop',
+            'name'               => 'megashopsblog',
         }
     )
 );

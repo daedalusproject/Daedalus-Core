@@ -23,6 +23,8 @@ use Daedalus::Utils::Constants qw(
 
 use namespace::clean -except => 'meta';
 
+use Data::Dumper;
+
 our $VERSION = '0.01';
 
 =head1 SYNOPSIS
@@ -50,18 +52,36 @@ sub create_project {
     my $organization_id = shift;
     my $project_name    = shift;
 
-    my $response;
+    my $response = {
+        status  => 0,
+        message => "",
+    };
 
-    my @pojects_rs =
+    my $pojects_rs =
       $c->model('CoreRealms::Project')
-      ->search( { organization_owner => $organization_id } )->all;
-
-    chomp $project_name;
-    if ( scalar @pojects_rs > 0 ) {
-
+      ->find(
+        { organization_owner => $organization_id, name => $project_name } );
+    if ($pojects_rs) {
+        $response->{error_code} = $bad_request;
+        $response->{message} =
+          "Required project name already exists inside this organization.";
     }
     else {
-        $c->model('CoreRealms::Project');
+        my $project = $c->model('CoreRealms::Project')->create(
+            {
+                name               => $project_name,
+                organization_owner => $organization_id
+            }
+        );
+        $response->{status}       = 1;
+        $response->{message}      = "Project Created.";
+        $response->{data}         = { project => { name => $project_name } };
+        $response->{_hidden_data} = {
+            project => {
+                id                 => $project->id,
+                organization_owner => $organization_id
+            }
+        };
     }
 
     return $response;
