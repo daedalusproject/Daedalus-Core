@@ -10,8 +10,6 @@ use Daedalus::Utils::Constants qw(
   $bad_request
 );
 
-use Data::Dumper;
-
 use base qw(Daedalus::Core::Controller::REST);
 
 use Daedalus::Projects::Manager;

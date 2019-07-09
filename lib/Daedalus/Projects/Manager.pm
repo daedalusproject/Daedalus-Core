@@ -23,8 +23,6 @@ use Daedalus::Utils::Constants qw(
 
 use namespace::clean -except => 'meta';
 
-use Data::Dumper;
-
 our $VERSION = '0.01';
 
 =head1 SYNOPSIS
@@ -54,7 +52,7 @@ sub create_project {
 
     my $response = {
         status  => 0,
-        message => "",
+        message => q{},
     };
 
     my $pojects_rs =
