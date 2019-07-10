@@ -204,6 +204,11 @@ my $create_project_success_json =
 is( $create_project_success_json->{status}, 1, );
 is( $create_project_success_json->{message}, 'Project Created.', "Success" );
 
+isnt( $create_project_success_json->{data}->{project}, undef, );
+is( $create_project_success_json->{data}->{project}->{name}, 'megashopsblog' );
+isnt( $create_project_success_json->{data}->{project}->{token}, undef, );
+is( $create_project_success_json->{_hidden_data}, undef );
+
 my $failed_project_with_same_name = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -293,6 +298,13 @@ is( $superadmin_create_project_success_json->{status}, 1, );
 is( $superadmin_create_project_success_json->{message},
     'Project Created.', "Success" );
 
+isnt( $superadmin_create_project_success_json->{data}->{project}, undef, );
+is( $superadmin_create_project_success_json->{data}->{project}->{name},
+    'DaedalusGorgon' );
+isnt( $superadmin_create_project_success_json->{data}->{project}->{token},
+    undef, );
+isnt( $superadmin_create_project_success_json->{_hidden_data}, undef );
+
 my $superadmin_create_duplicated_project_fail = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -336,6 +348,26 @@ is( $superadmin_create_project_other_organization_success_json->{status}, 1, );
 is( $superadmin_create_project_other_organization_success_json->{message},
     'Project Created.', "Success" );
 
+isnt(
+    $superadmin_create_project_other_organization_success_json->{data}
+      ->{project},
+    undef,
+);
+is(
+    $superadmin_create_project_other_organization_success_json->{data}
+      ->{project}->{name},
+    'megashopsshop2'
+);
+isnt(
+    $superadmin_create_project_other_organization_success_json->{data}
+      ->{project}->{token},
+    undef,
+);
+isnt(
+    $superadmin_create_project_other_organization_success_json->{_hidden_data},
+    undef
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();
