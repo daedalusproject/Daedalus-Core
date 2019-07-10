@@ -92,8 +92,9 @@ sub create_organization_POST {
             },
             required_data => {
                 'name' => {
-                    name     => "string",
-                    required => 1,
+                    name         => "string",
+                    required     => 1,
+                    forbid_empty => 1,
                 },
             }
         }
@@ -528,8 +529,9 @@ sub create_organization_group_POST {
                     required => 1,
                 },
                 group_name => {
-                    type     => "string",
-                    required => 1,
+                    type         => "string",
+                    required     => 1,
+                    forbid_empty => 1,
                 },
             }
         }

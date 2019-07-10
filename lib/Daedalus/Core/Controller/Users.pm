@@ -177,16 +177,19 @@ sub register_new_user_POST {
             },
             required_data => {
                 'e-mail' => {
-                    type     => "e-mail",
-                    required => 1,
+                    type         => "e-mail",
+                    required     => 1,
+                    forbid_empty => 1,
                 },
                 name => {
-                    type     => "string",
-                    required => 1,
+                    type         => "string",
+                    required     => 1,
+                    forbid_empty => 1,
                 },
                 surname => {
-                    type     => "string",
-                    required => 1,
+                    type         => "string",
+                    required     => 1,
+                    forbid_empty => 1,
                 },
             }
         }

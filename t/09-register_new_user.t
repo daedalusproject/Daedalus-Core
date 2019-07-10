@@ -300,7 +300,7 @@ my $failed_empty_fields_json = decode_json( $failed_empty_fields->content );
 is( $failed_empty_fields_json->{status}, 0, );
 is(
     $failed_empty_fields_json->{message},
-    'name field is empty. e-mail field is empty. surname filed is empty.',
+    'e-mail field is empty. name field is empty. surname field is empty.',
 );
 
 my $failed_empty_name = request(
