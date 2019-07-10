@@ -104,6 +104,24 @@ my $failed_no_name_json = decode_json( $failed_no_name->content );
 is( $failed_no_name_json->{status},  0, );
 is( $failed_no_name_json->{message}, 'No name provided.', );
 
+my $failed_empty_name = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            name => ''
+        }
+    ),
+);
+
+is( $failed_empty_name->code(), 400, );
+
+my $failed_empty_name_json = decode_json( $failed_empty_name->content );
+
+is( $failed_empty_name_json->{status},  0, );
+is( $failed_empty_name_json->{message}, 'name field is empty.', );
+
 my $success = request(
     POST '/organization/create',
     Content_Type  => 'application/json',
