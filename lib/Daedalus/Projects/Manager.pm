@@ -16,9 +16,7 @@ use Daedalus::Utils::Crypt;
 use List::MoreUtils qw(any uniq);
 use Daedalus::Utils::Constants qw(
   $bad_request
-  $forbidden
-  $organization_token_length
-  $organization_group_token_length
+  $project_token_length
 );
 
 use namespace::clean -except => 'meta';
@@ -55,6 +53,8 @@ sub create_project {
         message => q{},
     };
 
+    my $project_token;
+
     my $pojects_rs =
       $c->model('CoreRealms::Project')
       ->find(
@@ -65,15 +65,20 @@ sub create_project {
           "Required project name already exists inside this organization.";
     }
     else {
+        $project_token =
+          Daedalus::Utils::Crypt::generate_random_string($project_token_length);
+
         my $project = $c->model('CoreRealms::Project')->create(
             {
                 name               => $project_name,
-                organization_owner => $organization_id
+                organization_owner => $organization_id,
+                token              => $project_token
             }
         );
-        $response->{status}       = 1;
-        $response->{message}      = "Project Created.";
-        $response->{data}         = { project => { name => $project_name } };
+        $response->{status}  = 1;
+        $response->{message} = "Project Created.";
+        $response->{data} =
+          { project => { name => $project_name, token => $project_token } };
         $response->{_hidden_data} = {
             project => {
                 id                 => $project->id,

@@ -30,6 +30,7 @@ our @EXPORT_OK = qw(
   $user_token_length
   $organization_token_length
   $organization_group_token_length
+  $project_token_length
 );
 
 use namespace::clean -except => 'meta';
@@ -127,6 +128,14 @@ Constant that sets organization group Token length (32)
 const our $organization_group_token_length => 32;
 
 =encoding utf8
+
+=head2 Project token lenght
+
+Constant that sets projects Token length (32)
+
+=cut
+
+const our $project_token_length => 32;
 
 =head1 METHODS
 =head1 SEE ALSO
