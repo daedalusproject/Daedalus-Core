@@ -24,13 +24,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp|TimeStamp>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<projects>
 
@@ -60,6 +58,20 @@ __PACKAGE__->table("projects");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 organization_owner
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 token
+
+  data_type: 'varchar'
+  default_value: (empty string)
+  is_nullable: 0
+  size: 33
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -83,6 +95,20 @@ __PACKAGE__->add_columns(
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
+    "organization_owner",
+    {
+        data_type      => "bigint",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
+    },
+    "token",
+    {
+        data_type     => "varchar",
+        default_value => q{},
+        is_nullable   => 0,
+        size          => 33
+    },
 );
 
 =head1 PRIMARY KEY
@@ -97,36 +123,35 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<token_index>
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "token_index", ["token"] );
+
 =head1 RELATIONS
 
-=head2 organization_project_organizations
+=head2 organization_owner
 
-Type: has_many
+Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject|OrganizationProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_project_organizations",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject",
-    { "foreign.organization_id" => "self.id" },
-    { cascade_copy              => 0, cascade_delete => 0 },
-);
-
-=head2 organization_project_projects
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject|OrganizationProject>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization|Organization>
 
 =cut
 
-__PACKAGE__->has_many(
-    "organization_project_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationProject",
-    { "foreign.project_id" => "self.id" },
-    { cascade_copy         => 0, cascade_delete => 0 },
+__PACKAGE__->belongs_to(
+    "organization_owner",
+    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
+    { id            => "organization_owner" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
 =head2 organization_share_projects
@@ -144,8 +169,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2EY1go1usoaH7t2hc7TGWA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:09:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZeEZBoo1cXVc4bHZibIcsA
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 

@@ -1,5 +1,4 @@
 package Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup;
-
 use utf8;
 
 # Created by DBIx::Class::Schema::Loader
@@ -25,13 +24,11 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
-=item * L<DBIx::Class::TimeStamp|TimeStamp>
-
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<organization_users_groups>
 
@@ -132,8 +129,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KbgQf1S2RjBKSRSG0REOEg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:02:16
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5xEx8J6A6TvHmZ1fT4Xv7Q
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 

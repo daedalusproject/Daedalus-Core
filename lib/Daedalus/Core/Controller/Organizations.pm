@@ -61,7 +61,7 @@ Create Organization.
 
 Only admin users are allowed to perform this operation.
 
-Required data:   - Organation name
+Required data:   - Organization name
 
 =cut
 
@@ -1330,12 +1330,6 @@ See debian/control
 Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
 
 Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
-
-=head1 AUTHOR
-
-Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
-
-=cut
 
 =head1 AUTHOR
 
