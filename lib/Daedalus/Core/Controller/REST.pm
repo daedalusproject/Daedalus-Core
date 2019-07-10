@@ -47,37 +47,9 @@ L<https://docs.daedalus-project.io/|Daedalus Project Docs>
 
 $VERSION
 
-
 =head1 SUBROUTINES/METHODS
 
 =cut
-
-=head2 ping
-
-Returns "pong"
-
-=cut
-
-sub ping : Path('/ping') : Args(0) : ActionClass('REST') {
-    my ( $self, $c ) = @_;
-    return;
-}
-
-=head2 ping_GET
-
-/ping is a GET request
-
-=cut
-
-sub ping_GET {
-    my ( $self, $c ) = @_;
-    return $self->status_ok(
-        $c,
-        entity => {
-            status => "pong",
-        },
-    );
-}
 
 =head1 Common functions
 
