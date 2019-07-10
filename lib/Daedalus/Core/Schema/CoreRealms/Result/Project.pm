@@ -105,9 +105,9 @@ __PACKAGE__->add_columns(
     "token",
     {
         data_type     => "varchar",
-        is_nullable   => 0,
         default_value => q{},
-        , size => 33
+        is_nullable   => 0,
+        size          => 33
     },
 );
 
@@ -122,6 +122,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<token_index>
+
+=over 4
+
+=item * L</token>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint( "token_index", ["token"] );
 
 =head1 RELATIONS
 
@@ -155,8 +169,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 17:36:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9/XkgdjEH2YQk0jlQwxwBg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:09:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZeEZBoo1cXVc4bHZibIcsA
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
