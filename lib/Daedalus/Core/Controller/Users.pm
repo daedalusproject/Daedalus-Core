@@ -24,7 +24,7 @@ our $VERSION = '0.01';
 
 =head1 NAME
 
-Daedalus::Core::Controller::REST - Catalyst Controller
+Daedalus::Core::Controller::Users - Catalyst Controller
 
 =head1 SYNOPSIS
 
