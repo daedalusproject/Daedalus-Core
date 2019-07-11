@@ -100,8 +100,6 @@ sub create_organization_POST {
         }
     );
 
-    my $user = Daedalus::Users::Manager::is_admin_from_session_token($c);
-
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
