@@ -189,6 +189,29 @@ is(
     'Invalid organization token.',
 );
 
+my $create_group_fail_empty_group = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => ''
+        }
+    ),
+);
+
+is( $create_group_fail_empty_group->code(), 400, );
+
+my $create_group_fail_empty_group_json =
+  decode_json( $create_group_fail_empty_group->content );
+
+is( $create_group_fail_empty_group_json->{status}, 0, );
+is(
+    $create_group_fail_empty_group_json->{message},
+    'group_name field is empty.',
+);
+
 my $create_group_success = request(
     POST $endpoint,
     Content_Type  => 'application/json',

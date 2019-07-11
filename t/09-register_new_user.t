@@ -280,6 +280,49 @@ is(
 
 isnt( $success_superadmin_json->{data}->{new_user}->{token}, undef, );
 
+my $failed_empty_fields = request(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'e-mail' => '',
+            name     => '',
+            surname  => '',
+        }
+    ),
+);
+
+is( $failed_empty_fields->code(), 400, );
+
+my $failed_empty_fields_json = decode_json( $failed_empty_fields->content );
+
+is( $failed_empty_fields_json->{status}, 0, );
+is(
+    $failed_empty_fields_json->{message},
+    'e-mail field is empty. name field is empty. surname field is empty.',
+);
+
+my $failed_empty_name = request(
+    POST '/user/register',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'e-mail' => 'some@email.com',
+            name     => '',
+            surname  => 'surname',
+        }
+    ),
+);
+
+is( $failed_empty_name->code(), 400, );
+
+my $failed_empty_name_json = decode_json( $failed_empty_name->content );
+
+is( $failed_empty_name_json->{status},  0, );
+is( $failed_empty_name_json->{message}, 'name field is empty.', );
+
 my $success_superadmin_other_user = request(
     POST '/user/register',
     Authorization => "Basic $superadmin_authorization_basic",
