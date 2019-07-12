@@ -323,6 +323,49 @@ is( $check_empty_data_json->{data}->{user}->{surname}, 'Jimenez', );
 
 is( $check_empty_data_json->{data}->{user}->{phone}, '+34962525478', );
 
+my $update_chomped_data = request(
+    PUT $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            name    => '       Luis     ',
+            surname => 'Felipe     ',
+            phone   => '        +34962525479',
+        }
+    )
+);
+
+is( $update_chomped_data->code(), 200, );
+
+my $update_chomped_data_json = decode_json( $update_chomped_data->content );
+
+is( $update_chomped_data_json->{status}, 1, );
+is(
+    $update_chomped_data_json->{message},
+    'Data updated: name, phone, surname.',
+);
+
+my $check_all_chomped_data = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $check_all_chomped_data->code(), 200, );
+
+my $check_all_chomped_data_json =
+  decode_json( $check_all_chomped_data->content );
+
+is( $check_all_chomped_data_json->{status},  1, );
+is( $check_all_chomped_data_json->{message}, undef, );
+
+is( $check_all_chomped_data_json->{data}->{user}->{name}, 'Luis', );
+
+is( $check_all_chomped_data_json->{data}->{user}->{surname}, 'Felipe', );
+
+is( $check_all_chomped_data_json->{data}->{user}->{phone}, '+34962525479', );
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();

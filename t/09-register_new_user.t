@@ -427,6 +427,40 @@ my $inactive_user_cant_login_json =
 is( $inactive_user_cant_login_json->{status},  0, );
 is( $inactive_user_cant_login_json->{message}, 'Wrong e-mail or password.', );
 
+my $success_chomped = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => '       othernotanadmin2@daedalus-project.io',
+            name     => '      Other      ',
+            surname  => '     Not Admin     2    ',
+        }
+    )
+);
+
+is( $success_chomped->code(), 200, );
+
+my $success_chomped_json = decode_json( $success_chomped->content );
+
+is( $success_chomped_json->{status}, 1, 'User has been created.' );
+is(
+    $success_chomped_json->{message},
+    'User has been registered.',
+    'User registered.'
+);
+is(
+    $success_chomped->{data}->{new_user}->{'e-mail'},
+    'othernotanadmin@daedalus-project.io',
+);
+
+is( $success_chomped->{data}->{new_user}->{'name'}, 'Other', );
+
+is( $success_chomped->{data}->{new_user}->{'surname'}, 'Not Admin     2', );
+
+isnt( $success_superadmin_json->{data}->{new_user}->{token}, undef, );
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();
