@@ -203,7 +203,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_register_json->{_hidden_data}->{new_user}->{'e-mail'},
+    $success_superadmin_register_json->{data}->{new_user}->{'e-mail'},
     'othernotanadmin@daedalus-project.io',
 );
 

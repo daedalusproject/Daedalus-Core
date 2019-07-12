@@ -22,6 +22,13 @@ make
 make test
 ```
 
+or....
+
+``` bash
+rm META.yml ; rm -f /var/tmp/daedalus_core_realms.db ; perl script/daedalus_core_deploy.pl SQLite /var/tmp/daedalus_core_realms.db ; perl t/script/DatabaseSetUpTearDown.pm ; perl Makefile.PL ; make ; make test
+```
+
+
 Run server
 ```
 perl script/daedalus_core_server.pl

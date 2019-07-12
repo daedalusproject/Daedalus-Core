@@ -130,11 +130,13 @@ my $success = request(
 );
 
 is( $success->code(), 200, );
-#
+
 my $success_json = decode_json( $success->content );
 
 is( $success_json->{status},  1, );
 is( $success_json->{message}, 'Organization created.', );
+
+is( $success_json->{data}->{organization}->{name}, "Supershops", );
 
 is( $success_json->{_hidden_data}, undef, );
 
@@ -188,6 +190,8 @@ my $superadmin_success_json = decode_json( $superadmin_success->content );
 is( $superadmin_success_json->{status},  1, );
 is( $superadmin_success_json->{message}, 'Organization created.', );
 
+is( $superadmin_success_json->{data}->{organization}->{name}, "Ultrashops", );
+
 isnt( $superadmin_success_json->{_hidden_data}, undef, );
 
 my $superadmin_failed_duplicated_name = request(
@@ -210,6 +214,29 @@ is(
 
 is( $superadmin_failed_duplicated_name_json->{_hidden_data},
     undef, 'If response code is not 2xx there is no hidden_data' );
+
+my $chomped_organization_name = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        { name => "         Ultra       Hiper       Shops        " }
+    ),
+);
+
+is( $chomped_organization_name->code(), 200, );
+
+my $chomped_organization_name_json =
+  decode_json( $chomped_organization_name->content );
+
+is( $chomped_organization_name_json->{status},  1, );
+is( $chomped_organization_name_json->{message}, 'Organization created.', );
+
+is(
+    $chomped_organization_name_json->{data}->{organization}->{name},
+    "Ultra       Hiper       Shops",
+);
+is( $chomped_organization_name_json->{_hidden_data}, undef, );
 
 done_testing();
 
