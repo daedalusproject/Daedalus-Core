@@ -496,7 +496,7 @@ sub authorize_and_validate {
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
             $value = $data_properties->{value};
-            $value = =~ s/^\s+|\s+$//g;
+            $value =~ s/^\s+|\s+$//g;
         }
         else {
             $value = $c->{request}->{data}->{organization_token};
