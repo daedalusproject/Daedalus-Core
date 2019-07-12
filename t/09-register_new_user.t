@@ -274,7 +274,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_json->{_hidden_data}->{new_user}->{'e-mail'},
+    $success_superadmin_json->{data}->{new_user}->{'e-mail'},
     'othernotanadmin@daedalus-project.io',
 );
 
@@ -349,7 +349,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_other_user_json->{_hidden_data}->{new_user}->{'e-mail'},
+    $success_superadmin_other_user_json->{data}->{new_user}->{'e-mail'},
     'othernotanadmin2@daedalus-project.io',
 );
 
@@ -433,7 +433,7 @@ my $success_chomped = request(
     Content_Type  => 'application/json',
     Content       => encode_json(
         {
-            'e-mail' => '       othernotanadmin2@daedalus-project.io',
+            'e-mail' => '       anothernotanadmin@daedalus-project.io',
             name     => '      Other      ',
             surname  => '     Not Admin     2    ',
         }
@@ -451,13 +451,14 @@ is(
     'User registered.'
 );
 is(
-    $success_chomped->{data}->{new_user}->{'e-mail'},
-    'othernotanadmin@daedalus-project.io',
+    $success_chomped_json->{data}->{new_user}->{'e-mail'},
+    'anothernotanadmin@daedalus-project.io',
 );
 
-is( $success_chomped->{data}->{new_user}->{'name'}, 'Other', );
+is( $success_chomped_json->{data}->{new_user}->{'name'}, 'Other', );
 
-is( $success_chomped->{data}->{new_user}->{'surname'}, 'Not Admin     2', );
+is( $success_chomped_json->{data}->{new_user}->{'surname'}, 'Not Admin     2',
+);
 
 isnt( $success_superadmin_json->{data}->{new_user}->{token}, undef, );
 

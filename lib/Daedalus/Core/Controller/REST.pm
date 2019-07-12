@@ -372,7 +372,7 @@ sub check_required_data {
         $value = $c->{request}->{data}->{$required_data_name};
     }
 
-    $value =~ s/^\s+|\s+$//g;
+    $value =~ s/^\s+|\s+$//sxmg;
 
     if (   defined($value)
         && $data_properties->{forbid_empty} == 1
@@ -496,7 +496,7 @@ sub authorize_and_validate {
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
             $value = $data_properties->{value};
-            $value =~ s/^\s+|\s+$//g;
+            $value =~ s/^\s+|\s+$//sxmg;
         }
         else {
             $value = $c->{request}->{data}->{organization_token};

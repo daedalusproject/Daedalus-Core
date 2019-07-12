@@ -476,7 +476,6 @@ sub register_new_user {
 
         $response->{_hidden_data} = {
             new_user => {
-                'e-mail'   => $registered_user->email,
                 auth_token => $registered_user->auth_token,
                 id         => $registered_user->id,
             },
@@ -484,7 +483,10 @@ sub register_new_user {
 
         $response->{data} = {
             new_user => {
-                token => $registered_user->token,
+                token    => $registered_user->token,
+                name     => $registered_user->name,
+                'e-mail' => $registered_user->email,
+                surname  => $registered_user->surname,
             },
         };
 

@@ -140,6 +140,7 @@ sub create_organization {
             data    => {
                 organization => {
                     organization_token => $organization->token,
+                    name               => $request_organization_name,
                 },
             },
             _hidden_data => {

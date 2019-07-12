@@ -140,7 +140,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_register_json->{_hidden_data}->{new_user}->{'e-mail'},
+    $success_superadmin_register_json->{data}->{new_user}->{'e-mail'},
     'othernotanadmin@daedalus-project.io',
 );
 
@@ -276,7 +276,7 @@ is(
     'User registered.'
 );
 is(
-    $success_superadmin_register_other_user_json->{_hidden_data}->{new_user}
+    $success_superadmin_register_other_user_json->{data}->{new_user}
       ->{'e-mail'},
     'othernotanadmin2@daedalus-project.io',
 );
