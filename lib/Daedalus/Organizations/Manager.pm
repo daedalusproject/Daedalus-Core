@@ -63,6 +63,10 @@ sub create_organization {
 
     my @organization_names;
 
+    my $organization_name_info =
+      $c->model('CoreRealms')->source('Organization')->column_info('name');
+    my $organization_name_max_size = $organization_name_info->{size};
+
     for my $user_organization (@user_organizations_rs) {
         push @organization_names, $user_organization->organization()->name;
     }
@@ -72,6 +76,16 @@ sub create_organization {
             status     => 0,
             error_code => $bad_request,
             message    => 'Duplicated organization name.',
+        };
+
+    }
+
+    elsif ( length($request_organization_name) > $organization_name_max_size ) {
+        $response = {
+            status     => 0,
+            error_code => $bad_request,
+            message =>
+"Organization name too lage maximun number of characters is $organization_name_max_size.",
         };
 
     }
@@ -87,6 +101,7 @@ sub create_organization {
         my $organization_token =
           Daedalus::Utils::Crypt::generate_random_string(
             $organization_token_length);
+
         my $organization = $c->model('CoreRealms::Organization')->create(
             {
                 name  => $request_organization_name,
@@ -185,8 +200,10 @@ sub get_organizations_from_user {
         for my $user_organization (@user_organizations) {
             my $organization = $c->model('CoreRealms::Organization')
               ->find( { id => $user_organization->organization_id } );
-            $response->{data}->{organizations}->{ $organization->token } =
-              { name => $organization->name, token => $organization->token };
+            $response->{data}->{organizations}->{ $organization->token } = {
+                name  => $organization->name,
+                token => $organization->token
+            };
             $response->{_hidden_data}->{organizations}->{ $organization->token }
               = { id => $organization->id };
         }
@@ -196,8 +213,10 @@ sub get_organizations_from_user {
         for my $user_organization (@user_organizations) {
             my $organization = $c->model('CoreRealms::Organization')
               ->find( { id => $user_organization->organization_id } );
-            $response->{data}->{organizations}->{ $organization->name } =
-              { name => $organization->name, token => $organization->token };
+            $response->{data}->{organizations}->{ $organization->name } = {
+                name  => $organization->name,
+                token => $organization->token
+            };
             $response->{_hidden_data}->{organizations}->{ $organization->name }
               = { id => $organization->id };
         }
@@ -259,7 +278,8 @@ sub add_user_to_organization {
     my $user_organizations =
       get_organizations_from_user( $c, $user_data, 'token' );
 
-    my $organization_token = $organizaion_data->{data}->{organization}->{token};
+    my $organization_token =
+      $organizaion_data->{data}->{organization}->{token};
 
     if ( $user_organizations->{data}->{organizations}->{$organization_token} ) {
         $response->{status}  = 0;
@@ -357,8 +377,10 @@ sub get_organization_groups {
         my $roles = get_organization_group_roles( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name } =
           { roles => $roles->{data} };
-        $response->{_hidden_data}->{ $organization_group->group_name } =
-          { id => $organization_group->id, roles => $roles->{_hidden_data} };
+        $response->{_hidden_data}->{ $organization_group->group_name } = {
+            id    => $organization_group->id,
+            roles => $roles->{_hidden_data}
+        };
         my $users = get_organization_group_users( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name }->{users} =
           $users->{data};
@@ -472,7 +494,8 @@ sub get_user_organization_groups {
         }
     }
 
-    $user_organization_groups->{data}->{groups} = $organization_groups->{data};
+    $user_organization_groups->{data}->{groups} =
+      $organization_groups->{data};
     $user_organization_groups->{_hidden_data}->{groups} =
       $organization_groups->{_hidden_data};
 
@@ -529,7 +552,8 @@ sub list_roles {
 
     my $roles = { data => [], _hidden_data => {} };
 
-    my @available_roles = $c->model('CoreRealms::Role')
+    my @available_roles =
+      $c->model('CoreRealms::Role')
       ->search( { role_name => { 'not in' => ['daedalus_manager'] } } )->all;
 
     for my $role (@available_roles) {
