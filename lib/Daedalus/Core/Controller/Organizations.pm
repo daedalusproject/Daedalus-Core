@@ -92,9 +92,12 @@ sub create_organization_POST {
             },
             required_data => {
                 'name' => {
-                    name         => "string",
-                    required     => 1,
-                    forbid_empty => 1,
+                    name                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "Organization",
+                    associated_model_source_column => "name",
                 },
             }
         }

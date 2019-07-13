@@ -63,10 +63,6 @@ sub create_organization {
 
     my @organization_names;
 
-    my $organization_name_info =
-      $c->model('CoreRealms')->source('Organization')->column_info('name');
-    my $organization_name_max_size = $organization_name_info->{size};
-
     for my $user_organization (@user_organizations_rs) {
         push @organization_names, $user_organization->organization()->name;
     }
@@ -76,16 +72,6 @@ sub create_organization {
             status     => 0,
             error_code => $bad_request,
             message    => 'Duplicated organization name.',
-        };
-
-    }
-
-    elsif ( length($request_organization_name) > $organization_name_max_size ) {
-        $response = {
-            status     => 0,
-            error_code => $bad_request,
-            message =>
-"Organization name too lage maximun number of characters is $organization_name_max_size.",
         };
 
     }

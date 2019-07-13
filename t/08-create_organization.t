@@ -98,7 +98,7 @@ my $failed_no_name = request(
 );
 
 is( $failed_no_name->code(), 400, );
-#
+
 my $failed_no_name_json = decode_json( $failed_no_name->content );
 
 is( $failed_no_name_json->{status},  0, );
@@ -284,7 +284,7 @@ my $organization_name_too_large_json =
 is( $organization_name_too_large_json->{status}, 0, );
 is(
     $organization_name_too_large_json->{message},
-    'Organization name too lage maximun number of characters is 100.',
+    "'name' value is too large. Maximun number of characters is 100.",
 );
 
 done_testing();

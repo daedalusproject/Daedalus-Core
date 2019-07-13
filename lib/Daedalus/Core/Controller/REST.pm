@@ -320,6 +320,38 @@ sub check_registered_user {
     return;
 }
 
+=head2 check_value_against_model
+
+Checks if given value pass Model Checks
+
+=cut
+
+sub check_value_against_model {
+    my $c               = shift;
+    my $data_name       = shift;
+    my $value           = shift;
+    my $data_properties = shift;
+
+    my $response = { status => 1, };
+
+    my $model  = $c->model( $data_properties->{associated_model} );
+    my $source = $model->source( $data_properties->{associated_model_source} );
+    my $column =
+      $source->column_info(
+        $data_properties->{associated_model_source_column} );
+    my $max_size = $column->{size};
+
+    #Check size
+
+    if ( length($value) > $max_size ) {
+        $response->{status} = 0;
+        $response->{message} =
+"'$data_name' value is too large. Maximun number of characters is $max_size.";
+    }
+
+    return $response;
+}
+
 =head2 check_user_organization_member
 
 Checks if given user is an organization member.
@@ -391,6 +423,14 @@ sub check_required_data {
                 $response->{message} =
                   $response->{message} . " No $required_data_name provided.";
             }
+        }
+    }
+
+    if ( $response->{status} == 1 ) {
+        if ( defined $data_properties->{associated_model} ) {
+            $response =
+              check_value_against_model( $c, $required_data_name, $value,
+                $data_properties );
         }
     }
 
