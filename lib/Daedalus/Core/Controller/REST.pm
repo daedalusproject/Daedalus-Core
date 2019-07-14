@@ -344,7 +344,8 @@ sub check_value_against_model {
     #Check size
 
     if ( length($value) > $max_size ) {
-        $response->{status} = 0;
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
         $response->{message} =
 "'$data_name' value is too large. Maximun number of characters is $max_size.";
     }

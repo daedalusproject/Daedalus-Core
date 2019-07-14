@@ -462,8 +462,6 @@ is( $success_chomped_json->{data}->{new_user}->{'surname'}, 'Not Admin     2',
 
 isnt( $success_superadmin_json->{data}->{new_user}->{token}, undef, );
 
-done_testing();
-
 my $failed_email_too_large = request(
     POST '/user/register',
     Authorization => "Basic $superadmin_authorization_basic",
@@ -471,7 +469,7 @@ my $failed_email_too_large = request(
     Content       => encode_json(
         {
             'e-mail' =>
-'       oPh5ohrooquohphiyooxeiSoo6fah7OhPoh5dohxo7moghah7iechiedeeseechuv5heeNai8seiQuailigh0quiepeZuughohfas5iX8hoh8Quai8uchii0fie9jopai9dengohGaayieP9raife1ongaeph1aeQuap1wu5gahg6vohh7loh8ainae5Koch2niesh6fee0vohh0ohlaed6futa3wiemahtie0ohy8aeyaeg9ahleew7Joh7ithe@daedalus-project.io',
+'       ew7Joh7ithe@daedalossssssssssssssssssssssssssssssssssssssssssssssssssssssssssssaaaaaaaaaaaaaaaaaaassssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssdsfffsdfsdfsfsdfsfsfsfsfus-project.io',
             name    => '      Other      ',
             surname => '     Not Admin     2    ',
         }
@@ -480,11 +478,12 @@ my $failed_email_too_large = request(
 
 is( $failed_email_too_large->code(), 400, );
 
-my $failed_email_too_large_json = decode_json( $success_chomped->content );
+my $failed_email_too_large_json =
+  decode_json( $failed_email_too_large->content );
 
 is( $failed_email_too_large_json->{status}, 0, 'e-mail is too large' );
 is(
-    $failed_email_too_large->{message},
+    $failed_email_too_large_json->{message},
     "'e-mail' value is too large. Maximun number of characters is 255.",
 );
 
@@ -503,11 +502,11 @@ my $failed_name_too_large = request(
 
 is( $failed_name_too_large->code(), 400, );
 
-my $failed_name_too_large_json = decode_json( $success_chomped->content );
+my $failed_name_too_large_json = decode_json( $failed_name_too_large->content );
 
-is( $failed_name_too_large_json->{status}, 0, 'e-mail is too large' );
+is( $failed_name_too_large_json->{status}, 0, 'name is too large' );
 is(
-    $failed_name_too_large->{message},
+    $failed_name_too_large_json->{message},
     "'name' value is too large. Maximun number of characters is 50.",
 );
 
@@ -527,12 +526,14 @@ my $failed_surname_too_large = request(
 
 is( $failed_surname_too_large->code(), 400, );
 
-my $failed_surname_too_large_json = decode_json( $success_chomped->content );
+my $failed_surname_too_large_json =
+  decode_json( $failed_surname_too_large->content );
 
-is( $failed_surname_too_large_json->{status}, 0, 'e-mail is too large' );
+is( $failed_surname_too_large_json->{status}, 0, 'surname is too large' );
 is(
-    $failed_surname_too_large->{message},
-    "'name' value is too large. Maximun number of characters is 50.",
+    $failed_surname_too_large_json->{message},
+    "'surname' value is too large. Maximun number of characters is 100.",
 );
 
+done_testing();
 DatabaseSetUpTearDown::delete_database();

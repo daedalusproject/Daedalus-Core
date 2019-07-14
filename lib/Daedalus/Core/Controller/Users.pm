@@ -177,19 +177,28 @@ sub register_new_user_POST {
             },
             required_data => {
                 'e-mail' => {
-                    type         => "e-mail",
-                    required     => 1,
-                    forbid_empty => 1,
+                    type                           => "e-mail",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "email",
                 },
                 name => {
-                    type         => "string",
-                    required     => 1,
-                    forbid_empty => 1,
+                    type                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "name",
                 },
                 surname => {
-                    type         => "string",
-                    required     => 1,
-                    forbid_empty => 1,
+                    type                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "surname",
                 },
             }
         }
