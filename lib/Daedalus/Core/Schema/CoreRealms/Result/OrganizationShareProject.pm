@@ -38,13 +38,6 @@ __PACKAGE__->table("organization_share_project");
 
 =head1 ACCESSORS
 
-=head2 organization_owner_id
-
-  data_type: 'bigint'
-  extra: {unsigned => 1}
-  is_foreign_key: 1
-  is_nullable: 0
-
 =head2 organization_to_manage_id
 
   data_type: 'bigint'
@@ -58,9 +51,9 @@ __PACKAGE__->table("organization_share_project");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 organization_to_manage_group_id
+=head2 organization_to_manage_role_id
 
-  data_type: 'bigint'
+  data_type: 'integer'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
@@ -72,16 +65,22 @@ __PACKAGE__->table("organization_share_project");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 share_id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_auto_increment: 1
+  is_nullable: 0
+
+=head2 deleted
+
+  data_type: 'tinyint'
+  default_value: 0
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
-    "organization_owner_id",
-    {
-        data_type      => "bigint",
-        extra          => { unsigned => 1 },
-        is_foreign_key => 1,
-        is_nullable    => 0,
-    },
     "organization_to_manage_id",
     {
         data_type      => "bigint",
@@ -95,9 +94,9 @@ __PACKAGE__->add_columns(
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
-    "organization_to_manage_group_id",
+    "organization_to_manage_role_id",
     {
-        data_type      => "bigint",
+        data_type      => "integer",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
@@ -109,45 +108,30 @@ __PACKAGE__->add_columns(
         is_foreign_key => 1,
         is_nullable    => 0,
     },
+    "share_id",
+    {
+        data_type         => "bigint",
+        extra             => { unsigned => 1 },
+        is_auto_increment => 1,
+        is_nullable       => 0,
+    },
+    "deleted",
+    { data_type => "tinyint", default_value => 0, is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
 
 =over 4
 
-=item * L</organization_owner_id>
-
-=item * L</organization_to_manage_id>
-
-=item * L</organization_to_manage_group_id>
-
-=item * L</project_id>
+=item * L</share_id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key(
-    "organization_owner_id",           "organization_to_manage_id",
-    "organization_to_manage_group_id", "project_id",
-);
+__PACKAGE__->set_primary_key("share_id");
 
 =head1 RELATIONS
-
-=head2 organization_owner
-
-Type: belongs_to
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization|Organization>
-
-=cut
-
-__PACKAGE__->belongs_to(
-    "organization_owner",
-    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
-    { id            => "organization_owner_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
-);
 
 =head2 organization_to_manage
 
@@ -161,22 +145,22 @@ __PACKAGE__->belongs_to(
     "organization_to_manage",
     "Daedalus::Core::Schema::CoreRealms::Result::Organization",
     { id            => "organization_to_manage_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-=head2 organization_to_manage_group
+=head2 organization_to_manage_role
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup|OrganizationGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role|Role>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization_to_manage_group",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
-    { id            => "organization_to_manage_group_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    "organization_to_manage_role",
+    "Daedalus::Core::Schema::CoreRealms::Result::Role",
+    { id            => "organization_to_manage_role_id" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
 =head2 project
@@ -191,11 +175,11 @@ __PACKAGE__->belongs_to(
     "project",
     "Daedalus::Core::Schema::CoreRealms::Result::Project",
     { id            => "project_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:02:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JpmG1uz34AizuPHDgkJ6tA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-14 17:38:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RsQH71psluoArtqkcvUQww
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
 __PACKAGE__->add_columns(
