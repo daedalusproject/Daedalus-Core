@@ -644,9 +644,12 @@ sub user_data_PUT {
             forbid_empty => 1,
         },
         password => {
-            type         => "password",
-            required     => 0,
-            forbid_empty => 1,
+            type                           => "password",
+            required                       => 0,
+            forbid_empty                   => 1,
+            associated_model               => "CoreRealms",
+            associated_model_source        => "User",
+            associated_model_source_column => "password",
         },
     };
 

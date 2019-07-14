@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-20) unstable; urgency=low
+
+  * Check too large inputs
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 14 Jul 2019 16:36:00 +0200
+
 libdaedalus-core-perl (0.01-19) unstable; urgency=low
 
   * Chomp input strings.
