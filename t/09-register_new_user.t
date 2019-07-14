@@ -462,6 +462,78 @@ is( $success_chomped_json->{data}->{new_user}->{'surname'}, 'Not Admin     2',
 
 isnt( $success_superadmin_json->{data}->{new_user}->{token}, undef, );
 
-done_testing();
+my $failed_email_too_large = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' =>
+'       ew7Joh7ithe@daedalossssssssssssssssssssssssssssssssssssssssssssssssssssssssssssaaaaaaaaaaaaaaaaaaassssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssdsfffsdfsdfsfsdfsfsfsfsfus-project.io',
+            name    => '      Other      ',
+            surname => '     Not Admin     2    ',
+        }
+    )
+);
 
+is( $failed_email_too_large->code(), 400, );
+
+my $failed_email_too_large_json =
+  decode_json( $failed_email_too_large->content );
+
+is( $failed_email_too_large_json->{status}, 0, 'e-mail is too large' );
+is(
+    $failed_email_too_large_json->{message},
+    "'e-mail' value is too large. Maximun number of characters is 255.",
+);
+
+my $failed_name_too_large = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'someemail@daedalus-project.io',
+            name     => 'seeLuthie6pi0ieXah3chaaXec1eithaisee2Oeneesheb1paeh',
+            surname  => '     Not Admin     2    ',
+        }
+    )
+);
+
+is( $failed_name_too_large->code(), 400, );
+
+my $failed_name_too_large_json = decode_json( $failed_name_too_large->content );
+
+is( $failed_name_too_large_json->{status}, 0, 'name is too large' );
+is(
+    $failed_name_too_large_json->{message},
+    "'name' value is too large. Maximun number of characters is 50.",
+);
+
+my $failed_surname_too_large = request(
+    POST '/user/register',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content_Type  => 'application/json',
+    Content       => encode_json(
+        {
+            'e-mail' => 'someemail@daedalus-project.io',
+            name     => 'somename',
+            surname =>
+'Mooy2ohpeidu9aenoocha2oheexi3euchijomeiNgie1eipoathoh5seC7eeMoh2Ohtie9ieShaic1shah8bohquai9aiphieRahR',
+        }
+    )
+);
+
+is( $failed_surname_too_large->code(), 400, );
+
+my $failed_surname_too_large_json =
+  decode_json( $failed_surname_too_large->content );
+
+is( $failed_surname_too_large_json->{status}, 0, 'surname is too large' );
+is(
+    $failed_surname_too_large_json->{message},
+    "'surname' value is too large. Maximun number of characters is 100.",
+);
+
+done_testing();
 DatabaseSetUpTearDown::delete_database();

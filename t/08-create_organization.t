@@ -98,7 +98,7 @@ my $failed_no_name = request(
 );
 
 is( $failed_no_name->code(), 400, );
-#
+
 my $failed_no_name_json = decode_json( $failed_no_name->content );
 
 is( $failed_no_name_json->{status},  0, );
@@ -237,6 +237,55 @@ is(
     "Ultra       Hiper       Shops",
 );
 is( $chomped_organization_name_json->{_hidden_data}, undef, );
+
+my $large_organization_name = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            name =>
+"oodaeT9iNeih9Sierae3ajash4ohzohPie2Ohh4aiseNg2aigheenir3aew5chuifoo7eene0Wung9uo1loa0xool4Iesh9uc8ie"
+        }
+    ),
+);
+
+is( $large_organization_name->code(), 200, );
+
+my $large_organization_name_json =
+  decode_json( $large_organization_name->content );
+
+is( $large_organization_name_json->{status},  1, );
+is( $large_organization_name_json->{message}, 'Organization created.', );
+
+is(
+    $large_organization_name_json->{data}->{organization}->{name},
+"oodaeT9iNeih9Sierae3ajash4ohzohPie2Ohh4aiseNg2aigheenir3aew5chuifoo7eene0Wung9uo1loa0xool4Iesh9uc8ie",
+);
+is( $large_organization_name_json->{_hidden_data}, undef, );
+
+my $organization_name_too_large = request(
+    POST '/organization/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            name =>
+"iphohquee9Chapa6Tu9aing9ohNga0ethe7aengou3Shier8dei5ieGhohring7uchieghieDaeraigoun4phoogh9sohSh9aev5x8iphohquee9Chapa6Tu9aing9ohNga0ethe7aengou3Shier8dei5ieGhohring7uchieghieDaeraigoun4phoogh9sohSh9aev5x8iphohquee9Chapa6Tu9aing9ohNga0ethe7aengou3Shier8dei5ieGhohring7uchieghieDaeraigoun4phoogh9sohSh9aev5x8"
+        }
+    ),
+);
+
+is( $organization_name_too_large->code(), 400, );
+#
+my $organization_name_too_large_json =
+  decode_json( $organization_name_too_large->content );
+
+is( $organization_name_too_large_json->{status}, 0, );
+is(
+    $organization_name_too_large_json->{message},
+    "'name' value is too large. Maximun number of characters is 100.",
+);
 
 done_testing();
 

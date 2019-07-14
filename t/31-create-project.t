@@ -305,6 +305,28 @@ isnt( $superadmin_create_project_success_json->{data}->{project}->{token},
     undef, );
 isnt( $superadmin_create_project_success_json->{_hidden_data}, undef );
 
+my $project_name_too_large = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'name' =>
+'unoo6cujohcuqu1eex1uiweexietei3bohju6EqueePh5yaiz0Iunahqu9ohd8Aibah7shu0xeegh9tai9ikohphohGah5chauLumeeghaeng2chagh6aejohjaigaanoh6sia0ainain4iekoo7shoph1Iezoo8xoosei3heeNaibah3Imongeighoew7ocahreileit',
+        }
+    )
+);
+
+is( $project_name_too_large->code(), 400, );
+
+my $project_name_too_large_json =
+  decode_json( $project_name_too_large->content );
+
+is( $project_name_too_large_json->{status}, 0, );
+is( $project_name_too_large_json->{message},
+    "'name' value is too large. Maximun number of characters is 200.", "" );
+
 my $superadmin_create_duplicated_project_fail = request(
     POST $endpoint,
     Content_Type  => 'application/json',

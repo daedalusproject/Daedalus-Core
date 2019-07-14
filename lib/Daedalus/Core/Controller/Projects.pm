@@ -93,9 +93,12 @@ sub create_project_POST {
             },
             required_data => {
                 'name' => {
-                    name         => "string",
-                    required     => 1,
-                    forbid_empty => 1,
+                    name                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "Project",
+                    associated_model_source_column => "name",
                 },
                 organization_token => {
                     type  => "organization",

@@ -91,6 +91,30 @@ is(
     'Password has no diverse characters.'
 );
 
+my $update_password_too_large = request(
+    PUT $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            password =>
+'val1d_Pa55w0rderaixei3ud1eew4Zee9ahch8ge5doomai2tewe1Chogh9aHaez5pa0queeng3Zeeweefeif9outeetuhie5exae3Ohtho4eesh2oow2reish2sheeph1ais6aedia4ee',
+        }
+      )
+
+);
+
+is( $update_password_too_large->code(), 400, );
+
+my $update_password_too_large_json =
+  decode_json( $update_password_too_large->content );
+
+is( $update_password_too_large_json->{status}, 0, );
+is(
+    $update_password_too_large_json->{message},
+    "'password' value is too large. Maximun number of characters is 128.",
+);
+
 my $update_password_success = request(
     PUT $endpoint,
     Content_Type  => 'application/json',
