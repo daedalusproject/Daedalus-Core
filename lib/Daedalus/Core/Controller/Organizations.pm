@@ -530,9 +530,12 @@ sub create_organization_group_POST {
                     required => 1,
                 },
                 group_name => {
-                    type         => "string",
-                    required     => 1,
-                    forbid_empty => 1,
+                    type                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "OrganizationGroup",
+                    associated_model_source_column => "group_name",
                 },
             }
         }
