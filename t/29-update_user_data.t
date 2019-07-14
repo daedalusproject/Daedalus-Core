@@ -366,6 +366,54 @@ is( $check_all_chomped_data_json->{data}->{user}->{surname}, 'Felipe', );
 
 is( $check_all_chomped_data_json->{data}->{user}->{phone}, '+34962525479', );
 
+my $update_name_too_large = request(
+    PUT $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            name    => 'seeLuthie6pi0ieXah3chaaXec1eithaisee2Oeneesheb1paeh',
+            surname => 'Felipe     ',
+            phone   => '        +34962525479',
+        }
+    )
+);
+
+is( $update_name_too_large->code(), 200, );
+
+my $update_name_too_large_json = decode_json( $update_name_too_large->content );
+
+is( $update_name_too_large_json->{status}, 1, );
+is(
+    $update_name_too_large_json->{message},
+    "'name' value is too large. Maximun number of characters is 50.",
+);
+
+my $update_surname_too_large = request(
+    PUT $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            name => 'Luis',
+            surname =>
+'Wad7Rukoo8nuWu6thaetee6oZath8phooz3aigh9OhsheiXei1poh0Que1iyij3veiLei5ShaeWoothoo1apie0laishieziyee6o',
+            phone => '        +34962525479',
+        }
+    )
+);
+
+is( $update_surname_too_large->code(), 200, );
+
+my $update_surname_too_large_json =
+  decode_json( $update_surname_too_large->content );
+
+is( $update_surname_too_large_json->{status}, 1, );
+is(
+    $update_surname_too_large_json->{message},
+    "'surname' value is too large. Maximun number of characters is 100.",
+);
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();
