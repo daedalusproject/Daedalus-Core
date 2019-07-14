@@ -302,8 +302,11 @@ sub confirm_register_POST {
                     required => 1,
                 },
                 password => {
-                    type     => "string",
-                    required => 0,
+                    type                           => "string",
+                    required                       => 0,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "password",
                 },
             }
         }
