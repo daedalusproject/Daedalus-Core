@@ -379,11 +379,11 @@ my $update_name_too_large = request(
     )
 );
 
-is( $update_name_too_large->code(), 200, );
+is( $update_name_too_large->code(), 400, );
 
 my $update_name_too_large_json = decode_json( $update_name_too_large->content );
 
-is( $update_name_too_large_json->{status}, 1, );
+is( $update_name_too_large_json->{status}, 0, );
 is(
     $update_name_too_large_json->{message},
     "'name' value is too large. Maximun number of characters is 50.",
@@ -403,12 +403,12 @@ my $update_surname_too_large = request(
     )
 );
 
-is( $update_surname_too_large->code(), 200, );
+is( $update_surname_too_large->code(), 400, );
 
 my $update_surname_too_large_json =
   decode_json( $update_surname_too_large->content );
 
-is( $update_surname_too_large_json->{status}, 1, );
+is( $update_surname_too_large_json->{status}, 0, );
 is(
     $update_surname_too_large_json->{message},
     "'surname' value is too large. Maximun number of characters is 100.",

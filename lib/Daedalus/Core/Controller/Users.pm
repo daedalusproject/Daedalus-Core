@@ -620,14 +620,20 @@ sub user_data_PUT {
 
     my $required_data = {
         name => {
-            type         => 'string',
-            required     => 0,
-            forbid_empty => 1,
+            type                           => 'string',
+            required                       => 0,
+            forbid_empty                   => 1,
+            associated_model               => "CoreRealms",
+            associated_model_source        => "User",
+            associated_model_source_column => "name",
         },
         surname => {
-            type         => "string",
-            required     => 0,
-            forbid_empty => 1,
+            type                           => "string",
+            required                       => 0,
+            forbid_empty                   => 1,
+            associated_model               => "CoreRealms",
+            associated_model_source        => "User",
+            associated_model_source_column => "surname",
         },
         phone => {
             type         => "phone",
