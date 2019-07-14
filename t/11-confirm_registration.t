@@ -181,6 +181,31 @@ is(
     'Password has no diverse characters.'
 );
 
+my $failed_valid_auth_token_password_too_large = request(
+    POST '/user/confirm',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            auth_token =>
+              'gqYyhZWMffFm9WK6q/2376cqSoRxOS9EdUBrQnPpUnVB0/Fb/3t1cQXPfIr.X5l',
+            password =>
+'val1d_Pa55w0rdieweP3iemie7lethehai9eRohJohquooph9bom0eix2aivaeko5eengeag4chai3Quoo7haelu7thie0edoog6quahCipeiroh5kahbeiCienah8ahmahgaixoh3iesh',
+        }
+    )
+);
+
+is( $failed_valid_auth_token_password_too_large->code(), 400 );
+
+my $failed_valid_auth_token_password_too_large_json =
+  decode_json( $failed_valid_auth_token_password_too_large->content );
+
+is( $failed_valid_auth_token_password_too_large_json->{status},
+    0, 'Status failed, Password too large' );
+is(
+    $failed_valid_auth_token_password_too_large_json->{message},
+    "'password' value is too large. Maximun number of characters is 128.",
+);
+
 my $success_valid_auth_token_and_password = request(
     POST '/user/confirm',
     Content_Type => 'application/json',
