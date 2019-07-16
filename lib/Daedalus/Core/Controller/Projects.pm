@@ -127,6 +127,44 @@ sub create_project_POST {
     return $self->return_response( $c, $response );
 }
 
+=head2 share_project
+
+Share project between organizations, role level..
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organization token
+                 - Organization "to share wtih" token
+                 - Project token
+                 - Role name
+
+Organization tokens can be the same. An organization has to choose if its own groups
+have to manage or not its projects.
+
+=cut
+
+sub share_project : Path('/project/share') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 share_project_POST
+
+/project/share is a POST request
+
+=cut
+
+sub share_project_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $project_name;
+
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS
