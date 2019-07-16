@@ -101,8 +101,8 @@ sub create_project_POST {
                     associated_model_source_column => "name",
                 },
                 organization_token => {
-                    type  => "organization",
-                    value => $c->{request}->{arguments}[0],
+                    type     => "organization",
+                    required => 1,
                 },
             }
         }
