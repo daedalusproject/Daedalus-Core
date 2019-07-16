@@ -236,6 +236,81 @@ is(
 'Your organization roles does not match with the following roles: organization master.',
 );
 
+my $failed_admin_non_existent_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+        }
+    )
+);
+
+is( $failed_admin_non_existent_organization->code(), 400, );
+
+my $failed_admin_non_existent_organization_json =
+  decode_json( $failed_admin_non_existent_organization->content );
+
+is( $failed_admin_non_existent_organization_json->{status}, 0, );
+is(
+    $failed_admin_non_existent_organization_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_non_existent_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+        }
+    )
+);
+
+is( $failed_non_existent_organization->code(), 400, );
+
+my $failed_non_existent_organization_json =
+  decode_json( $failed_non_existent_organization->content );
+
+is( $failed_non_existent_organization_json->{status}, 0, );
+is(
+    $failed_non_existent_organization_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_admin_non_existent_organization_to_share = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+        }
+    )
+);
+
+is( $failed_admin_non_existent_organization_to_share->code(), 400, );
+
+my $failed_admin_non_existent_organization_to_share_json =
+  decode_json( $failed_admin_non_existent_organization_to_share->content );
+
+is( $failed_admin_non_existent_organization_to_share_json->{status}, 0, );
+is(
+    $failed_admin_non_existent_organization_to_share_json->{message},
+    'Invalid organization to share token.',
+);
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();
