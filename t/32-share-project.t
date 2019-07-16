@@ -121,7 +121,7 @@ my $failed_admin_no_project_token_json =
 is( $failed_admin_no_project_token_json->{status}, 0, );
 is(
     $failed_admin_no_project_token_json->{message},
-    'No project_token provided.',
+'No organization_to_share_token provided. No project_token provided. No role_name provided.',
 );
 
 my $failed_no_project_token = request(
@@ -135,13 +135,16 @@ my $failed_no_project_token = request(
     )
 );
 
-is( $failed_no_project_token->code(), 400, );
+is( $failed_no_project_token->code(), 403, );
 
 my $failed_no_project_token_json =
   decode_json( $failed_no_project_token->content );
 
-is( $failed_no_project_token_json->{status},  0, );
-is( $failed_no_project_token_json->{message}, 'No project_token provided.', );
+is( $failed_no_project_token_json->{status}, 0, );
+is(
+    $failed_no_project_token_json->{message},
+'Your organization roles does not match with the following roles: organization master.',
+);
 
 my $failed_admin_no_organization_to_share_token = request(
     POST $endpoint,
@@ -163,7 +166,7 @@ my $failed_admin_no_organization_to_share_token_json =
 is( $failed_admin_no_organization_to_share_token_json->{status}, 0, );
 is(
     $failed_admin_no_organization_to_share_token_json->{message},
-    'No organization_to_share_token provided.',
+    'No organization_to_share_token provided. No role_name provided.',
 );
 
 my $failed_no_organization_to_share_token = request(
@@ -178,7 +181,7 @@ my $failed_no_organization_to_share_token = request(
     )
 );
 
-is( $failed_no_organization_to_share_token->code(), 400, );
+is( $failed_no_organization_to_share_token->code(), 403, );
 
 my $failed_no_organization_to_share_token_json =
   decode_json( $failed_no_organization_to_share_token->content );
@@ -186,7 +189,7 @@ my $failed_no_organization_to_share_token_json =
 is( $failed_no_organization_to_share_token_json->{status}, 0, );
 is(
     $failed_no_project_token_json->{message},
-    'No organization_to_share_token provided.',
+'Your organization roles does not match with the following roles: organization master.',
 );
 
 my $failed_admin_no_role_name = request(
@@ -223,12 +226,15 @@ my $failed_no_role_name = request(
     )
 );
 
-is( $failed_no_role_name->code(), 400, );
+is( $failed_no_role_name->code(), 403, );
 
 my $failed_no_role_name_json = decode_json( $failed_no_role_name->content );
 
-is( $failed_no_role_name_json->{status},  0, );
-is( $failed_no_role_name_json->{message}, 'No no_role_name provided.', );
+is( $failed_no_role_name_json->{status}, 0, );
+is(
+    $failed_no_role_name_json->{message},
+'Your organization roles does not match with the following roles: organization master.',
+);
 
 done_testing();
 

@@ -162,6 +162,38 @@ sub share_project_POST {
     my $user_data;
     my $project_name;
 
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master'],
+            },
+            required_data => {
+                organization_token => {
+                    type     => "organization",
+                    required => 1,
+                },
+                organization_to_share_token => {
+                    type     => "organization",
+                    required => 1,
+                },
+                project_token => {
+                    type     => "project",
+                    required => 1,
+                },
+                role_name => {
+                    type     => "string",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+
     return $self->return_response( $c, $response );
 }
 
