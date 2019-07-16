@@ -154,6 +154,15 @@ sub populate_databse {
         }
     );
 
+    # Projects
+    $schema->resultset('Project')->create(
+        {
+            organization_owner => $organization->id,
+            name               => "Daedalus Core",
+            token              => "eabi7ooph3Aih4fohc5aung1phawijae",
+        }
+    );
+
     # No admin user
 
     $name     = 'NoAdmin';
@@ -334,6 +343,15 @@ sub populate_databse {
         {
             name  => "Mega Shops",
             token => "ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf"
+        }
+    );
+
+    # Projects
+    $schema->resultset('Project')->create(
+        {
+            organization_owner => $yet_other_organization->id,
+            name               => "Mega Shops e-commerce",
+            token              => "oqu2eeCee2Amae6Aijo7tei5woh4jiet",
         }
     );
 
