@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::REST;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -168,12 +169,13 @@ sub check_organization_token {
             $organization_token_candidate );
 
         if ( $organization_token_check->{status} == 1 ) {
-            $data->{organization} = $organization_token_check->{organization};
+            $data->{$required_data_name} =
+              $organization_token_check->{organization};
         }
         else {
             $response = $organization_token_check;
+            $response->{message} = "Invalid $required_data_name.";
         }
-
     }
 
     return $response;
@@ -471,35 +473,49 @@ sub check_required_data {
     }
 
     if ( $response->{status} == 1 ) {
+        given ( $data_properties->{type} ) {
 
-        #Check Type
-        if ( $data_properties->{type} eq "e-mail" ) {
-            if ( !Daedalus::Users::Manager::check_email_valid($value) ) {
-                $response->{status}     = 0;
-                $response->{error_code} = $bad_request;
-                $response->{message} =
-                  $response->{message} . " $required_data_name is invalid.";
+            when ("e-mail") {
+                if ( !Daedalus::Users::Manager::check_email_valid($value) ) {
+                    $response->{status}     = 0;
+                    $response->{error_code} = $bad_request;
+                    $response->{message} =
+                      $response->{message} . " $required_data_name is invalid.";
+                }
             }
-        }
+            when ("registered_user_token") {
 
-        elsif ($data_properties->{type} eq "registered_user_token"
-            or $data_properties->{type} eq "active_user_token"
-            or $data_properties->{type} eq "organization_user" )
-        {
-            # Check users token length
-            $response =
-              check_user_token( $c, $value, $data, $data_properties,
-                $required_data_name );
-        }
+                # Check users token length
+                $response =
+                  check_user_token( $c, $value, $data, $data_properties,
+                    $required_data_name );
+            }
+            when ("active_user_token") {
 
-        elsif ( $data_properties->{type} eq "phone" ) {
-            check_phone_number( $response, $value, $required_data_name );
-        }
+                # Check users token length
+                $response =
+                  check_user_token( $c, $value, $data, $data_properties,
+                    $required_data_name );
+            }
 
-        elsif ( $data_properties->{type} eq "organization" ) {
-            $response =
-              check_organization_token( $c, $value, $data, $data_properties,
-                $required_data_name );
+            when ("organization_user") {
+
+                # Check users token length
+                $response =
+                  check_user_token( $c, $value, $data, $data_properties,
+                    $required_data_name );
+            }
+
+            when ("phone") {
+                check_phone_number( $response, $value, $required_data_name );
+            }
+
+            when ("no_main_organization") {
+                $response =
+                  check_organization_token( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+
         }
 
         if ( $response->{status} == 1 ) {

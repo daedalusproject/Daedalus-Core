@@ -1,4 +1,6 @@
 package Daedalus::Core;
+
+use 5.026_001;
 use Moose;
 use namespace::autoclean;
 use Cache::Redis;

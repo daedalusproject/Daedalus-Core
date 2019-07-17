@@ -311,6 +311,81 @@ is(
     'Invalid organization_to_share_token.',
 );
 
+my $failed_admin_non_existent_organization_to_share = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+        }
+    )
+);
+
+is( $failed_admin_non_existent_organization_to_share->code(), 400, );
+
+my $failed_admin_non_existent_organization_to_share_json =
+  decode_json( $failed_admin_non_existent_organization_to_share->content );
+
+is( $failed_admin_non_existent_organization_to_share_json->{status}, 0, );
+is(
+    $failed_admin_non_existent_organization_to_share_json->{message},
+    'Invalid organization_to_share_token.',
+);
+
+my $failed_admin_too_short_organization_to_share = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMZQTbXsaXWA2kgSWzL942Pua',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+        }
+    )
+);
+
+is( $failed_admin_too_short_organization_to_share->code(), 400, );
+
+my $failed_admin_too_short_organization_to_share_json =
+  decode_json( $failed_admin_too_short_organization_to_share->content );
+
+is( $failed_admin_too_short_organization_to_share_json->{status}, 0, );
+is(
+    $failed_admin_too_short_organization_to_share_json->{message},
+    'Invalid organization_to_share_token.',
+);
+
+my $failed_admin_invalid_project_token = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+        }
+    )
+);
+
+is( $failed_admin_invalid_project_token->code(), 400, );
+
+my $failed_admin_invalid_project_token_json =
+  decode_json( $failed_admin_invalid_project_token->content );
+
+is( $failed_admin_invalid_project_token_json->{status}, 0, );
+is(
+    $failed_admin_invalid_project_token_json->{message},
+    'Invalid project_token.',
+);
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();

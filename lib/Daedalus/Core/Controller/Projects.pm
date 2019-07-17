@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::Projects;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -9,6 +10,8 @@ use List::MoreUtils qw(any uniq);
 use Daedalus::Utils::Constants qw(
   $bad_request
 );
+
+use Data::Dumper;
 
 use base qw(Daedalus::Core::Controller::REST);
 
@@ -175,7 +178,7 @@ sub share_project_POST {
                     required => 1,
                 },
                 organization_to_share_token => {
-                    type     => "organization",
+                    type     => "no_main_organization",
                     required => 1,
                 },
                 project_token => {

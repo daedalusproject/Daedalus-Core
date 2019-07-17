@@ -8,6 +8,7 @@ Daedalus::Core::Utils::Crypt
 
 =cut
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;

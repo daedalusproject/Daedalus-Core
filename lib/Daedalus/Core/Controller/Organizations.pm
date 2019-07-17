@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::Organizations;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;

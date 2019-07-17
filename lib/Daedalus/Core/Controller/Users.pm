@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::Users;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;

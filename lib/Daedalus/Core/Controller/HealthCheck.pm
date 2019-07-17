@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::HealthCheck;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
