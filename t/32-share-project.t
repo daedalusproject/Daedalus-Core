@@ -308,7 +308,7 @@ my $failed_admin_non_existent_organization_to_share_json =
 is( $failed_admin_non_existent_organization_to_share_json->{status}, 0, );
 is(
     $failed_admin_non_existent_organization_to_share_json->{message},
-    'Invalid organization to share token.',
+    'Invalid organization_to_share_token.',
 );
 
 done_testing();

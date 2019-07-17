@@ -17,6 +17,8 @@ use base qw(Catalyst::Controller::REST);
 use Daedalus::Organizations::Manager;
 use Daedalus::Users::Manager;
 
+use Data::Dumper;
+
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
 
@@ -137,11 +139,44 @@ Checks organization token
 =cut
 
 sub check_organization_token {
+
+    my $c                            = shift;
+    my $organization_token_candidate = shift;
+    my $data                         = shift;
+    my $data_properties              = shift;
+    my $required_data_name           = shift;
+
     my $response;
+    my $organization_token_check;
+
+    my $model      = $c->model("CoreRealms");
+    my $source     = $model->source("Organization");
+    my $column     = $source->column_info("token");
+    my $token_size = $column->{size};
 
     $response->{message} = q{};
     $response->{status}  = 1;
-    return;
+
+    if ( length($organization_token_candidate) != $token_size ) {
+        $response->{message}    = "Invalid $required_data_name.";
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+    }
+    else {
+        $organization_token_check =
+          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+            $organization_token_candidate );
+
+        if ( $organization_token_check->{status} == 1 ) {
+            $data->{organization} = $organization_token_check->{organization};
+        }
+        else {
+            $response = $organization_token_check;
+        }
+
+    }
+
+    return $response;
 }
 
 =head2 manage_auth
@@ -461,6 +496,12 @@ sub check_required_data {
             check_phone_number( $response, $value, $required_data_name );
         }
 
+        elsif ( $data_properties->{type} eq "organization" ) {
+            $response =
+              check_organization_token( $c, $value, $data, $data_properties,
+                $required_data_name );
+        }
+
         if ( $response->{status} == 1 ) {
             $data->{required_data}->{$required_data_name} = $value;
         }
@@ -533,7 +574,6 @@ sub authorize_and_validate {
 
      #  and ( $required_data->{organization_token}->{type} eq "organization" ) )
     {
-        check_organization_token();
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
             $value = $data_properties->{value};
