@@ -70,7 +70,7 @@ __PACKAGE__->table("projects");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 33
+  size: 32
 
 =cut
 
@@ -107,7 +107,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => q{},
         is_nullable   => 0,
-        size          => 33
+        size          => 32
     },
 );
 
@@ -169,8 +169,8 @@ __PACKAGE__->has_many(
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-14 17:38:31
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KevM1UGRhlFiMmcgpjRfdQ
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-17 06:56:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KhQmUSrpUuOcPd2YrCRFIQ
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
