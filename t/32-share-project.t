@@ -200,7 +200,7 @@ my $failed_admin_no_role_name = request(
         {
             'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9b',
+            'project_token'               => 'oqu2eeCee2Amae6Aijo7tei5woh4jiet',
         }
     )
 );
@@ -295,32 +295,7 @@ my $failed_admin_non_existent_organization_to_share = request(
             'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
             'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
-            'role_name'                   => 'firemann',
-        }
-    )
-);
-
-is( $failed_admin_non_existent_organization_to_share->code(), 400, );
-
-my $failed_admin_non_existent_organization_to_share_json =
-  decode_json( $failed_admin_non_existent_organization_to_share->content );
-
-is( $failed_admin_non_existent_organization_to_share_json->{status}, 0, );
-is(
-    $failed_admin_non_existent_organization_to_share_json->{message},
-    'Invalid organization_to_share_token.',
-);
-
-my $failed_admin_non_existent_organization_to_share = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
-            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
-            'role_name'                   => 'firemann',
+            'role_name'                   => 'fireman',
         }
     )
 );

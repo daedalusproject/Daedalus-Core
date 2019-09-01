@@ -181,6 +181,53 @@ sub check_organization_token {
     return $response;
 }
 
+=head2 check_project_token
+
+Checks project token
+
+=cut
+
+sub check_project_token {
+
+    my $c                       = shift;
+    my $project_token_candidate = shift;
+    my $data                    = shift;
+    my $data_properties         = shift;
+    my $required_data_name      = shift;
+
+    my $response;
+    my $project_token_check;
+
+    my $model      = $c->model("CoreRealms");
+    my $source     = $model->source("Project");
+    my $column     = $source->column_info("token");
+    my $token_size = $column->{size};
+
+    $response->{message} = q{};
+    $response->{status}  = 1;
+
+    if ( length($project_token_candidate) != $token_size ) {
+        $response->{message}    = "Invalid $required_data_name.";
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+    }
+    else {
+        $project_token_check =
+          Daedalus::Projects::Manager::get_project_from_token( $c,
+            $project_token_candidate );
+
+        if ( $project_token_check->{status} == 1 ) {
+            $data->{$required_data_name} = $project_token_check->{project};
+        }
+        else {
+            $response = $project_token_check;
+            $response->{message} = "Invalid $required_data_name.";
+        }
+    }
+
+    return $response;
+}
+
 =head2 manage_auth
 
 Checks auth
@@ -513,6 +560,11 @@ sub check_required_data {
             when ("no_main_organization") {
                 $response =
                   check_organization_token( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+            when ("project") {
+                $response =
+                  check_project_token( $c, $value, $data,
                     $data_properties, $required_data_name );
             }
 

@@ -91,6 +91,47 @@ sub create_project {
     return $response;
 }
 
+=head2 get_project_from_token
+
+For a given project token, return project data
+
+=cut
+
+sub get_project_from_token {
+
+    my $c             = shift;
+    my $project_token = shift;
+
+    my $response;
+    $response->{status}     = 0;
+    $response->{error_code} = $bad_request;
+    $response->{message}    = 'Invalid project token.';
+
+    my $project =
+      $c->model('CoreRealms::Project')->find( { token => $project_token } );
+
+    if ($project) {
+        $response->{status}  = 1;
+        $response->{message} = 'Project token is valid.';
+        $response->{project} = {
+            data => {
+                project => {
+                    name  => $project->name,
+                    token => $project->token,
+                },
+            },
+            _hidden_data => {
+                project => {
+                    id                 => $project->id,
+                    organization_owner => $project->organization_owner,
+                }
+            }
+        };
+    }
+
+    return $response;
+}
+
 =encoding utf8
 
 =head1 SEE ALSO
