@@ -361,6 +361,29 @@ is(
     'Invalid project_token.',
 );
 
+my $failed_admin_role_name = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'nonsense',
+        }
+    )
+);
+
+is( $failed_admin_role_name->code(), 400, );
+
+my $failed_admin_role_name_json =
+  decode_json( $failed_admin_role_name->content );
+
+is( $failed_admin_role_name_json->{status},  0, );
+is( $failed_admin_role_name_json->{message}, 'Invalid role_name.', );
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();
