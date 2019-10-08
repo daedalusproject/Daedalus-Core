@@ -228,6 +228,41 @@ sub check_project_token {
     return $response;
 }
 
+=head2 check_role_name
+
+Checks role name
+
+=cut
+
+sub check_role_name {
+
+    my $c                   = shift;
+    my $role_name_candidate = shift;
+    my $data                = shift;
+    my $data_properties     = shift;
+    my $required_data_name  = shift;
+
+    my $response;
+    my $role_name_check;
+
+    $response->{message} = q{};
+    $response->{status}  = 1;
+
+    $role_name_check =
+      Daedalus::OrganizationGroups::Manager::check_role_existence( $c,
+        $role_name_candidate );
+
+    if ($role_name_check) {
+        $data->{$required_data_name} = $role_name_candidate;
+    }
+    else {
+        $response->{status}  = 0;
+        $response->{message} = "Invalid $required_data_name.";
+    }
+
+    return $response;
+}
+
 =head2 manage_auth
 
 Checks auth
@@ -565,6 +600,11 @@ sub check_required_data {
             when ("project") {
                 $response =
                   check_project_token( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+            when ("role") {
+                $response =
+                  check_role_name( $c, $value, $data,
                     $data_properties, $required_data_name );
             }
 

@@ -186,7 +186,7 @@ sub share_project_POST {
                     required => 1,
                 },
                 role_name => {
-                    type     => "string",
+                    type     => "role",
                     required => 1,
                 },
             }

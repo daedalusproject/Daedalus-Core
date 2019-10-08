@@ -386,4 +386,4 @@ is( $failed_admin_role_name_json->{message}, 'Invalid role_name.', );
 
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
