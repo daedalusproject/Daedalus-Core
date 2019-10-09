@@ -384,6 +384,54 @@ my $failed_admin_role_name_json =
 is( $failed_admin_role_name_json->{status},  0, );
 is( $failed_admin_role_name_json->{message}, 'Invalid role_name.', );
 
+my $failed_no_admin = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $failed_no_admin->code(), 403, );
+
+my $failed_no_admin_json = decode_json( $failed_no_admin->content );
+
+is( $failed_no_admin_json->{status}, 0, );
+is(
+    $failed_no_admin_json->{message},
+'Your organization roles does not match with the following roles: organization master.',
+    "You are not your organization admin"
+);
+
+my $success_admin = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $success_admin->code(), 200, );
+
+my $success_admin_json = decode_json( $success_admin->content );
+
+is( $success_admin_json->{status},  1, );
+is( $success_admin_json->{message}, 'Project shared.', );
+
 done_testing();
 
 #DatabaseSetUpTearDown::delete_database();
