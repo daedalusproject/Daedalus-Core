@@ -410,6 +410,33 @@ is(
     "You are not your organization admin"
 );
 
+my $failed_not_organization_project = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'eabi7ooph3Aih4fohc5aung1phawijae',    # Daedalus Core
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $failed_not_organization_project->code(), 400, );
+
+my $failed_not_organization_project_json =
+  decode_json( $failed_not_organization_project->content );
+
+is( $failed_not_organization_project_json->{status}, 0, );
+is(
+    $failed_not_organization_project_json->{message},
+    'Invalid project_token.',
+    "It exists but Core is not going to tell you."
+);
+
 my $success_admin = request(
     POST $endpoint,
     Content_Type  => 'application/json',

@@ -123,7 +123,7 @@ sub get_project_from_token {
             _hidden_data => {
                 project => {
                     id                 => $project->id,
-                    organization_owner => $project->organization_owner,
+                    organization_owner => $project->organization_owner->id,
                 }
             }
         };

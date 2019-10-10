@@ -165,6 +165,8 @@ sub share_project_POST {
     my $user_data;
     my $project_name;
 
+    my $data;
+
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
@@ -195,6 +197,24 @@ sub share_project_POST {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
+    }
+    else {
+        $response->{status}  = 1;
+        $response->{message} = "Project shared.";
+
+        $data = $authorization_and_validatation->{data};
+
+        # Check Project organization owner is organization
+        if ( $data->{organization}->{_hidden_data}->{organization}->{id} ne
+            $data->{project}->{_hidden_data}->{project}->{organization_owner} )
+        {
+            $response->{status}     = 0;
+            $response->{error_code} = $bad_request;
+            $response->{message}    = "Invalid project_token.";
+        }
+        else {
+ #check if organization_to_share already have this project shared with this role
+        }
     }
 
     return $self->return_response( $c, $response );

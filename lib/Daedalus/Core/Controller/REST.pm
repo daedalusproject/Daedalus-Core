@@ -217,7 +217,7 @@ sub check_project_token {
             $project_token_candidate );
 
         if ( $project_token_check->{status} == 1 ) {
-            $data->{$required_data_name} = $project_token_check->{project};
+            $data->{project} = $project_token_check->{project};
         }
         else {
             $response = $project_token_check;
