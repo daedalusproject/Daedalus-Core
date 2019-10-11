@@ -1,4 +1,4 @@
-package Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject;
+package Daedalus::Core::Schema::CoreRealms::Result::SharedProject;
 use utf8;
 
 # Created by DBIx::Class::Schema::Loader
@@ -6,7 +6,7 @@ use utf8;
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject
+Daedalus::Core::Schema::CoreRealms::Result::SharedProject
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<organization_share_project>
+=head1 TABLE: C<shared_projects>
 
 =cut
 
-__PACKAGE__->table("organization_share_project");
+__PACKAGE__->table("shared_projects");
 
 =head1 ACCESSORS
 
@@ -65,11 +65,10 @@ __PACKAGE__->table("organization_share_project");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 share_id
+=head2 organization_manager_id
 
   data_type: 'bigint'
   extra: {unsigned => 1}
-  is_auto_increment: 1
   is_nullable: 0
 
 =head2 deleted
@@ -77,6 +76,13 @@ __PACKAGE__->table("organization_share_project");
   data_type: 'tinyint'
   default_value: 0
   is_nullable: 1
+
+=head2 id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_auto_increment: 1
+  is_nullable: 0
 
 =cut
 
@@ -108,28 +114,30 @@ __PACKAGE__->add_columns(
         is_foreign_key => 1,
         is_nullable    => 0,
     },
-    "share_id",
+    "organization_manager_id",
+    { data_type => "bigint", extra => { unsigned => 1 }, is_nullable => 0 },
+    "deleted",
+    { data_type => "tinyint", default_value => 0, is_nullable => 1 },
+    "id",
     {
         data_type         => "bigint",
         extra             => { unsigned => 1 },
         is_auto_increment => 1,
         is_nullable       => 0,
     },
-    "deleted",
-    { data_type => "tinyint", default_value => 0, is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
 
 =over 4
 
-=item * L</share_id>
+=item * L</id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("share_id");
+__PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
@@ -178,18 +186,25 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-17 06:56:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lYBBLMFCQhNM/t3fmHZPoQ
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+=head2 shared_project_group_assignment
 
-__PACKAGE__->add_columns(
-    'created_at',
-    {
-        %{ __PACKAGE__->column_info('created_at') },
-        set_on_create => 1,
-        set_on_update => 0
-    }
+Type: might_have
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment|SharedProjectGroupAssignment>
+
+=cut
+
+__PACKAGE__->might_have(
+    "shared_project_group_assignment",
+    "Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment",
+    { "foreign.shared_project_id" => "self.id" },
+    { cascade_copy                => 0, cascade_delete => 0 },
 );
+
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:62Ry+H7EKJfrsfOIOb7ZnQ
+
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 
 our $VERSION = '0.01';

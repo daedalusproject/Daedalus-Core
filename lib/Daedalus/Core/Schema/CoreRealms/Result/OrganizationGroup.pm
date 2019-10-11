@@ -184,8 +184,23 @@ __PACKAGE__->has_many(
     { cascade_copy       => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-17 06:56:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LyXGD16ngw2CriFK0m2SvA
+=head2 shared_project_group_assignments
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment|SharedProjectGroupAssignment>
+
+=cut
+
+__PACKAGE__->has_many(
+    "shared_project_group_assignments",
+    "Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment",
+    { "foreign.group_id" => "self.id" },
+    { cascade_copy       => 0, cascade_delete => 0 },
+);
+
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aOWxaUIeOYGxzS8Mbn0z9w
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 
