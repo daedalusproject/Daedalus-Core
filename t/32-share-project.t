@@ -539,6 +539,132 @@ is(
     ""
 );
 
+my $success_admin_other_role = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $success_admin_other_role->code(), 200, );
+
+my $success_admin_other_role_json =
+  decode_json( $success_admin_other_role->content );
+
+is( $success_admin_other_role_json->{status},  1, );
+is( $success_admin_other_role_json->{message}, 'Project shared.', );
+
+my $success_admin_share_with_other_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $success_admin_share_with_other_organization->code(), 200, );
+
+my $success_admin_share_with_other_organization_json =
+  decode_json( $success_admin_share_with_other_organization->content );
+
+is( $success_admin_share_with_other_organization_json->{status}, 1, );
+is(
+    $success_admin_share_with_other_organization_json->{message},
+    'Project shared.',
+);
+
+my $failed_admin_share_not_your_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $failed_admin_share_not_your_organization->code(), 400, );
+
+my $failed_admin_share_not_your_organization_json =
+  decode_json( $failed_admin_share_not_your_organization->content );
+
+is( $failed_admin_share_not_your_organization_json->{status}, 0, );
+is(
+    $failed_admin_share_not_your_organization_json->{message},
+    'Invalid organization token.',
+);
+
+my $superadmin_login = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_login->code(), 200, );
+
+my $superadmin_login_json = decode_json( $superadmin_login->content );
+
+is( $superadmin_login_json->{status}, 1, );
+
+my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
+
+my $super_admin_share_not_your_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $super_admin_share_not_your_organization->code(), 200, );
+
+my $super_admin_share_not_your_organization_json =
+  decode_json( $super_admin_share_not_your_organization->content );
+
+is( $super_admin_share_not_your_organization_json->{status}, 1, );
+is(
+    $super_admin_share_not_your_organization_json->{message},
+    'Invalid organization token.',
+);
+
 done_testing();
 
 #DatabaseSetUpTearDown::delete_database();
