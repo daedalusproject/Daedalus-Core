@@ -37,7 +37,7 @@ Daedalus Projects Manager
 
 =cut
 
-=head2 create_projects
+=head2 create_project
 
 Creates a new Project
 
@@ -182,8 +182,6 @@ sub share_project {
     my $role_id                  = shift;
 
     my $response;
-    $response->{status}  = 0;
-    $response->{message} = 'Fatal error.';
 
     my $share_project = $c->model('CoreRealms::SharedProject')->create(
         {
@@ -194,10 +192,10 @@ sub share_project {
         }
     );
 
-    if ($share_project) {
-        $response->{status}  = 1;
-        $response->{message} = 'Project shared.';
-    }
+# There is no check for duplicated shares, if this relation is duplicated it is has been checked before.
+
+    $response->{status}  = 1;
+    $response->{message} = 'Project shared.';
 
     return $response;
 }
