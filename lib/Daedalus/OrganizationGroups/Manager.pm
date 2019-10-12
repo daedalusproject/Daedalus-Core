@@ -70,7 +70,7 @@ sub check_role_existence {
 
     my $roles = { data => [], _hidden_data => {} };
 
-    my $response = { status => 1, message => "" };
+    my $response = { status => 1, message => q{} };
 
     my @available_roles =
       $c->model('CoreRealms::Role')
