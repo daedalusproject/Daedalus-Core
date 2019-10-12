@@ -214,7 +214,7 @@ sub share_project_POST {
         {
             $response->{status}     = 0;
             $response->{error_code} = $bad_request;
-            if ( $is_super_admin eq 0 ) {
+            if ( $is_super_admin == 0 ) {
                 $response->{message} = "Invalid project_token.";
             }
             else {

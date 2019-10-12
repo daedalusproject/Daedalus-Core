@@ -638,8 +638,7 @@ my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-my $super_adminljMPXvVHZZQTbXsaXWA2kgSWzL942Pufoqu2eeCee2Amae6Aijo7tei5woh4jiet_share_not_organizations_project
-  = request(
+my $super_admin_share_not_organizations_project = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
@@ -653,7 +652,7 @@ my $super_adminljMPXvVHZZQTbXsaXWA2kgSWzL942Pufoqu2eeCee2Amae6Aijo7tei5woh4jiet_
             'role_name' => 'expenses_watcher',
         }
     )
-  );
+);
 
 is( $super_admin_share_not_organizations_project->code(), 400, );
 
