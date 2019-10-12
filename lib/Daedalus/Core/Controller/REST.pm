@@ -252,8 +252,8 @@ sub check_role_name {
       Daedalus::OrganizationGroups::Manager::check_role_existence( $c,
         $role_name_candidate );
 
-    if ($role_name_check) {
-        $data->{$required_data_name} = $role_name_candidate;
+    if ( $role_name_check->{status} ) {
+        $data->{$required_data_name} = $role_name_check;
     }
     else {
         $response->{status}  = 0;

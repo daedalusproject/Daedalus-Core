@@ -132,6 +132,76 @@ sub get_project_from_token {
     return $response;
 }
 
+=head2 check_shared_project
+
+Check if project is already shared
+
+=cut
+
+sub check_shared_project {
+
+    my $c                        = shift;
+    my $organization_owner_id    = shift;
+    my $organization_to_share_id = shift;
+    my $project_id               = shift;
+    my $role_id                  = shift;
+
+    my $response;
+    $response->{status} = 0;
+
+    my $shared_project = $c->model('CoreRealms::SharedProject')->find(
+        {
+            organization_manager_id        => $organization_owner_id,
+            organization_to_manage_id      => $organization_to_share_id,
+            project_id                     => $project_id,
+            organization_to_manage_role_id => $role_id
+        }
+    );
+
+    if ($shared_project) {
+        $response->{status} = 1;
+        $response->{message} =
+'This project has been already shared with this organization and this role.';
+    }
+
+    return $response;
+}
+
+=head2 share_project
+
+Share a project between two organizations
+
+=cut
+
+sub share_project {
+
+    my $c                        = shift;
+    my $organization_owner_id    = shift;
+    my $organization_to_share_id = shift;
+    my $project_id               = shift;
+    my $role_id                  = shift;
+
+    my $response;
+    $response->{status}  = 0;
+    $response->{message} = 'Fatal error.';
+
+    my $share_project = $c->model('CoreRealms::SharedProject')->create(
+        {
+            organization_manager_id        => $organization_owner_id,
+            organization_to_manage_id      => $organization_to_share_id,
+            project_id                     => $project_id,
+            organization_to_manage_role_id => $role_id
+        }
+    );
+
+    if ($share_project) {
+        $response->{status}  = 1;
+        $response->{message} = 'Project shared.';
+    }
+
+    return $response;
+}
+
 =encoding utf8
 
 =head1 SEE ALSO

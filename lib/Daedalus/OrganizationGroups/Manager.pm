@@ -70,6 +70,8 @@ sub check_role_existence {
 
     my $roles = { data => [], _hidden_data => {} };
 
+    my $response = { status => 1, message => "" };
+
     my @available_roles =
       $c->model('CoreRealms::Role')
       ->search( { role_name => { 'not in' => ['daedalus_manager'] } } )->all;
@@ -79,7 +81,15 @@ sub check_role_existence {
         $roles->{_hidden_data}->{ $role->role_name } = { id => $role->id };
     }
 
-    return exists $roles->{_hidden_data}->{$role_candidate};
+    if ( exists $roles->{_hidden_data}->{$role_candidate} ) {
+        $response->{data} = { name => $role_candidate, };
+        $response->{_hidden_data} =
+          { id => $roles->{_hidden_data}->{$role_candidate}->{id} };
+    }
+    else {
+        $response->{status} = 0;
+    }
+    return $response;
 }
 
 =head2 count_roles

@@ -166,6 +166,8 @@ sub share_project_POST {
     my $project_name;
 
     my $data;
+    my $shared_project;
+    my $share_project;
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -213,7 +215,31 @@ sub share_project_POST {
             $response->{message}    = "Invalid project_token.";
         }
         else {
- #check if organization_to_share already have this project shared with this role
+# Check if organization_to_share already have this project shared with this role
+            $shared_project = Daedalus::Projects::Manager::check_shared_project(
+                $c,
+                $data->{organization}->{_hidden_data}->{organization}->{id},
+                $data->{organization_to_share_token}->{_hidden_data}
+                  ->{organization}->{id},
+                $data->{project}->{_hidden_data}->{project}->{id},
+                $data->{role_name}->{_hidden_data}->{id}
+            );
+            if ( $shared_project->{status} ) {
+                $response               = $shared_project;
+                $response->{status}     = 0;
+                $response->{error_code} = $bad_request;
+            }
+            else {
+                $share_project = Daedalus::Projects::Manager::share_project(
+                    $c,
+                    $data->{organization}->{_hidden_data}->{organization}->{id},
+                    $data->{organization_to_share_token}->{_hidden_data}
+                      ->{organization}->{id},
+                    $data->{project}->{_hidden_data}->{project}->{id},
+                    $data->{role_name}->{_hidden_data}->{id}
+                );
+                $response = $share_project;
+            }
         }
     }
 

@@ -204,7 +204,18 @@ __PACKAGE__->might_have(
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:62Ry+H7EKJfrsfOIOb7ZnQ
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
+
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
+);
+
 __PACKAGE__->meta->make_immutable;
 
 our $VERSION = '0.01';
