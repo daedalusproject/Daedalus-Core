@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::Root;
 
+use 5.026_001;
 use Moose;
 use namespace::autoclean;
 
@@ -43,7 +44,7 @@ $VERSION
 
 =head1 SUBROUTINES/METHODS
 
-=head2 index
+=head2 WelcomeEmptyPage
 
 The root page (/)
 
@@ -57,7 +58,7 @@ sub WelcomeEmptyPage : Path : Args(0) {
     return;
 }
 
-=head2 default
+=head2 defaultNotFound
 
 Standard 404 error page
 

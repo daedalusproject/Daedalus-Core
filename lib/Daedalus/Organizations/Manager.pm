@@ -8,6 +8,7 @@ Daedalus::Organizations::Manager
 
 =cut
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -525,28 +526,6 @@ sub create_organization_group {
     $response->{message} = "Organization group has been created.";
 
     return $response;
-}
-
-=head2 list_roles
-
-Lists available roles
-
-=cut
-
-sub list_roles {
-    my $c = shift;
-
-    my $roles = { data => [], _hidden_data => {} };
-
-    my @available_roles =
-      $c->model('CoreRealms::Role')
-      ->search( { role_name => { 'not in' => ['daedalus_manager'] } } )->all;
-
-    for my $role (@available_roles) {
-        push @{ $roles->{data} }, $role->role_name;
-        $roles->{_hidden_data}->{ $role->role_name } = { id => $role->id };
-    }
-    return $roles;
 }
 
 =head2 add_role_to_organization_group

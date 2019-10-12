@@ -78,7 +78,7 @@ __PACKAGE__->table("users");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 33
+  size: 32
 
 =head2 password
 
@@ -130,7 +130,7 @@ __PACKAGE__->table("users");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 33
+  size: 32
 
 =cut
 
@@ -175,7 +175,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => q{},
         is_nullable   => 0,
-        size          => 33
+        size          => 32
     },
     "password",
     {
@@ -223,7 +223,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => q{},
         is_nullable   => 0,
-        size          => 33
+        size          => 32
     },
 );
 
@@ -327,8 +327,8 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:02:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:v70AV6uSxCfdQ7nI40KXIA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yKO+eOadyY2m6a5VSxnhpw
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

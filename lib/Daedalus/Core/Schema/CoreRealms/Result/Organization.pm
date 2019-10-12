@@ -69,7 +69,7 @@ __PACKAGE__->table("organizations");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 33
+  size: 32
 
 =cut
 
@@ -105,7 +105,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => q{},
         is_nullable   => 0,
-        size          => 33
+        size          => 32
     },
 );
 
@@ -138,36 +138,6 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-=head2 organization_share_project_organization_owners
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject|OrganizationShareProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_share_project_organization_owners",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
-    { "foreign.organization_owner_id" => "self.id" },
-    { cascade_copy                    => 0, cascade_delete => 0 },
-);
-
-=head2 organization_share_project_organizations_to_manage
-
-Type: has_many
-
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject|OrganizationShareProject>
-
-=cut
-
-__PACKAGE__->has_many(
-    "organization_share_project_organizations_to_manage",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
-    { "foreign.organization_to_manage_id" => "self.id" },
-    { cascade_copy                        => 0, cascade_delete => 0 },
-);
-
 =head2 projects
 
 Type: has_many
@@ -181,6 +151,21 @@ __PACKAGE__->has_many(
     "Daedalus::Core::Schema::CoreRealms::Result::Project",
     { "foreign.organization_owner" => "self.id" },
     { cascade_copy                 => 0, cascade_delete => 0 },
+);
+
+=head2 shared_projects
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProject|SharedProject>
+
+=cut
+
+__PACKAGE__->has_many(
+    "shared_projects",
+    "Daedalus::Core::Schema::CoreRealms::Result::SharedProject",
+    { "foreign.organization_to_manage_id" => "self.id" },
+    { cascade_copy                        => 0, cascade_delete => 0 },
 );
 
 =head2 user_organizations
@@ -198,8 +183,8 @@ __PACKAGE__->has_many(
     { cascade_copy              => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:02:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OFFSNYAaipaAViirm7Cp3g
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:c8MfzcH7fOb2ZHQAGPBX2g
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );

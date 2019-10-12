@@ -3,6 +3,7 @@ Information system which also manages all other services, clients, organizations
 
 **Master**
 [![pipeline master status](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/badges/master/pipeline.svg)](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/commits/master)[![gitlab master coverage report](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/badges/master/coverage.svg)](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/commits/master)
+
 **Develop**
 [![pipeline develop status](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/badges/develop/pipeline.svg)](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/commits/develop)[![gitlab develop coverage report](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/badges/develop/coverage.svg)](https://git.daedalus-project.io/daedalusproject/Daedalus-Core/commits/develop)
 
@@ -22,12 +23,20 @@ make
 make test
 ```
 
-or....
+or...
 
 ``` bash
 rm META.yml ; rm -f /var/tmp/daedalus_core_realms.db ; perl script/daedalus_core_deploy.pl SQLite /var/tmp/daedalus_core_realms.db ; perl t/script/DatabaseSetUpTearDown.pm ; perl Makefile.PL ; make ; make test
 ```
 
+For running only one test:
+```bash
+rm META.yml
+rm -f /var/tmp/daedalus_core_realms.db
+perl script/daedalus_core_deploy.pl SQLite /var/tmp/daedalus_core_realms.db
+perl t/script/DatabaseSetUpTearDown.pm
+prove --lib lib t/00-test.t
+```
 
 Run server
 ```

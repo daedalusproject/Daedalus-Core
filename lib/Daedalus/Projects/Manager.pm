@@ -8,6 +8,7 @@ Daedalus::Projects::Manager
 
 =cut
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -36,7 +37,7 @@ Daedalus Projects Manager
 
 =cut
 
-=head2 create_projects
+=head2 create_project
 
 Creates a new Project
 
@@ -86,6 +87,115 @@ sub create_project {
             }
         };
     }
+
+    return $response;
+}
+
+=head2 get_project_from_token
+
+For a given project token, return project data
+
+=cut
+
+sub get_project_from_token {
+
+    my $c             = shift;
+    my $project_token = shift;
+
+    my $response;
+    $response->{status}     = 0;
+    $response->{error_code} = $bad_request;
+    $response->{message}    = 'Invalid project token.';
+
+    my $project =
+      $c->model('CoreRealms::Project')->find( { token => $project_token } );
+
+    if ($project) {
+        $response->{status}  = 1;
+        $response->{message} = 'Project token is valid.';
+        $response->{project} = {
+            data => {
+                project => {
+                    name  => $project->name,
+                    token => $project->token,
+                },
+            },
+            _hidden_data => {
+                project => {
+                    id                 => $project->id,
+                    organization_owner => $project->organization_owner->id,
+                }
+            }
+        };
+    }
+
+    return $response;
+}
+
+=head2 check_shared_project
+
+Check if project is already shared
+
+=cut
+
+sub check_shared_project {
+
+    my $c                        = shift;
+    my $organization_owner_id    = shift;
+    my $organization_to_share_id = shift;
+    my $project_id               = shift;
+    my $role_id                  = shift;
+
+    my $response;
+    $response->{status} = 0;
+
+    my $shared_project = $c->model('CoreRealms::SharedProject')->find(
+        {
+            organization_manager_id        => $organization_owner_id,
+            organization_to_manage_id      => $organization_to_share_id,
+            project_id                     => $project_id,
+            organization_to_manage_role_id => $role_id
+        }
+    );
+
+    if ($shared_project) {
+        $response->{status} = 1;
+        $response->{message} =
+'This project has been already shared with this organization and this role.';
+    }
+
+    return $response;
+}
+
+=head2 share_project
+
+Share a project between two organizations
+
+=cut
+
+sub share_project {
+
+    my $c                        = shift;
+    my $organization_owner_id    = shift;
+    my $organization_to_share_id = shift;
+    my $project_id               = shift;
+    my $role_id                  = shift;
+
+    my $response;
+
+    my $share_project = $c->model('CoreRealms::SharedProject')->create(
+        {
+            organization_manager_id        => $organization_owner_id,
+            organization_to_manage_id      => $organization_to_share_id,
+            project_id                     => $project_id,
+            organization_to_manage_role_id => $role_id
+        }
+    );
+
+# There is no check for duplicated shares, if this relation is duplicated it is has been checked before.
+
+    $response->{status}  = 1;
+    $response->{message} = 'Project shared.';
 
     return $response;
 }

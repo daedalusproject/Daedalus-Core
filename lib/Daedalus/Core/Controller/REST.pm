@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::REST;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -16,6 +17,8 @@ use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Organizations::Manager;
 use Daedalus::Users::Manager;
+
+use Data::Dumper;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -137,11 +140,127 @@ Checks organization token
 =cut
 
 sub check_organization_token {
+
+    my $c                            = shift;
+    my $organization_token_candidate = shift;
+    my $data                         = shift;
+    my $data_properties              = shift;
+    my $required_data_name           = shift;
+
     my $response;
+    my $organization_token_check;
+
+    my $model      = $c->model("CoreRealms");
+    my $source     = $model->source("Organization");
+    my $column     = $source->column_info("token");
+    my $token_size = $column->{size};
 
     $response->{message} = q{};
     $response->{status}  = 1;
-    return;
+
+    if ( length($organization_token_candidate) != $token_size ) {
+        $response->{message}    = "Invalid $required_data_name.";
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+    }
+    else {
+        $organization_token_check =
+          Daedalus::Organizations::Manager::get_organization_from_token( $c,
+            $organization_token_candidate );
+
+        if ( $organization_token_check->{status} == 1 ) {
+            $data->{$required_data_name} =
+              $organization_token_check->{organization};
+        }
+        else {
+            $response = $organization_token_check;
+            $response->{message} = "Invalid $required_data_name.";
+        }
+    }
+
+    return $response;
+}
+
+=head2 check_project_token
+
+Checks project token
+
+=cut
+
+sub check_project_token {
+
+    my $c                       = shift;
+    my $project_token_candidate = shift;
+    my $data                    = shift;
+    my $data_properties         = shift;
+    my $required_data_name      = shift;
+
+    my $response;
+    my $project_token_check;
+
+    my $model      = $c->model("CoreRealms");
+    my $source     = $model->source("Project");
+    my $column     = $source->column_info("token");
+    my $token_size = $column->{size};
+
+    $response->{message} = q{};
+    $response->{status}  = 1;
+
+    if ( length($project_token_candidate) != $token_size ) {
+        $response->{message}    = "Invalid $required_data_name.";
+        $response->{status}     = 0;
+        $response->{error_code} = $bad_request;
+    }
+    else {
+        $project_token_check =
+          Daedalus::Projects::Manager::get_project_from_token( $c,
+            $project_token_candidate );
+
+        if ( $project_token_check->{status} == 1 ) {
+            $data->{project} = $project_token_check->{project};
+        }
+        else {
+            $response = $project_token_check;
+            $response->{message} = "Invalid $required_data_name.";
+        }
+    }
+
+    return $response;
+}
+
+=head2 check_role_name
+
+Checks role name
+
+=cut
+
+sub check_role_name {
+
+    my $c                   = shift;
+    my $role_name_candidate = shift;
+    my $data                = shift;
+    my $data_properties     = shift;
+    my $required_data_name  = shift;
+
+    my $response;
+    my $role_name_check;
+
+    $response->{message} = q{};
+    $response->{status}  = 1;
+
+    $role_name_check =
+      Daedalus::OrganizationGroups::Manager::check_role_existence( $c,
+        $role_name_candidate );
+
+    if ( $role_name_check->{status} ) {
+        $data->{$required_data_name} = $role_name_check;
+    }
+    else {
+        $response->{status}  = 0;
+        $response->{message} = "Invalid $required_data_name.";
+    }
+
+    return $response;
 }
 
 =head2 manage_auth
@@ -436,29 +555,59 @@ sub check_required_data {
     }
 
     if ( $response->{status} == 1 ) {
+        given ( $data_properties->{type} ) {
 
-        #Check Type
-        if ( $data_properties->{type} eq "e-mail" ) {
-            if ( !Daedalus::Users::Manager::check_email_valid($value) ) {
-                $response->{status}     = 0;
-                $response->{error_code} = $bad_request;
-                $response->{message} =
-                  $response->{message} . " $required_data_name is invalid.";
+            when ("e-mail") {
+                if ( !Daedalus::Users::Manager::check_email_valid($value) ) {
+                    $response->{status}     = 0;
+                    $response->{error_code} = $bad_request;
+                    $response->{message} =
+                      $response->{message} . " $required_data_name is invalid.";
+                }
             }
-        }
+            when ("registered_user_token") {
 
-        elsif ($data_properties->{type} eq "registered_user_token"
-            or $data_properties->{type} eq "active_user_token"
-            or $data_properties->{type} eq "organization_user" )
-        {
-            # Check users token length
-            $response =
-              check_user_token( $c, $value, $data, $data_properties,
-                $required_data_name );
-        }
+                # Check users token length
+                $response =
+                  check_user_token( $c, $value, $data, $data_properties,
+                    $required_data_name );
+            }
+            when ("active_user_token") {
 
-        elsif ( $data_properties->{type} eq "phone" ) {
-            check_phone_number( $response, $value, $required_data_name );
+                # Check users token length
+                $response =
+                  check_user_token( $c, $value, $data, $data_properties,
+                    $required_data_name );
+            }
+
+            when ("organization_user") {
+
+                # Check users token length
+                $response =
+                  check_user_token( $c, $value, $data, $data_properties,
+                    $required_data_name );
+            }
+
+            when ("phone") {
+                check_phone_number( $response, $value, $required_data_name );
+            }
+
+            when ("no_main_organization") {
+                $response =
+                  check_organization_token( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+            when ("project") {
+                $response =
+                  check_project_token( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+            when ("role") {
+                $response =
+                  check_role_name( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+
         }
 
         if ( $response->{status} == 1 ) {
@@ -533,7 +682,6 @@ sub authorize_and_validate {
 
      #  and ( $required_data->{organization_token}->{type} eq "organization" ) )
     {
-        check_organization_token();
         my $data_properties = $required_data->{organization_token};
         if ( $data_properties->{given} == 1 ) {
             $value = $data_properties->{value};

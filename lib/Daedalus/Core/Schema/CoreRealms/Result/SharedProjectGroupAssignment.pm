@@ -1,4 +1,4 @@
-package Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser;
+package Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment;
 use utf8;
 
 # Created by DBIx::Class::Schema::Loader
@@ -6,7 +6,7 @@ use utf8;
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::RegisteredUser
+Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment
 
 =cut
 
@@ -30,56 +30,46 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<registered_users>
+=head1 TABLE: C<shared_project_group_assignment>
 
 =cut
 
-__PACKAGE__->table("registered_users");
+__PACKAGE__->table("shared_project_group_assignment");
 
 =head1 ACCESSORS
 
-=head2 registered_user
+=head2 shared_project_id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_auto_increment: 1
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 group_id
 
   data_type: 'bigint'
   extra: {unsigned => 1}
   is_foreign_key: 1
-  is_nullable: 0
-
-=head2 registrator_user
-
-  data_type: 'bigint'
-  extra: {unsigned => 1}
-  is_foreign_key: 1
-  is_nullable: 0
-
-=head2 created_at
-
-  data_type: 'datetime'
-  datetime_undef_if_invalid: 1
   is_nullable: 0
 
 =cut
 
 __PACKAGE__->add_columns(
-    "registered_user",
+    "shared_project_id",
+    {
+        data_type         => "bigint",
+        extra             => { unsigned => 1 },
+        is_auto_increment => 1,
+        is_foreign_key    => 1,
+        is_nullable       => 0,
+    },
+    "group_id",
     {
         data_type      => "bigint",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
-    },
-    "registrator_user",
-    {
-        data_type      => "bigint",
-        extra          => { unsigned => 1 },
-        is_foreign_key => 1,
-        is_nullable    => 0,
-    },
-    "created_at",
-    {
-        data_type                 => "datetime",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
     },
 );
 
@@ -87,63 +77,50 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</registered_user>
-
-=item * L</registrator_user>
+=item * L</shared_project_id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key( "registered_user", "registrator_user" );
+__PACKAGE__->set_primary_key("shared_project_id");
 
 =head1 RELATIONS
 
-=head2 registered_user
+=head2 group
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User|User>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup|OrganizationGroup>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "registered_user",
-    "Daedalus::Core::Schema::CoreRealms::Result::User",
-    { id            => "registered_user" },
-    { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+    "group",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
+    { id            => "group_id" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-=head2 registrator_user
+=head2 shared_project
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::User|User>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProject|SharedProject>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "registrator_user",
-    "Daedalus::Core::Schema::CoreRealms::Result::User",
-    { id            => "registrator_user" },
-    { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+    "shared_project",
+    "Daedalus::Core::Schema::CoreRealms::Result::SharedProject",
+    { id            => "shared_project_id" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yJgYP251YshXLmn6yRaPWw
-#
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
-    "Validation", "Core" );
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:el/ArTYZCR434odv9GRxMw
 
-__PACKAGE__->add_columns(
-    'created_at',
-    {
-        %{ __PACKAGE__->column_info('created_at') },
-        set_on_create => 1,
-        set_on_update => 0
-    }
-);
-
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 
 our $VERSION = '0.01';

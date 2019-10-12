@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::Organizations;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -676,7 +677,7 @@ sub add_role_to_group_POST {
                 else {
                     # Check role, name
                     $available_roles =
-                      Daedalus::Organizations::Manager::list_roles($c);
+                      Daedalus::OrganizationGroups::Manager::list_roles($c);
                     if (
                         !exists $available_roles->{_hidden_data}->{$role_name} )
                     {
@@ -755,7 +756,8 @@ sub remove_existent_role {
         $response->{error_code} = $bad_request;
     }
     else {
-        $available_roles = Daedalus::Organizations::Manager::list_roles($c);
+        $available_roles =
+          Daedalus::OrganizationGroups::Manager::list_roles($c);
 
         if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
             $response->{status}     = 0;

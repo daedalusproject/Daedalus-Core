@@ -70,7 +70,7 @@ __PACKAGE__->table("projects");
   data_type: 'varchar'
   default_value: (empty string)
   is_nullable: 0
-  size: 33
+  size: 32
 
 =cut
 
@@ -107,7 +107,7 @@ __PACKAGE__->add_columns(
         data_type     => "varchar",
         default_value => q{},
         is_nullable   => 0,
-        size          => 33
+        size          => 32
     },
 );
 
@@ -154,23 +154,23 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-=head2 organization_share_projects
+=head2 shared_projects
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject|OrganizationShareProject>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProject|SharedProject>
 
 =cut
 
 __PACKAGE__->has_many(
-    "organization_share_projects",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationShareProject",
+    "shared_projects",
+    "Daedalus::Core::Schema::CoreRealms::Result::SharedProject",
     { "foreign.project_id" => "self.id" },
     { cascade_copy         => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-07-09 18:09:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZeEZBoo1cXVc4bHZibIcsA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3ZKPPMZJ7oICji8t9Db0Ig
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
 

@@ -1,5 +1,6 @@
 package Daedalus::Core::Controller::Projects;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -9,6 +10,8 @@ use List::MoreUtils qw(any uniq);
 use Daedalus::Utils::Constants qw(
   $bad_request
 );
+
+use Data::Dumper;
 
 use base qw(Daedalus::Core::Controller::REST);
 
@@ -124,6 +127,130 @@ sub create_project_POST {
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
     }
+    return $self->return_response( $c, $response );
+}
+
+=head2 share_project
+
+Share project between organizations, role level..
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organization token
+                 - Organization "to share wtih" token
+                 - Project token
+                 - Role name
+
+Organization tokens can be the same. An organization has to choose if its own groups
+have to manage or not its projects.
+
+=cut
+
+sub share_project : Path('/project/share') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 share_project_POST
+
+/project/share is a POST request
+
+=cut
+
+sub share_project_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $project_name;
+    my $is_super_admin;
+
+    my $data;
+    my $shared_project;
+    my $share_project;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master'],
+            },
+            required_data => {
+                organization_token => {
+                    type     => "organization",
+                    required => 1,
+                },
+                organization_to_share_token => {
+                    type     => "no_main_organization",
+                    required => 1,
+                },
+                project_token => {
+                    type     => "project",
+                    required => 1,
+                },
+                role_name => {
+                    type     => "role",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $response->{message} = "Project shared.";
+
+        $data = $authorization_and_validatation->{data};
+        $is_super_admin =
+          $data->{user_data}->{_hidden_data}->{user}->{is_super_admin};
+
+        # Check Project organization owner is organization
+        if ( $data->{organization}->{_hidden_data}->{organization}->{id} ne
+            $data->{project}->{_hidden_data}->{project}->{organization_owner} )
+        {
+            $response->{status}     = 0;
+            $response->{error_code} = $bad_request;
+            if ( $is_super_admin == 0 ) {
+                $response->{message} = "Invalid project_token.";
+            }
+            else {
+                $response->{message} =
+                  'Project does not belong to this organization.';
+            }
+        }
+        else {
+# Check if organization_to_share already have this project shared with this role
+            $shared_project = Daedalus::Projects::Manager::check_shared_project(
+                $c,
+                $data->{organization}->{_hidden_data}->{organization}->{id},
+                $data->{organization_to_share_token}->{_hidden_data}
+                  ->{organization}->{id},
+                $data->{project}->{_hidden_data}->{project}->{id},
+                $data->{role_name}->{_hidden_data}->{id}
+            );
+            if ( $shared_project->{status} ) {
+                $response               = $shared_project;
+                $response->{status}     = 0;
+                $response->{error_code} = $bad_request;
+            }
+            else {
+                $share_project = Daedalus::Projects::Manager::share_project(
+                    $c,
+                    $data->{organization}->{_hidden_data}->{organization}->{id},
+                    $data->{organization_to_share_token}->{_hidden_data}
+                      ->{organization}->{id},
+                    $data->{project}->{_hidden_data}->{project}->{id},
+                    $data->{role_name}->{_hidden_data}->{id}
+                );
+                $response = $share_project;
+            }
+        }
+    }
+
     return $self->return_response( $c, $response );
 }
 
