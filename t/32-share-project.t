@@ -638,7 +638,8 @@ my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-my $super_admin_share_not_your_organization = request(
+my $super_adminljMPXvVHZZQTbXsaXWA2kgSWzL942Pufoqu2eeCee2Amae6Aijo7tei5woh4jiet_share_not_organizations_project
+  = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $superadmin_authorization_basic",
@@ -652,6 +653,33 @@ my $super_admin_share_not_your_organization = request(
             'role_name' => 'expenses_watcher',
         }
     )
+  );
+
+is( $super_admin_share_not_organizations_project->code(), 400, );
+
+my $super_admin_share_not_organizations_project_json =
+  decode_json( $super_admin_share_not_organizations_project->content );
+
+is( $super_admin_share_not_organizations_project_json->{status}, 0, );
+is(
+    $super_admin_share_not_organizations_project_json->{message},
+    'Project does not belong to this organization.',
+);
+
+my $super_admin_share_not_your_organization = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'fireman',
+        }
+    )
 );
 
 is( $super_admin_share_not_your_organization->code(), 200, );
@@ -662,7 +690,7 @@ my $super_admin_share_not_your_organization_json =
 is( $super_admin_share_not_your_organization_json->{status}, 1, );
 is(
     $super_admin_share_not_your_organization_json->{message},
-    'Invalid organization token.',
+    'Project shared.',
 );
 
 done_testing();

@@ -164,6 +164,7 @@ sub share_project_POST {
     my $organization;
     my $user_data;
     my $project_name;
+    my $is_super_admin;
 
     my $data;
     my $shared_project;
@@ -201,10 +202,11 @@ sub share_project_POST {
         $response = $authorization_and_validatation;
     }
     else {
-        $response->{status}  = 1;
         $response->{message} = "Project shared.";
 
         $data = $authorization_and_validatation->{data};
+        $is_super_admin =
+          $data->{user_data}->{_hidden_data}->{user}->{is_super_admin};
 
         # Check Project organization owner is organization
         if ( $data->{organization}->{_hidden_data}->{organization}->{id} ne
@@ -212,7 +214,13 @@ sub share_project_POST {
         {
             $response->{status}     = 0;
             $response->{error_code} = $bad_request;
-            $response->{message}    = "Invalid project_token.";
+            if ( $is_super_admin eq 0 ) {
+                $response->{message} = "Invalid project_token.";
+            }
+            else {
+                $response->{message} =
+                  'Project does not belong to this organization.';
+            }
         }
         else {
 # Check if organization_to_share already have this project shared with this role
