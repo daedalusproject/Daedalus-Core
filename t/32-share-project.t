@@ -410,6 +410,59 @@ is(
     "You are not your organization admin"
 );
 
+my $failed_project_token_too_short = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token'               => 'eph3Aih4fohng1phawijae',
+            'role_name'                   => 'health_watcher',
+        }
+    )
+);
+
+is( $failed_project_token_too_short->code(), 400, );
+
+my $failed_project_token_too_short_json =
+  decode_json( $failed_project_token_too_short->content );
+
+is( $failed_project_token_too_short_json->{status}, 0, );
+is(
+    $failed_project_token_too_short_json->{message},
+    'Invalid project_token.',
+    "Because it is too short"
+);
+
+my $failed_project_token_too_long = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'eph3Aih4foifsfhhq87wat7qssmFGSD4t43serg5srrhng1phawijae',
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $failed_project_token_too_long->code(), 400, );
+
+my $failed_project_token_too_long_json =
+  decode_json( $failed_project_token_too_long->content );
+
+is( $failed_project_token_too_long_json->{status}, 0, );
+is(
+    $failed_project_token_too_long_json->{message},
+    'Invalid project_token.',
+    "Because it is too long"
+);
+
 my $failed_not_organization_project = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -458,6 +511,33 @@ my $success_admin_json = decode_json( $success_admin->content );
 
 is( $success_admin_json->{status},  1, );
 is( $success_admin_json->{message}, 'Project shared.', );
+
+my $failed_organization_project_already_shared = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Daedalus Core
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $failed_organization_project_already_shared->code(), 400, );
+
+my $failed_organization_project_already_shared_json =
+  decode_json( $failed_organization_project_already_shared->content );
+
+is( $failed_organization_project_already_shared_json->{status}, 0, );
+is(
+    $failed_organization_project_already_shared_json->{message},
+'This project has been already shared with this organization and this role.',
+    ""
+);
 
 done_testing();
 
