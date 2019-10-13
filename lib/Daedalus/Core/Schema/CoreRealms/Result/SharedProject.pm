@@ -186,23 +186,23 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-=head2 shared_project_group_assignment
+=head2 shared_project_group_assignments
 
-Type: might_have
+Type: has_many
 
 Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment|SharedProjectGroupAssignment>
 
 =cut
 
-__PACKAGE__->might_have(
-    "shared_project_group_assignment",
+__PACKAGE__->has_many(
+    "shared_project_group_assignments",
     "Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment",
     { "foreign.shared_project_id" => "self.id" },
     { cascade_copy                => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:62Ry+H7EKJfrsfOIOb7ZnQ
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/vvHsDGc3WvbAKIpeWvDQQ
 
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
