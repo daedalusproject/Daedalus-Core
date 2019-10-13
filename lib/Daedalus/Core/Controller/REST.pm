@@ -263,6 +263,47 @@ sub check_role_name {
     return $response;
 }
 
+=head2 check_organization_group
+
+Checks organization group
+
+=cut
+
+sub check_organization_group {
+
+    my $c                                  = shift;
+    my $organization_group_token_cansidate = shift;
+    my $data                               = shift;
+    my $data_properties                    = shift;
+    my $required_data_name                 = shift;
+
+    my $organization_group_check;
+    my $response;
+
+    $response->{status}  = 0;
+    $response->{message} = "Invalid $required_data_name.";
+
+    $organization_group_check =
+      Daedalus::OrganizationGroups::Manager::get_organization_group_from_token(
+        $c, $organization_group_token_cansidate );
+
+    if ( $organization_group_check->{status} ) {
+
+        # Check if organization group belongs to organization
+        if ( $data->{organization}->{_hidden_data}->{organization}->{id} ==
+            $organization_group_check->{_hidden_data}
+            ->{$organization_group_token_cansidate}->{organization_id} )
+        {
+
+            $data->{$required_data_name} = $organization_group_check;
+            $response->{message}         = q{};
+            $response->{status}          = 1;
+        }
+    }
+
+    return $response;
+}
+
 =head2 manage_auth
 
 Checks auth
@@ -605,6 +646,11 @@ sub check_required_data {
             when ("role") {
                 $response =
                   check_role_name( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+            when ("organization_group") {
+                $response =
+                  check_organization_group( $c, $value, $data,
                     $data_properties, $required_data_name );
             }
 

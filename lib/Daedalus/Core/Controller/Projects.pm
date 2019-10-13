@@ -254,6 +254,125 @@ sub share_project_POST {
     return $self->return_response( $c, $response );
 }
 
+=head2 add_group_to_share_project
+
+Given a project shared with one organization. This organization is able to add groups with the same role as role level sharing.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organization token
+                 - Shared project token
+                 - Group token
+
+=cut
+
+sub add_group_to_share_project : Path('/project/share/group') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 add_group_to_share_project_POST
+
+/project/share/group is a POST request
+
+=cut
+
+sub add_group_to_share_project_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $is_super_admin;
+
+    my $data;
+    my $required_data;
+
+    my $shared_project_roles;
+    my $match_roles = 0;
+
+    my $group_id;
+    my $shared_project_id;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master'],
+            },
+            required_data => {
+                organization_token => {
+                    type     => "organization",
+                    required => 1,
+                },
+                shared_project_token => {
+                    type     => "project",
+                    required => 1,
+                },
+                group_token => {
+                    type     => "organization_group",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        # Check if project is shared
+        $data          = $authorization_and_validatation->{data};
+        $required_data = $data->{required_data};
+        $is_super_admin =
+          $data->{user_data}->{_hidden_data}->{user}->{is_super_admin};
+        $shared_project_id = $data->{project}->{_hidden_data}->{project}->{id};
+        $group_id          = $data->{group_token}->{_hidden_data}
+          ->{ $required_data->{group_token} }->{id};
+
+        $shared_project_roles =
+          Daedalus::Projects::Manager::check_shared_project_with_organization_roles(
+            $c, $data->{organization}->{_hidden_data}->{organization}->{id},
+            $shared_project_id );
+
+        if ( $shared_project_roles->{status} == 0 ) {
+            $response->{status}  = 0;
+            $response->{message} = "Invalid shared_project_token.";
+        }
+        else {
+            my $group_roles = $data->{group_token}->{_hidden_data}
+              ->{ $required_data->{group_token} }->{roles};
+
+            for my $group_role ( keys %{$group_roles} ) {
+                if (
+                    any { /^$group_roles->{$group_role}$/sxm }
+                    uniq @{ $shared_project_roles->{shared_project} }
+
+                  )
+                {
+                    $match_roles = 1;
+                }
+            }
+            if ( $match_roles == 0 ) {
+                $response->{status} = 0;
+                $response->{message} =
+                  "Project not shared with any of the roles of this group.";
+            }
+            else {
+                $response =
+                  Daedalus::Projects::Manager::add_group_to_shared_project( $c,
+                    $shared_project_id, $group_id );
+            }
+
+        }
+
+    }
+
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS

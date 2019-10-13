@@ -584,6 +584,14 @@ sub populate_databse {
         }
       );
 
+    $schema->resultset('Project')->create(
+        {
+            organization_owner => $bugstech_organization->id,
+            name               => "Bugs e-commerce",
+            token              => "igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj",
+        }
+    );
+
     $schema->resultset('OrganizationGroupRole')->create(
         {
             group_id => $bugstech_administrators_group->id,

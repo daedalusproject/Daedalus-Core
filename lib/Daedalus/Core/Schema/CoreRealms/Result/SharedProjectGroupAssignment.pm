@@ -53,6 +53,12 @@ __PACKAGE__->table("shared_project_group_assignment");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 created_at
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -71,19 +77,30 @@ __PACKAGE__->add_columns(
         is_foreign_key => 1,
         is_nullable    => 0,
     },
+    "created_at",
+    {
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 1,
+    },
 );
 
-=head1 PRIMARY KEY
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<shared_project_id>
 
 =over 4
 
 =item * L</shared_project_id>
 
+=item * L</group_id>
+
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("shared_project_id");
+__PACKAGE__->add_unique_constraint( "shared_project_id",
+    [ "shared_project_id", "group_id" ] );
 
 =head1 RELATIONS
 
@@ -117,10 +134,23 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-10 21:21:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:el/ArTYZCR434odv9GRxMw
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ur2LWKZiQnHXHP1IqfX7Zg
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
+
+__PACKAGE__->add_columns(
+    'created_at',
+    {
+        %{ __PACKAGE__->column_info('created_at') },
+        set_on_create => 1,
+        set_on_update => 0
+    }
+);
+
 __PACKAGE__->meta->make_immutable;
 
 our $VERSION = '0.01';
