@@ -613,7 +613,7 @@ my $failed_group_token_already_added = request(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'shared_project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Daedalus Core
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
             'group_token' =>
               'EC78R91DADJowsNogz16pHnAcEBiQHWBF',   # Mega Shops Administrators
         }
@@ -629,6 +629,79 @@ is( $failed_group_token_already_added_json->{status}, 0, );
 is( $failed_group_token_already_added_json->{message},
     'This group has already been aded to this shared project.', "" );
 
+my $superadmin_add_bugs_project = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj',    # Bugs e-commerce
+            'role_name' => 'fireman',
+        }
+    )
+);
+
+is( $superadmin_add_bugs_project->code(), 200, );
+
+my $superadmin_add_bugs_project_json =
+  decode_json( $superadmin_add_bugs_project->content );
+
+is( $superadmin_add_bugs_project_json->{status},  1, );
+is( $superadmin_add_bugs_project_json->{message}, 'Project shared.', );
+
+my $superadmin_failed_not_project = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            'shared_project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'group_token' =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',   # Mega Shops Administrators
+        }
+    )
+);
+
+is( $superadmin_failed_not_project->code(), 400, );
+
+my $superadmin_failed_not_project_json =
+  decode_json( $superadmin_failed_not_project->content );
+
+is( $superadmin_failed_not_project_json->{status},  0, );
+is( $superadmin_failed_not_project_json->{message}, 'Invalid group_token.', );
+
+my $superadmin_bugs_project = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'shared_project_token' =>
+              'igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj',    # Bugs e-commerce
+            'group_token' =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',    # Bugs tech Administrators
+        }
+    )
+);
+
+is( $superadmin_bugs_project->code(), 200, );
+
+my $superadmin_bugs_project_json =
+  decode_json( $superadmin_bugs_project->content );
+
+is( $superadmin_bugs_project_json->{status}, 1, );
+is(
+    $superadmin_bugs_project_json->{message},
+    'Group added to shared project.',
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();
