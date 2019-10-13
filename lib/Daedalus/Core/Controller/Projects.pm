@@ -292,6 +292,9 @@ sub add_group_to_share_project_POST {
     my $shared_project_roles;
     my $match_roles = 0;
 
+    my $group_id;
+    my $shared_project_id;
+
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
         {
@@ -325,13 +328,14 @@ sub add_group_to_share_project_POST {
         $required_data = $data->{required_data};
         $is_super_admin =
           $data->{user_data}->{_hidden_data}->{user}->{is_super_admin};
+        $shared_project_id = $data->{project}->{_hidden_data}->{project}->{id};
+        $group_id          = $data->{group_token}->{_hidden_data}
+          ->{ $required_data->{group_token} }->{id};
 
         $shared_project_roles =
           Daedalus::Projects::Manager::check_shared_project_with_organization_roles(
-            $c,
-            $data->{organization}->{_hidden_data}->{organization}->{id},
-            $data->{project}->{_hidden_data}->{project}->{id}
-          );
+            $c, $data->{organization}->{_hidden_data}->{organization}->{id},
+            $shared_project_id );
 
         if ( $shared_project_roles->{status} == 0 ) {
             $response->{status}  = 0;
@@ -356,8 +360,9 @@ sub add_group_to_share_project_POST {
                   "Project not shared with any of the roles of this group.";
             }
             else {
-                # Check if group is not already added
-                $response->{status} = 1;
+                $response =
+                  Daedalus::Projects::Manager::add_group_to_shared_project( $c,
+                    $shared_project_id, $group_id );
             }
 
         }
