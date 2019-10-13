@@ -19,7 +19,7 @@ use DatabaseSetUpTearDown;
 DatabaseSetUpTearDown::delete_database();
 DatabaseSetUpTearDown::create_database();
 
-my $endpoint = '/project/share';
+my $endpoint = '/project/share/group';
 
 my $non_admin_login_success = request(
     POST '/user/login',
@@ -67,6 +67,28 @@ my $admin_login_success_token =
 
 my $admin_authorization_basic =
   MIME::Base64::encode( "session_token:$admin_login_success_token", '' );
+
+my $superadmin_login = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'admin@daedalus-project.io',
+            password => 'this_is_a_Test_1234',
+        }
+    )
+);
+
+is( $superadmin_login->code(), 200, );
+
+my $superadmin_login_json = decode_json( $superadmin_login->content );
+
+is( $superadmin_login_json->{status}, 1, );
+
+my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
+
+my $superadmin_authorization_basic =
+  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
 my $failed_no_organization_token = request(
     POST $endpoint,
@@ -236,6 +258,59 @@ is(
 'Your organization roles does not match with the following roles: organization master.',
 );
 
+####
+
+my $failed_admin_no_group_token = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+
+        }
+    )
+);
+
+is( $failed_admin_no_group_token->code(), 400, );
+
+my $failed_admin_no_group_token_json =
+  decode_json( $failed_admin_no_group_token->content );
+
+is( $failed_admin_no_group_token_json->{status},  0, );
+is( $failed_admin_no_group_token_json->{message}, 'No group_token provided.', );
+
+my $failed_no_group_token = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $failed_no_group_token->code(), 403, );
+
+my $failed_no_group_token_json = decode_json( $failed_no_group_token->content );
+
+is( $failed_no_group_token_json->{status}, 0, );
+is(
+    $failed_no_group_token->{message},
+'Your organization roles does not match with the following roles: organization master.',
+);
+
+####
+
 my $failed_admin_non_existent_organization = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -246,6 +321,7 @@ my $failed_admin_non_existent_organization = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
             'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
             'role_name'                   => 'firemann',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -271,6 +347,7 @@ my $failed_non_existent_organization = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
             'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
             'role_name'                   => 'firemann',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -296,6 +373,7 @@ my $failed_admin_non_existent_organization_to_share = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Pua',
             'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
             'role_name'                   => 'fireman',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -321,6 +399,7 @@ my $failed_admin_too_short_organization_to_share = request(
             'organization_to_share_token' => 'ljMZQTbXsaXWA2kgSWzL942Pua',
             'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
             'role_name'                   => 'firemann',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -346,6 +425,7 @@ my $failed_admin_invalid_project_token = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
             'role_name'                   => 'firemann',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -371,7 +451,8 @@ my $failed_admin_role_name = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
               'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'nonsense',
+            'role_name'   => 'nonsense',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -384,6 +465,56 @@ my $failed_admin_role_name_json =
 is( $failed_admin_role_name_json->{status},  0, );
 is( $failed_admin_role_name_json->{message}, 'Invalid role_name.', );
 
+my $failed_admin_invalid_group_token = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token'               => 'Quuph8Josahpeibeixeng7oth7phuP9a',
+            'role_name'                   => 'firemann',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+        }
+    )
+);
+
+is( $failed_admin_invalid_group_token->code(), 400, );
+
+my $failed_admin_invalid_group_token_json =
+  decode_json( $failed_admin_invalid_group_token->content );
+
+is( $failed_admin_invalid_group_token_json->{status}, 0, );
+is(
+    $failed_admin_invalid_group_token_json->{message},
+    'Invalid project_token.',
+);
+
+my $failed_admin_invalid_role_name = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name'   => 'nonsense',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+        }
+    )
+);
+
+is( $failed_admin_invalid_role_name->code(), 400, );
+
+my $failed_admin_invalid_role_name_json =
+  decode_json( $failed_admin_invalid_role_name->content );
+
+is( $failed_admin_invalid_role_name_json->{status},  0, );
+is( $failed_admin_invalid_role_name_json->{message}, 'Invalid role_name.', );
+
 my $failed_no_admin = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -394,7 +525,8 @@ my $failed_no_admin = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
               'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'health_watcher',
+            'role_name'   => 'health_watcher',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -420,6 +552,7 @@ my $failed_project_token_too_short = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token'               => 'eph3Aih4fohng1phawijae',
             'role_name'                   => 'health_watcher',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -446,7 +579,8 @@ my $failed_project_token_too_long = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
               'eph3Aih4foifsfhhq87wat7qssmFGSD4t43serg5srrhng1phawijae',
-            'role_name' => 'health_watcher',
+            'role_name'   => 'health_watcher',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -473,7 +607,8 @@ my $failed_not_organization_project = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
               'eabi7ooph3Aih4fohc5aung1phawijae',    # Daedalus Core
-            'role_name' => 'health_watcher',
+            'role_name'   => 'health_watcher',
+            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -490,6 +625,143 @@ is(
     "It exists but Core is not going to tell you."
 );
 
+#######
+
+my $failed_group_token_too_long = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+            'group_token' =>
+              '8B8hl0sdajdhajhgdskhjagdajshgdRNItqemT2d4v4mJgYo6GssPzG8g',
+        }
+    )
+);
+
+is( $failed_group_token_too_long->code(), 400, );
+
+my $failed_group_token_too_long_json =
+  decode_json( $failed_group_token_too_long->content );
+
+is( $failed_group_token_too_long_json->{status}, 0, );
+is(
+    $failed_group_token_too_long_json->{message},
+    'Invalid group_token.',
+    "Because it is too long"
+);
+
+my $failed_not_valid_group_token = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name'   => 'health_watcher',
+            'group_token' => '8B8hl0RNItqemTqYmv4mJgYo6GssPzG8g'
+            ,    # Daedalus Super Administrators
+        }
+    )
+);
+
+is( $failed_not_valid_group_token->code(), 400, );
+
+my $failed_not_valid_group_token_json =
+  decode_json( $failed_not_valid_group_token->content );
+
+is( $failed_not_valid_group_token_json->{status}, 0, );
+is(
+    $failed_not_valid_group_token_json->{message},
+    'Invalid group_token.',
+    "It exists but Core is not going to tell you."
+);
+
+my $failed_project_not_shared = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+            'group_name' =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',   # Mega Shops Administrators
+        }
+    )
+);
+
+is( $failed_project_not_shared->code(), 400, );
+
+my $failed_project_not_shared_json =
+  decode_json( $failed_project_not_shared->content );
+
+is( $failed_project_not_shared_json->{status}, 0, );
+is(
+    $failed_project_not_shared_json->{message},
+    'Invalid project token.',
+    "Project is not shared, yet."
+);
+
+my $share_project = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher'
+        }
+    )
+);
+
+is( $share_project->code(), 200, );
+
+my $share_project_json = decode_json( $share_project->content );
+
+is( $share_project_json->{status},  1, );
+is( $share_project_json->{message}, 'Project shared.', );
+
+my $failed_not_shared_at_this_role = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+            'group_name' =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',   # Mega Shops Administrators
+        }
+    )
+);
+
+is( $failed_not_shared_at_this_role->code(), 400, );
+
+my $failed_not_shared_at_this_role_json =
+  decode_json( $failed_not_shared_at_this_role->content );
+
+is( $failed_not_shared_at_this_role_json->{status}, 0, );
+is(
+    $failed_not_shared_at_this_role_json->{message},
+    'Project not sahred with this role_name.',
+);
+
 my $success_admin = request(
     POST $endpoint,
     Content_Type  => 'application/json',
@@ -500,7 +772,9 @@ my $success_admin = request(
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
               'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'health_watcher',
+            'role_name' => 'fireman',
+            'group_name' =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',   # Mega Shops Administrators
         }
     )
 );
@@ -510,9 +784,9 @@ is( $success_admin->code(), 200, );
 my $success_admin_json = decode_json( $success_admin->content );
 
 is( $success_admin_json->{status},  1, );
-is( $success_admin_json->{message}, 'Project shared.', );
+is( $success_admin_json->{message}, 'Group added to shared project.', );
 
-my $failed_organization_project_already_shared = request(
+my $failed_group_token_already_added = request(
     POST $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
@@ -521,177 +795,23 @@ my $failed_organization_project_already_shared = request(
             'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'health_watcher',
-        }
-    )
-);
-
-is( $failed_organization_project_already_shared->code(), 400, );
-
-my $failed_organization_project_already_shared_json =
-  decode_json( $failed_organization_project_already_shared->content );
-
-is( $failed_organization_project_already_shared_json->{status}, 0, );
-is(
-    $failed_organization_project_already_shared_json->{message},
-'This project has been already shared with this organization and this role.',
-    ""
-);
-
-my $success_admin_other_role = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'expenses_watcher',
-        }
-    )
-);
-
-is( $success_admin_other_role->code(), 200, );
-
-my $success_admin_other_role_json =
-  decode_json( $success_admin_other_role->content );
-
-is( $success_admin_other_role_json->{status},  1, );
-is( $success_admin_other_role_json->{message}, 'Project shared.', );
-
-my $success_admin_share_with_other_organization = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'organization_to_share_token' =>
-              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
-            'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'expenses_watcher',
-        }
-    )
-);
-
-is( $success_admin_share_with_other_organization->code(), 200, );
-
-my $success_admin_share_with_other_organization_json =
-  decode_json( $success_admin_share_with_other_organization->content );
-
-is( $success_admin_share_with_other_organization_json->{status}, 1, );
-is(
-    $success_admin_share_with_other_organization_json->{message},
-    'Project shared.',
-);
-
-my $failed_admin_share_not_your_organization = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-    Content       => encode_json(
-        {
-            'organization_token' =>
-              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
-            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'expenses_watcher',
-        }
-    )
-);
-
-is( $failed_admin_share_not_your_organization->code(), 400, );
-
-my $failed_admin_share_not_your_organization_json =
-  decode_json( $failed_admin_share_not_your_organization->content );
-
-is( $failed_admin_share_not_your_organization_json->{status}, 0, );
-is(
-    $failed_admin_share_not_your_organization_json->{message},
-    'Invalid organization token.',
-);
-
-my $superadmin_login = request(
-    POST '/user/login',
-    Content_Type => 'application/json',
-    Content      => encode_json(
-        {
-            'e-mail' => 'admin@daedalus-project.io',
-            password => 'this_is_a_Test_1234',
-        }
-    )
-);
-
-is( $superadmin_login->code(), 200, );
-
-my $superadmin_login_json = decode_json( $superadmin_login->content );
-
-is( $superadmin_login_json->{status}, 1, );
-
-my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
-
-my $superadmin_authorization_basic =
-  MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
-
-my $super_admin_share_not_organizations_project = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $superadmin_authorization_basic",
-    Content       => encode_json(
-        {
-            'organization_token' =>
-              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
-            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'role_name' => 'expenses_watcher',
-        }
-    )
-);
-
-is( $super_admin_share_not_organizations_project->code(), 400, );
-
-my $super_admin_share_not_organizations_project_json =
-  decode_json( $super_admin_share_not_organizations_project->content );
-
-is( $super_admin_share_not_organizations_project_json->{status}, 0, );
-is(
-    $super_admin_share_not_organizations_project_json->{message},
-    'Project does not belong to this organization.',
-);
-
-my $super_admin_share_not_your_organization = request(
-    POST $endpoint,
-    Content_Type  => 'application/json',
-    Authorization => "Basic $superadmin_authorization_basic",
-    Content       => encode_json(
-        {
-            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'organization_to_share_token' =>
-              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
-            'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Daedalus Core
             'role_name' => 'fireman',
+            'group_name' =>
+              'EC78R91DADJowsNogz16pHnAcEBiQHWBF',   # Mega Shops Administrators
         }
     )
 );
 
-is( $super_admin_share_not_your_organization->code(), 200, );
+is( $failed_group_token_already_added->code(), 400, );
 
-my $super_admin_share_not_your_organization_json =
-  decode_json( $super_admin_share_not_your_organization->content );
+my $failed_group_token_already_added_json =
+  decode_json( $failed_group_token_already_added->content );
 
-is( $super_admin_share_not_your_organization_json->{status}, 1, );
-is(
-    $super_admin_share_not_your_organization_json->{message},
-    'Project shared.',
-);
+is( $failed_group_token_already_added_json->{status}, 0, );
+is( $failed_group_token_already_added_json->{message},
+    'This group has already been aded to this shared project.', "" );
 
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
