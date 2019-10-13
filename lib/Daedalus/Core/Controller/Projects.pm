@@ -347,8 +347,9 @@ sub add_group_to_share_project_POST {
 
             for my $group_role ( keys %{$group_roles} ) {
                 if (
-                    grep( /^$group_roles->{$group_role}$/,
-                        @{ $shared_project_roles->{shared_project} } )
+                    any { /^$group_roles->{$group_role}$/sxm }
+                    uniq @{ $shared_project_roles->{shared_project} }
+
                   )
                 {
                     $match_roles = 1;

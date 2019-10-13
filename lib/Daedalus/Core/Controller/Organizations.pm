@@ -1003,8 +1003,6 @@ sub add_user_to_group_POST {
             else {
 
                 if (
-         #                    grep( /^$user_email$/,
-         #                        @{ $group->{data}->{$group_token}->{users} } )
                     exists(
                         $group->{data}->{$group_token}->{users}->{$user_email}
                     )

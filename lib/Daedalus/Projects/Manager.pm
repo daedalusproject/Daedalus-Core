@@ -268,7 +268,7 @@ sub add_group_to_shared_project {
     }
     else {
         # Add group
-        my $check_share_project =
+        $check_share_project =
           $c->model('CoreRealms::SharedProjectGroupAssignment')->create(
             {
                 shared_project_id => $shared_project_id,
