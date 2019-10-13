@@ -287,7 +287,10 @@ sub add_group_to_share_project_POST {
     my $is_super_admin;
 
     my $data;
-    my $shared_project;
+    my $required_data;
+
+    my $shared_project_roles;
+    my $match_roles = 0;
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -315,6 +318,50 @@ sub add_group_to_share_project_POST {
 
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
+    }
+    else {
+        # Check if project is shared
+        $data          = $authorization_and_validatation->{data};
+        $required_data = $data->{required_data};
+        $is_super_admin =
+          $data->{user_data}->{_hidden_data}->{user}->{is_super_admin};
+
+        $shared_project_roles =
+          Daedalus::Projects::Manager::check_shared_project_with_organization_roles(
+            $c,
+            $data->{organization}->{_hidden_data}->{organization}->{id},
+            $data->{project}->{_hidden_data}->{project}->{id}
+          );
+
+        if ( $shared_project_roles->{status} == 0 ) {
+            $response->{status}  = 0;
+            $response->{message} = "Invalid shared_project_token.";
+        }
+        else {
+            my $group_roles = $data->{group_token}->{_hidden_data}
+              ->{ $required_data->{group_token} }->{roles};
+
+            for my $group_role ( keys %{$group_roles} ) {
+                if (
+                    grep( /^$group_roles->{$group_role}$/,
+                        @{ $shared_project_roles->{shared_project} } )
+                  )
+                {
+                    $match_roles = 1;
+                }
+            }
+            if ( $match_roles == 0 ) {
+                $response->{status} = 0;
+                $response->{message} =
+                  "Project not shared with any of the roles of this group.";
+            }
+            else {
+                # Check if group is not already added
+                $response->{status} = 1;
+            }
+
+        }
+
     }
 
     return $self->return_response( $c, $response );

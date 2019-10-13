@@ -20,6 +20,8 @@ use Daedalus::Utils::Constants qw(
   $project_token_length
 );
 
+use Data::Dumper;
+
 use namespace::clean -except => 'meta';
 
 our $VERSION = '0.01';
@@ -127,6 +129,41 @@ sub get_project_from_token {
                 }
             }
         };
+    }
+
+    return $response;
+}
+
+=head2 check_shared_project_with_organization
+
+Check if project is already shared with organization
+
+=cut
+
+sub check_shared_project_with_organization_roles {
+
+    my $c                        = shift;
+    my $organization_to_share_id = shift;
+    my $project_id               = shift;
+
+    my $response;
+    $response->{status}         = 0;
+    $response->{shared_project} = [];
+
+    my @shared_project = $c->model('CoreRealms::SharedProject')->search(
+        {
+            organization_to_manage_id => $organization_to_share_id,
+            project_id                => $project_id,
+        }
+    )->all();
+
+    if ( scalar @shared_project > 0 ) {
+        $response->{status} = 1;
+
+        for my $sharing (@shared_project) {
+            push @{ $response->{shared_project} },
+              $sharing->organization_to_manage_role_id;
+        }
     }
 
     return $response;

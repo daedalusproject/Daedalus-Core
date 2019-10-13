@@ -508,7 +508,7 @@ my $failed_project_not_shared_json =
 is( $failed_project_not_shared_json->{status}, 0, );
 is(
     $failed_project_not_shared_json->{message},
-    'Invalid project token.',
+    'Invalid shared_project_token.',
     "Project is not shared, yet."
 );
 
@@ -557,7 +557,7 @@ my $failed_not_shared_at_this_role_json =
 is( $failed_not_shared_at_this_role_json->{status}, 0, );
 is(
     $failed_not_shared_at_this_role_json->{message},
-    'Project not shared with this role_name.',
+    'Project not shared with any of the roles of this group.',
 );
 
 my $share_project_other_role = request(
