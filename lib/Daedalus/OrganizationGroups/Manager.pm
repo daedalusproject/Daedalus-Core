@@ -137,7 +137,7 @@ sub count_organization_admins {
     my @groups_with_selected_role;
 
     for my $group_name ( keys %{$groups} ) {
-        if (    #grep( /^$role_name$/, @{ $groups->{$group_name}->{roles} } ) )
+        if (
             any { /^$role_name$/sxm }
             uniq @{ $groups->{$group_name}->{roles} }
           )

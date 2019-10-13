@@ -20,6 +20,8 @@ use Daedalus::Utils::Constants qw(
   $project_token_length
 );
 
+use Data::Dumper;
+
 use namespace::clean -except => 'meta';
 
 our $VERSION = '0.01';
@@ -132,6 +134,42 @@ sub get_project_from_token {
     return $response;
 }
 
+=head2 check_shared_project_with_organization
+
+Check if project is already shared with organization
+
+=cut
+
+sub check_shared_project_with_organization_roles {
+
+    my $c                        = shift;
+    my $organization_to_share_id = shift;
+    my $project_id               = shift;
+
+    my $response;
+    $response->{status}             = 0;
+    $response->{shared_project}     = [];
+    $response->{shared_project_ids} = [];
+
+    my @shared_project = $c->model('CoreRealms::SharedProject')->search(
+        {
+            organization_to_manage_id => $organization_to_share_id,
+            project_id                => $project_id,
+        }
+    )->all();
+
+    if ( scalar @shared_project > 0 ) {
+        $response->{status} = 1;
+        for my $sharing (@shared_project) {
+            push @{ $response->{shared_project} },
+              $sharing->organization_to_manage_role_id;
+            push @{ $response->{shared_project_ids} }, $sharing->id;
+        }
+    }
+
+    return $response;
+}
+
 =head2 check_shared_project
 
 Check if project is already shared
@@ -196,6 +234,50 @@ sub share_project {
 
     $response->{status}  = 1;
     $response->{message} = 'Project shared.';
+
+    return $response;
+}
+
+=head2 add_group_to_shared_project
+
+Add group to a shared project
+
+=cut
+
+sub add_group_to_shared_project {
+
+    my $c                 = shift;
+    my $shared_project_id = shift;
+    my $group_id          = shift;
+
+    my $response;
+
+    # Check if already exists
+    my $check_share_project =
+      $c->model('CoreRealms::SharedProjectGroupAssignment')->find(
+        {
+            shared_project_id => $shared_project_id,
+            group_id          => $group_id
+        }
+      );
+
+    if ($check_share_project) {
+        $response->{status} = 0;
+        $response->{message} =
+          'This group has already been aded to this shared project.';
+    }
+    else {
+        # Add group
+        $check_share_project =
+          $c->model('CoreRealms::SharedProjectGroupAssignment')->create(
+            {
+                shared_project_id => $shared_project_id,
+                group_id          => $group_id
+            }
+          );
+        $response->{status}  = 1;
+        $response->{message} = 'Group added to shared project.';
+    }
 
     return $response;
 }

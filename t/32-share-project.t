@@ -521,7 +521,7 @@ my $failed_organization_project_already_shared = request(
             'organization_token'          => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'project_token' =>
-              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Daedalus Core
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
             'role_name' => 'health_watcher',
         }
     )
@@ -691,6 +691,59 @@ is(
     $super_admin_share_not_your_organization_json->{message},
     'Project shared.',
 );
+
+my $failed_admin_share_not_your_organization_but_correct_info = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj',    # Bugs e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $failed_admin_share_not_your_organization_but_correct_info->code(), 400, );
+
+my $failed_admin_share_not_your_organization_but_correct_info_json =
+  decode_json(
+    $failed_admin_share_not_your_organization_but_correct_info->content );
+
+is( $failed_admin_share_not_your_organization_but_correct_info_json->{status},
+    0, );
+is(
+    $failed_admin_share_not_your_organization_but_correct_info_json->{message},
+    'Invalid organization token.',
+);
+
+my $superadmin_add_bugs_project = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'organization_to_share_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'project_token' =>
+              'igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj',    # Bugs e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $superadmin_add_bugs_project->code(), 200, );
+
+my $superadmin_add_bugs_project_json =
+  decode_json( $superadmin_add_bugs_project->content );
+
+is( $superadmin_add_bugs_project_json->{status},  1, );
+is( $superadmin_add_bugs_project_json->{message}, 'Project shared.', );
 
 done_testing();
 
