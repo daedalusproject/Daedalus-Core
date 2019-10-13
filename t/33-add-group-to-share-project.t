@@ -143,7 +143,7 @@ my $failed_admin_no_project_token_json =
 is( $failed_admin_no_project_token_json->{status}, 0, );
 is(
     $failed_admin_no_project_token_json->{message},
-    'No shared_project_token provided. No group_token provided.',
+    'No group_token provided. No shared_project_token provided.',
 );
 
 my $failed_no_project_token = request(
@@ -279,7 +279,7 @@ my $failed_admin_too_short_organization_json =
 is( $failed_admin_too_short_organization_json->{status}, 0, );
 is(
     $failed_admin_too_short_organization_json->{message},
-    'Invalid organization_token.',
+    'Invalid organization token.',
 );
 
 my $failed_admin_invalid_project_token = request(
@@ -289,8 +289,8 @@ my $failed_admin_invalid_project_token = request(
     Content       => encode_json(
         {
             'organization_token'   => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'shared_project_token' => 'Quuph8Josahpeibeixeng7oth7phuP9a',
-            'group_token'          => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+            'shared_project_token' => 'duuph8Josahpeibeixeng7oth7phuP9a',
+            'group_token'          => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
         }
     )
 );
@@ -301,8 +301,10 @@ my $failed_admin_invalid_project_token_json =
   decode_json( $failed_admin_invalid_project_token->content );
 
 is( $failed_admin_invalid_project_token_json->{status}, 0, );
-is( $failed_admin_invalid_project_token_json->{message},
-    'shared_project_token.', );
+is(
+    $failed_admin_invalid_project_token_json->{message},
+    'Invalid shared_project_token.',
+);
 
 my $failed_admin_invalid_group_token = request(
     POST $endpoint,
@@ -313,7 +315,7 @@ my $failed_admin_invalid_group_token = request(
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'shared_project_token' =>
               'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
-            'group_token' => '8qB8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+            'group_token' => '1qB8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
         }
     )
 );
@@ -360,7 +362,7 @@ my $failed_project_token_too_short = request(
         {
             'organization_token'   => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'shared_project_token' => 'eph3Aih4fohng1phawijae',
-            'group_token'          => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+            'group_token'          => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
         }
     )
 );
@@ -373,7 +375,7 @@ my $failed_project_token_too_short_json =
 is( $failed_project_token_too_short_json->{status}, 0, );
 is(
     $failed_project_token_too_short_json->{message},
-    'Invalid project_token.',
+    'Invalid shared_project_token.',
     "Because it is too short"
 );
 
@@ -386,7 +388,7 @@ my $failed_project_token_too_long = request(
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
             'shared_project_token' =>
               'eph3Aih4foifsfhhq87wat7qssmFGSD4t43serg5srrhng1phawijae',
-            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+            'group_token' => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
         }
     )
 );
@@ -399,7 +401,7 @@ my $failed_project_token_too_long_json =
 is( $failed_project_token_too_long_json->{status}, 0, );
 is(
     $failed_project_token_too_long_json->{message},
-    'Invalid project_token.',
+    'Invalid shared_project_token.',
     "Because it is too long"
 );
 
@@ -410,8 +412,9 @@ my $failed_not_project_not_shared_with_organization = request(
     Content       => encode_json(
         {
             'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
-            'shared_project_token' => 'shared_project_token',    # Daedalus Core
-            'group_token' => '8B8hl0RNItqemT2d4v4mJgYo6GssPzG8g',
+            'shared_project_token' =>
+              'eabi7ooph3Aih4fohc5aung1phawijae',    # Daedalus Core
+            'group_token' => 'EC78R91DADJowsNogz16pHnAcEBiQHWBF',
         }
     )
 );
@@ -424,7 +427,7 @@ my $failed_not_project_not_shared_with_organization_json =
 is( $failed_not_project_not_shared_with_organization_json->{status}, 0, );
 is(
     $failed_not_project_not_shared_with_organization_json->{message},
-    'Invalid project_token.',
+    'Invalid shared_project_token.',
     "It exists but Core is not going to tell you."
 );
 
