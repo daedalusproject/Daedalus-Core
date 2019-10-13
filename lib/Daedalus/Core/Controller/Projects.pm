@@ -254,6 +254,72 @@ sub share_project_POST {
     return $self->return_response( $c, $response );
 }
 
+=head2 add_group_to_share_project
+
+Given a project shared with one organization. This organization is able to add groups with the same role as role level sharing.
+
+Only admin users are allowed to perform this operation.
+
+Required data:   - Organization token
+                 - Shared project token
+                 - Group token
+
+=cut
+
+sub add_group_to_share_project : Path('/project/share/group') : Args(0) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 add_group_to_share_project_POST
+
+/project/share/group is a POST request
+
+=cut
+
+sub add_group_to_share_project_POST {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $is_super_admin;
+
+    my $data;
+    my $shared_project;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master'],
+            },
+            required_data => {
+                organization_token => {
+                    type     => "organization",
+                    required => 1,
+                },
+                shared_project_token => {
+                    type     => "project",
+                    required => 1,
+                },
+                group_token => {
+                    type     => "organization_group",
+                    required => 1,
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS
