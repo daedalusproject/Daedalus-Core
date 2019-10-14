@@ -19,7 +19,7 @@ use DatabaseSetUpTearDown;
 DatabaseSetUpTearDown::delete_database();
 DatabaseSetUpTearDown::create_database();
 
-my $endpoint = '/project/';
+my $endpoint = '/project';
 
 my $non_admin_login_success = request(
     POST '/user/login',
@@ -112,16 +112,7 @@ my $failed_invalid_organization_token = request(
     Authorization => "Basic $non_admin_authorization_basic",
 );
 
-is( $failed_invalid_organization_token->code(), 400, );
-
-my $failed_invalid_organization_token_json =
-  decode_json( $failed_invalid_organization_token->content );
-
-is( $failed_invalid_organization_token_json->{status}, 0, );
-is(
-    $failed_invalid_organization_token_json->{message},
-    'Invalid organization token.',
-);
+is( $failed_invalid_organization_token->code(), 404, );
 
 my $failed_admin_invalid_organization_token = request(
     POST "$endpoint/someorganizationtoken",
@@ -129,16 +120,7 @@ my $failed_admin_invalid_organization_token = request(
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_admin_invalid_organization_token->code(), 400, );
-
-my $failed_admin_invalid_organization_token_json =
-  decode_json( $failed_admin_invalid_organization_token->content );
-
-is( $failed_admin_invalid_organization_token_json->{status}, 0, );
-is(
-    $failed_admin_invalid_organization_token_json->{message},
-    'Invalid organization token.',
-);
+is( $failed_admin_invalid_organization_token->code(), 404, );
 
 my $failed_not_your_organization = request(
     POST "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
@@ -146,17 +128,7 @@ my $failed_not_your_organization = request(
     Authorization => "Basic $non_admin_authorization_basic",
 );
 
-is( $failed_not_your_organization->code(), 400, );
-
-my $failed_not_your_organization_json =
-  decode_json( $failed_not_your_organization->content );
-
-is( $failed_not_your_organization_json->{status}, 0, );
-is(
-    $failed_not_your_organization_json->{message},
-    'Invalid organization token.',
-    "It exists but Core is not going to tell you."
-);
+is( $failed_not_your_organization->code(), 404, );
 
 my $failed_admin_not_your_organization = request(
     POST "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
@@ -164,17 +136,7 @@ my $failed_admin_not_your_organization = request(
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_admin_not_your_organization->code(), 400, );
-
-my $failed_admin_not_your_organization_json =
-  decode_json( $failed_admin_not_your_organization->content );
-
-is( $failed_admin_not_your_organization_json->{status}, 0, );
-is(
-    $failed_admin_not_your_organization_json->{message},
-    'Invalid organization token.',
-    "It exists but Core is not going to tell you."
-);
+is( $failed_admin_not_your_organization->code(), 404, );
 
 done_testing();
 
