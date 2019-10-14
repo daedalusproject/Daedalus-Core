@@ -373,6 +373,66 @@ sub add_group_to_share_project_POST {
     return $self->return_response( $c, $response );
 }
 
+=head2 project
+
+Get Project Info.
+
+Admin projects also are able to view project
+
+Required data:   - Organization token
+                 - Project token
+
+=cut
+
+sub project : Path('/project') : Args(3) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 project_GET
+
+/project is a GET request
+
+=cut
+
+sub project_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $project_name;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_user'],
+            },
+            required_data => {
+                organization_token => {
+                    type         => 'organization',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[0],
+                },
+                'project_token' => {
+                    type         => "project",
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[1],
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS
