@@ -384,7 +384,7 @@ Required data:   - Organization token
 
 =cut
 
-sub project : Path('/project') : Args(3) : ActionClass('REST') {
+sub project : Path('/project') : Args(2) : ActionClass('REST') {
     my ( $self, $c ) = @_;
     return;
 }
@@ -407,8 +407,7 @@ sub project_GET {
         $c,
         {
             auth => {
-                type               => 'organization',
-                organization_roles => ['organization_user'],
+                type => 'organization_member',
             },
             required_data => {
                 organization_token => {

@@ -99,7 +99,7 @@ my $failed_no_organization_token_no_project_token = request(
 is( $failed_no_organization_token_no_project_token->code(), 404, );
 
 my $failed_admin_no_organization_token_no_project_token = request(
-    POST $endpoint,
+    GET $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -107,7 +107,7 @@ my $failed_admin_no_organization_token_no_project_token = request(
 is( $failed_admin_no_organization_token_no_project_token->code(), 404, );
 
 my $failed_invalid_organization_token = request(
-    POST "$endpoint/someorganizationtoken",
+    GET "$endpoint/someorganizationtoken",
     Content_Type  => 'application/json',
     Authorization => "Basic $non_admin_authorization_basic",
 );
@@ -115,7 +115,7 @@ my $failed_invalid_organization_token = request(
 is( $failed_invalid_organization_token->code(), 404, );
 
 my $failed_admin_invalid_organization_token = request(
-    POST "$endpoint/someorganizationtoken",
+    GET "$endpoint/someorganizationtoken",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -123,7 +123,7 @@ my $failed_admin_invalid_organization_token = request(
 is( $failed_admin_invalid_organization_token->code(), 404, );
 
 my $failed_not_your_organization = request(
-    POST "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
+    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
     Content_Type  => 'application/json',
     Authorization => "Basic $non_admin_authorization_basic",
 );
@@ -131,12 +131,44 @@ my $failed_not_your_organization = request(
 is( $failed_not_your_organization->code(), 404, );
 
 my $failed_admin_not_your_organization = request(
-    POST "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
+    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
 is( $failed_admin_not_your_organization->code(), 404, );
+
+my $failed_only_organization = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_only_organization->code(), 404, );
+
+my $failed_admin_only_organization = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_only_organization->code(), 404, );
+
+my $failed_invalid_project = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalidtoken",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_invalid_project->code(), 400, );
+
+my $failed_admin_only_organization = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalid_project",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_only_organization->code(), 400, );
 
 done_testing();
 
