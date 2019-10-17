@@ -407,7 +407,8 @@ sub project_GET {
         $c,
         {
             auth => {
-                type => 'organization_member',
+                type               => 'organization',
+                organization_roles => [],               # Organization member
             },
             required_data => {
                 organization_token => {

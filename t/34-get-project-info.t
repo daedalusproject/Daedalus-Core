@@ -146,13 +146,47 @@ my $failed_only_organization = request(
 
 is( $failed_only_organization->code(), 404, );
 
-my $failed_admin_only_organization = request(
+my $failed_admin_only_organization_no_project = request(
     GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_admin_only_organization->code(), 404, );
+is( $failed_admin_only_organization_no_project->code(), 404, );
+
+my $failed_invalid_organization_and_project = request(
+    GET "$endpoint/invalidtoken/invalidtoken",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_invalid_organization_and_project->code(), 400, );
+
+my $failed_invalid_organization_and_project_json =
+  decode_json( $failed_invalid_organization_and_project->content );
+
+is( $failed_invalid_organization_and_project_json->{status}, 0, );
+is(
+    $failed_invalid_organization_and_project_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_admin_invalid_organization_and_project = request(
+    GET "$endpoint/invalidtoken/invalid_project",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_invalid_organization_and_project->code(), 400, );
+
+my $failed_admin_invalid_organization_and_project_json =
+  decode_json( $failed_admin_invalid_organization_and_project->content );
+
+is( $failed_admin_invalid_organization_and_project_json->{status}, 0, );
+is(
+    $failed_admin_invalid_organization_and_project_json->{message},
+    'Invalid organization token.',
+);
 
 my $failed_invalid_project = request(
     GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalidtoken",
@@ -162,6 +196,12 @@ my $failed_invalid_project = request(
 
 is( $failed_invalid_project->code(), 400, );
 
+my $failed_invalid_project_json =
+  decode_json( $failed_invalid_project->content );
+
+is( $failed_invalid_project_json->{status},  0, );
+is( $failed_invalid_project_json->{message}, 'Invalid project_token.', );
+
 my $failed_admin_only_organization = request(
     GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalid_project",
     Content_Type  => 'application/json',
@@ -170,6 +210,86 @@ my $failed_admin_only_organization = request(
 
 is( $failed_admin_only_organization->code(), 400, );
 
+my $failed_admin_only_organization_json =
+  decode_json( $failed_admin_only_organization->content );
+
+is( $failed_admin_only_organization_json->{status}, 0, );
+is( $failed_admin_only_organization_json->{message}, 'Invalid project_token.',
+);
+
+my $failed_not_your_organization_neither_project = request(
+    GET
+"$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW/oqu2eeCee2Amae6Aijo7tei5woh4jiet"
+    ,    # Mega Shops e-commerce
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_not_your_organization_neither_project->code(), 400, );
+
+my $failed_not_your_organization_neither_project_json =
+  decode_json( $failed_not_your_organization_neither_project->content );
+
+is( $failed_not_your_organization_neither_project_json->{status}, 0, );
+is(
+    $failed_not_your_organization_neither_project_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_admin_not_your_organization_neither_project = request(
+    GET
+"$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW/oqu2eeCee2Amae6Aijo7tei5woh4jiet"
+    ,    # Mega Shops e-commerce
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_not_your_organization_neither_project->code(), 400, );
+
+my $failed_admin_not_your_organization_neither_project_json =
+  decode_json( $failed_admin_not_your_organization_neither_project->content );
+
+is( $failed_admin_not_your_organization_neither_project_json->{status}, 0, );
+is(
+    $failed_admin_not_your_organization_neither_project_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_not_your_project_yet = request(
+    GET
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/oqu2eeCee2Amae6Aijo7tei5woh4jiet"
+    ,    # Mega Shops e-commerce
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_not_your_project_yet->code(), 400, );
+
+my $failed_not_your_project_yet_json =
+  decode_json( $failed_not_your_project_yet->content );
+
+is( $failed_not_your_project_yet_json->{status},  0, );
+is( $failed_not_your_project_yet_json->{message}, 'Invalid project_token.', );
+
+my $failed_admin_not_your_project_yet = request(
+    GET
+"$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/oqu2eeCee2Amae6Aijo7tei5woh4jiet"
+    ,    # Mega Shops e-commerce
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_not_your_project_yet->code(), 400, );
+
+my $failed_admin_not_your_project_yet_json =
+  decode_json( $failed_admin_not_your_project_yet->content );
+
+is( $failed_admin_not_your_project_yet_json->{status}, 0, );
+is(
+    $failed_admin_not_your_project_yet_json->{message},
+    'Invalid project_token.',
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();
