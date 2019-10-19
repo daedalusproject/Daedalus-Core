@@ -488,11 +488,8 @@ sub organization_projects_GET {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
 
-        $response = Daedalus::Projects::Manager::get_organization_projects(
-            $c,
-            $organization->{_hidden_data}->{organization}->{id},
-            $user_data->{_hidden_data}->{user}->{is_super_admin}
-        );
+        $response = Daedalus::Projects::Manager::get_organization_projects( $c,
+            $organization->{_hidden_data}->{organization}->{id} );
 
     }
 

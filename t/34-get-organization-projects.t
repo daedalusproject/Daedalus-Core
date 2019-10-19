@@ -45,6 +45,30 @@ my $non_admin_login_success_token =
 my $non_admin_authorization_basic =
   MIME::Base64::encode( "session_token:$non_admin_login_success_token", '' );
 
+my $hank_scorpio_login_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'hscorpio@globex.com',
+            password => '::::Sc0rP10___:::;;;;;',
+        }
+    )
+);
+
+is( $hank_scorpio_login_success->code(), 200, );
+
+my $hank_scorpio_login_success_json =
+  decode_json( $hank_scorpio_login_success->content );
+
+is( $hank_scorpio_login_success_json->{status}, 1, );
+
+my $hank_scorpio_login_success_token =
+  $hank_scorpio_login_success_json->{data}->{session_token};
+
+my $hank_scorpio_authorization_basic =
+  MIME::Base64::encode( "session_token:$hank_scorpio_login_success_token", '' );
+
 my $admin_login_success = request(
     POST '/user/login',
     Content_Type => 'application/json',
@@ -203,13 +227,37 @@ is( $success_admin->code(), 200, );
 
 my $success_admin_json = decode_json( $success_admin->content );
 
-is( $success_admin_json->{status},  0, );
-is( $success_admin_json->{message}, '', );
+is( $success_admin_json->{status}, 1, );
 
 is( $success_admin_json->{_hidden_data}, undef, );
 
-isnt( $success_admin_json->{data}, undef, );
+isnt( $success_admin_json->{data},             undef, );
+isnt( $success_admin_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_json->{data}->{projects} },
+    1, 'For the time being this organization has only one project.' );
+
+my $success_admin_with_no_projects = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3",    # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_with_no_projects->code(), 200, );
+
+my $success_admin_with_no_projects_json =
+  decode_json( $success_admin_with_no_projects->content );
+
+is( $success_admin_with_no_projects_json->{status}, 1, );
+
+is( $success_admin_with_no_projects_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_with_no_projects_json->{data},             undef, );
+isnt( $success_admin_with_no_projects_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_with_no_projects_json->{data}->{projects} },
+    0, 'For the time being this organization has no projects.' );
 
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
