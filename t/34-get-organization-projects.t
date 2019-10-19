@@ -351,37 +351,321 @@ is(
     'Project shared.',
 );
 
-my $success_admin_more_projects_saved = request(
+my $success_admin_more_projects_shared = request(
     GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-my $success_admin_more_projects_saved_json =
-  decode_json( $success_admin_more_projects_saved->content );
+my $success_admin_more_projects_shared_json =
+  decode_json( $success_admin_more_projects_shared->content );
 
-is( $success_admin_more_projects_saved_json->{status}, 1, );
+is( $success_admin_more_projects_shared_json->{status}, 1, );
 
-is( $success_admin_more_projects_saved_json->{_hidden_data}, undef, );
+is( $success_admin_more_projects_shared_json->{_hidden_data}, undef, );
 
-isnt( $success_admin_more_projects_saved_json->{data},             undef, );
-isnt( $success_admin_more_projects_saved_json->{data}->{projects}, undef, );
+isnt( $success_admin_more_projects_shared_json->{data},             undef, );
+isnt( $success_admin_more_projects_shared_json->{data}->{projects}, undef, );
 
-is( keys %{ $success_admin_more_projects_saved_json->{data}->{projects} },
+is( keys %{ $success_admin_more_projects_shared_json->{data}->{projects} },
     1, 'For the time being this organization has only one project.' );
 
 is(
-    $success_admin_more_projects_saved_json->{data}->{projects}
+    $success_admin_more_projects_shared_json->{data}->{projects}
       ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{name},
     "Mega Shops e-commerce",
 );
 
 isnt(
-    $success_admin_more_projects_saved_json->{data}->{projects}
+    $success_admin_more_projects_shared_json->{data}->{projects}
       ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_with},
     undef,
 );
 
+isnt(
+    $success_admin_more_projects_shared_json->{data}->{projects}
+      ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_with}
+      ->{cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW},
+    undef,
+);
+
+is(
+    $success_admin_more_projects_shared_json->{data}->{projects}
+      ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_with}
+      ->{cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW}->{organization_name},
+    'Bugs Tech',
+);
+
+is(
+    scalar @{
+        $success_admin_more_projects_shared_json->{data}->{projects}
+          ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_with}
+          ->{cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW}->{shared_roles}
+    },
+    2,
+    "expenses_watcher and fireman"
+);
+
+my $create_project_success = request(
+    POST "project/create",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'name'               => 'Mega Shops blog',
+        }
+    )
+);
+
+is( $create_project_success->code(), 200, );
+
+my $create_project_success_json =
+  decode_json( $create_project_success->content );
+
+is( $create_project_success_json->{status}, 1, );
+is( $create_project_success_json->{message}, 'Project Created.', "Success" );
+
+my $new_project_token =
+  $create_project_success_json->{data}->{project}->{token};
+
+my $success_admin_new_project_not_shared_yet = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_new_project_not_shared_yet_json =
+  decode_json( $success_admin_new_project_not_shared_yet->content );
+
+is( $success_admin_new_project_not_shared_yet_json->{status}, 1, );
+
+is( $success_admin_new_project_not_shared_yet_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_new_project_not_shared_yet_json->{data}, undef, );
+isnt( $success_admin_new_project_not_shared_yet_json->{data}->{projects},
+    undef, );
+
+is(
+    keys %{ $success_admin_new_project_not_shared_yet_json->{data}->{projects}
+    },
+    2,
+    'There are two projects now.'
+);
+
+is(
+    $success_admin_new_project_not_shared_yet_json->{data}->{projects}
+      ->{$new_project_token}->{name},
+    "Mega Shops blog",
+
+);
+
+is(
+    $success_admin_more_projects_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with},
+    undef, "Not shared yet"
+);
+
+my $success_admin_share_other_project = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3',    # Globex
+            'project_token' => $new_project_token,
+            'role_name'     => 'fireman',
+        }
+    )
+);
+
+is( $success_admin_share_other_project->code(), 200, );
+
+my $success_admin_share_other_project_json =
+  decode_json( $success_admin_share_other_project->content );
+
+is( $success_admin_share_other_project_json->{status},  1, );
+is( $success_admin_share_other_project_json->{message}, 'Project shared.', );
+
+my $success_admin_share_other_project_other_organization = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    # Daedalus Project
+            'project_token' => $new_project_token,
+            'role_name'     => 'maze_master',
+        }
+    )
+);
+
+is( $success_admin_share_other_project_other_organization->code(), 200, );
+
+my $success_admin_share_other_project_other_organization_json =
+  decode_json( $success_admin_share_other_project_other_organization->content );
+
+is( $success_admin_share_other_project_other_organization_json->{status}, 1, );
+is(
+    $success_admin_share_other_project_other_organization_json->{message},
+    'Project shared.',
+);
+
+my $success_admin_new_project_shared = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_new_project_shared_json =
+  decode_json( $success_admin_new_project_shared->content );
+
+is( $success_admin_new_project_shared_json->{status}, 1, );
+
+is( $success_admin_new_project_shared_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_new_project_shared_json->{data},             undef, );
+isnt( $success_admin_new_project_shared_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_new_project_shared_json->{data}->{projects} },
+    2, 'There are two projects now.' );
+
+is(
+    $success_admin_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{name},
+    "Mega Shops blog",
+
+);
+
+isnt(
+    $success_admin_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with},
+    undef, "Not shared yet"
+);
+
+is(
+    $success_admin_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW},
+    undef, "Not shared with this organization"
+);
+
+isnt(
+    $success_admin_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3},
+    undef,
+);
+
+is(
+    $success_admin_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3}
+      ->{organization_name},
+    "Globex",
+);
+
+is(
+    $success_admin_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO}
+      ->{organization_name},
+    "Daedalus Project",
+);
+
+is(
+    @{
+        $success_admin_new_project_shared_json->{data}->{projects}
+          ->{$new_project_token}->{shared_with}
+          ->{FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO}->{shared_roles}
+    }[0],
+    'maze_master',
+);
+
+my $success_superadmin_check_new_project_shared = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+my $success_superadmin_check_new_project_shared_json =
+  decode_json( $success_superadmin_check_new_project_shared->content );
+
+is( $success_superadmin_check_new_project_shared_json->{status}, 1, );
+
+isnt( $success_superadmin_check_new_project_shared_json->{_hidden_data}, undef,
+);
+
+isnt( $success_superadmin_check_new_project_shared_json->{data}, undef, );
+isnt( $success_superadmin_check_new_project_shared_json->{data}->{projects},
+    undef, );
+
+is(
+    keys
+      %{ $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      },
+    2,
+    'There are two projects now.'
+);
+
+is(
+    $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{name},
+    "Mega Shops blog",
+
+);
+
+isnt(
+    $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with},
+    undef, "Not shared yet"
+);
+
+is(
+    $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW},
+    undef, "Not shared with this organization"
+);
+
+isnt(
+    $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3},
+    undef,
+);
+
+is(
+    $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3}
+      ->{organization_name},
+    "Globex",
+);
+
+is(
+    $success_superadmin_check_new_project_shared_json->{data}->{projects}
+      ->{$new_project_token}->{shared_with}->{FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO}
+      ->{organization_name},
+    "Daedalus Project",
+);
+
+is(
+    @{
+        $success_superadmin_check_new_project_shared_json->{data}->{projects}
+          ->{$new_project_token}->{shared_with}
+          ->{FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO}->{shared_roles}
+    }[0],
+    'maze_master',
+);
+
+isnt( $success_superadmin_check_new_project_shared_json->{_hidden_data}->{user},
+    undef, );
+
+is(
+    $success_superadmin_check_new_project_shared_json->{_hidden_data}
+      ->{projects}->{$new_project_token}->{shared_with}
+      ->{FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO}->{id},
+    1, "Daedalus project organization id"
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();

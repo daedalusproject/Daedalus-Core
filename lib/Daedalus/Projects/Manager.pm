@@ -372,27 +372,29 @@ sub get_organization_projects {
                     $knowed_organizations->{$organization_id} =
                       Daedalus::Organizations::Manager::get_organization_from_id(
                         $c, $organization_id )->{organization};
-                    $projects->{data}->{ $organization_project->token }
-                      ->{shared_with}
-                      ->{ $knowed_organizations->{$organization_id}->{data}
-                          ->{organization}->{token} } = {
-                        organization_name =>
-                          $knowed_organizations->{$organization_id}->{data}
-                          ->{organization}->{name},
-                        token =>
-                          $knowed_organizations->{$organization_id}->{data}
-                          ->{organization}->{token},
-                        shared_roles => [],
-                          };
-                    $projects->{_hidden_data}->{ $organization_project->token }
-                      ->{shared_with}
-                      ->{ $knowed_organizations->{$organization_id}->{data}
-                          ->{organization}->{token} } = {
-                        id => $knowed_organizations->{$organization_id}
-                          ->{_hidden_data}->{organization}->{id},
-                        shared_roles => {},
-                          };
                 }
+                $projects->{data}->{ $organization_project->token }
+                  ->{shared_with}
+                  ->{ $knowed_organizations->{$organization_id}->{data}
+                      ->{organization}->{token} } = {
+                    organization_name =>
+                      $knowed_organizations->{$organization_id}->{data}
+                      ->{organization}->{name},
+                    token =>
+                      $knowed_organizations->{$organization_id}->{data}
+                      ->{organization}->{token},
+                    shared_roles => [],
+                      };
+                $projects->{_hidden_data}->{ $organization_project->token }
+                  ->{shared_with}
+                  ->{ $knowed_organizations->{$organization_id}->{data}
+                      ->{organization}->{token} } = {
+                    id =>
+                      $knowed_organizations->{$organization_id}->{_hidden_data}
+                      ->{organization}->{id},
+                    shared_roles => {},
+                      };
+
                 for
                   my $shared_role_id ( @{ $sharing_info->{$organization_id} } )
                 {
