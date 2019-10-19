@@ -217,26 +217,6 @@ is(
 
 is( $failed_not_organization_admin_json->{_hidden_data}, undef, );
 
-my $success_admin = request(
-    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
-    Content_Type  => 'application/json',
-    Authorization => "Basic $admin_authorization_basic",
-);
-
-is( $success_admin->code(), 200, );
-
-my $success_admin_json = decode_json( $success_admin->content );
-
-is( $success_admin_json->{status}, 1, );
-
-is( $success_admin_json->{_hidden_data}, undef, );
-
-isnt( $success_admin_json->{data},             undef, );
-isnt( $success_admin_json->{data}->{projects}, undef, );
-
-is( keys %{ $success_admin_json->{data}->{projects} },
-    1, 'For the time being this organization has only one project.' );
-
 my $success_admin_with_no_projects = request(
     GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3",    # Globex
     Content_Type  => 'application/json',
@@ -257,6 +237,38 @@ isnt( $success_admin_with_no_projects_json->{data}->{projects}, undef, );
 
 is( keys %{ $success_admin_with_no_projects_json->{data}->{projects} },
     0, 'For the time being this organization has no projects.' );
+
+my $success_admin = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $success_admin->code(), 200, );
+
+my $success_admin_json = decode_json( $success_admin->content );
+
+is( $success_admin_json->{status}, 1, );
+
+is( $success_admin_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_json->{data},             undef, );
+isnt( $success_admin_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_json->{data}->{projects} },
+    1, 'For the time being this organization has only one project.' );
+
+is(
+    $success_admin_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{name},
+    "Mega Shops e-commerce",
+);
+
+isnt(
+    $success_admin_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{share_info},
+    undef,
+);
 
 done_testing();
 
