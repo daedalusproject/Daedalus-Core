@@ -228,6 +228,39 @@ sub check_project_token {
     return $response;
 }
 
+=head2 check_organization_project_token
+
+Checks if project token belongs to organization
+
+=cut
+
+sub check_organization_project_token {
+
+    my $c                       = shift;
+    my $project_token_candidate = shift;
+    my $data                    = shift;
+    my $data_properties         = shift;
+    my $required_data_name      = shift;
+
+    my $response;
+    my $project_token_check;
+
+    my $model      = $c->model("CoreRealms");
+    my $source     = $model->source("Project");
+    my $column     = $source->column_info("token");
+    my $token_size = $column->{size};
+
+    $response =
+      check_project_token( $c, $project_token_candidate, $data_properties,
+        $required_data_name );
+
+    if ( $response->{status} == 1 ) {    # Project exists
+        die Dumper($response);
+    }
+
+    return $response;
+}
+
 =head2 check_role_name
 
 Checks role name
@@ -641,6 +674,11 @@ sub check_required_data {
             when ("project") {
                 $response =
                   check_project_token( $c, $value, $data,
+                    $data_properties, $required_data_name );
+            }
+            when ("organization_project") {
+                $response =
+                  check_organization_project_token( $c, $value, $data,
                     $data_properties, $required_data_name );
             }
             when ("role") {

@@ -418,7 +418,7 @@ sub project_GET {
                     value        => $c->{request}->{arguments}[0],
                 },
                 'project_token' => {
-                    type         => "project",
+                    type         => "organization_project",
                     given        => 1,
                     forbid_empty => 1,
                     value        => $c->{request}->{arguments}[1],
