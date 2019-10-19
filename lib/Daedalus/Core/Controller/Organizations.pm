@@ -15,6 +15,7 @@ use base qw(Daedalus::Core::Controller::REST);
 
 use Daedalus::Users::Manager;
 use Daedalus::OrganizationGroups::Manager;
+use Daedalus::Roles::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -676,8 +677,7 @@ sub add_role_to_group_POST {
                 }
                 else {
                     # Check role, name
-                    $available_roles =
-                      Daedalus::OrganizationGroups::Manager::list_roles($c);
+                    $available_roles = Daedalus::Roles::Manager::list_roles($c);
                     if (
                         !exists $available_roles->{_hidden_data}->{$role_name} )
                     {
@@ -756,8 +756,7 @@ sub remove_existent_role {
         $response->{error_code} = $bad_request;
     }
     else {
-        $available_roles =
-          Daedalus::OrganizationGroups::Manager::list_roles($c);
+        $available_roles = Daedalus::Roles::Manager::list_roles($c);
 
         if ( !exists $available_roles->{_hidden_data}->{$role_name} ) {
             $response->{status}     = 0;
@@ -781,7 +780,7 @@ sub remove_existent_role {
                         $organization->{_hidden_data}->{organization}->{id} );
 
                     $count_roles =
-                      Daedalus::OrganizationGroups::Manager::count_roles( $c,
+                      Daedalus::Roles::Manager::count_roles( $c,
                         $groups->{data}, 'organization_master' );
                     if ( $count_roles < 2 ) {
                         $removal_allowed        = 0;

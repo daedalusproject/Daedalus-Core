@@ -17,6 +17,7 @@ use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Organizations::Manager;
 use Daedalus::Users::Manager;
+use Daedalus::Roles::Manager;
 
 use Data::Dumper;
 
@@ -255,7 +256,8 @@ sub check_organization_project_token {
         $required_data_name );
 
     if ( $response->{status} == 1 ) {    # Project exists
-        die Dumper($response);
+
+        #to  do
     }
 
     return $response;
@@ -282,7 +284,7 @@ sub check_role_name {
     $response->{status}  = 1;
 
     $role_name_check =
-      Daedalus::OrganizationGroups::Manager::check_role_existence( $c,
+      Daedalus::Roles::Manager::check_role_existence( $c,
         $role_name_candidate );
 
     if ( $role_name_check->{status} ) {
