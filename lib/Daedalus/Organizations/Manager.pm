@@ -248,6 +248,39 @@ sub get_organization_from_token {
     return $response;
 }
 
+=head2 get_organization_from_id
+
+For a given organization id, return organization data
+
+This function assumes that id always exists
+
+=cut
+
+sub get_organization_from_id {
+
+    my $c               = shift;
+    my $organization_id = shift;
+
+    my $response;
+    $response->{status} = 1;
+
+    my $organization =
+      $c->model('CoreRealms::Organization')->find( { id => $organization_id } );
+
+    $response->{status}       = 1;
+    $response->{organization} = {
+        data => {
+            organization => {
+                name  => $organization->name,
+                token => $organization->token,
+            },
+        },
+        _hidden_data => { organization => { id => $organization->id } }
+    };
+
+    return $response;
+}
+
 =head2 add_user_to_organization
 
 Adds user to organization token

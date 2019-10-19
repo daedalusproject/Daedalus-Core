@@ -15,6 +15,7 @@ use Moose;
 
 use Daedalus::Utils::Crypt;
 use List::MoreUtils qw(any uniq);
+use Daedalus::Roles::Manager;
 use Daedalus::Utils::Constants qw(
   $bad_request
   $project_token_length
@@ -282,6 +283,44 @@ sub add_group_to_shared_project {
     return $response;
 }
 
+=head2 get_shared_project_info
+
+Get all sharing relations of given project
+
+=cut
+
+sub get_shared_project_info {
+
+    my $c          = shift;
+    my $project_id = shift;
+
+    my $response;
+    $response->{status}     = 1;
+    $response->{share_info} = {};
+
+    my @shared_project = $c->model('CoreRealms::SharedProject')->search(
+        {
+            project_id => $project_id,
+        }
+    )->all();
+
+    if ( scalar @shared_project > 0 ) {
+        for my $sharing (@shared_project) {
+            if ( !exists $response->{share_info}
+                ->{ $sharing->organization_to_manage_id } )
+            {
+                $response->{share_info}->{ $sharing->organization_to_manage_id }
+                  = [];
+            }
+            push @{ $response->{share_info}
+                  ->{ $sharing->organization_to_manage_id } },
+              $sharing->organization_to_manage_role_id;
+        }
+    }
+
+    return $response;
+}
+
 =head2 get_organization_projects
 
 Returns a list of Project ID's owned by organization
@@ -294,6 +333,8 @@ sub get_organization_projects {
     my $organization_id = shift;
 
     my $projects;
+    my $knowed_organizations;
+    my $available_roles;
 
     my $response = {
         data         => { projects => {} },
@@ -310,6 +351,8 @@ sub get_organization_projects {
 
     if ( scalar @organization_projects > 0 ) {
 
+        $available_roles = Daedalus::Roles::Manager::list_roles_by_id($c);
+
         for my $organization_project (@organization_projects) {
             $projects->{data}->{ $organization_project->token } = {
                 name  => $organization_project->name,
@@ -317,6 +360,57 @@ sub get_organization_projects {
             };
             $projects->{_hidden_data}->{ $organization_project->token } =
               { id => $organization_project->id, };
+            $projects->{data}->{ $organization_project->token }->{shared_with}
+              = {};
+            $projects->{_hidden_data}->{ $organization_project->token }
+              ->{shared_with} = {};
+            my $sharing_info =
+              get_shared_project_info( $c, $organization_project->id )
+              ->{share_info};
+            for my $organization_id ( keys %{$sharing_info} ) {
+                if ( !exists $knowed_organizations->{$organization_id} ) {
+                    $knowed_organizations->{$organization_id} =
+                      Daedalus::Organizations::Manager::get_organization_from_id(
+                        $c, $organization_id )->{organization};
+                    $projects->{data}->{ $organization_project->token }
+                      ->{shared_with}
+                      ->{ $knowed_organizations->{$organization_id}->{data}
+                          ->{organization}->{token} } = {
+                        organization_name =>
+                          $knowed_organizations->{$organization_id}->{data}
+                          ->{organization}->{name},
+                        token =>
+                          $knowed_organizations->{$organization_id}->{data}
+                          ->{organization}->{token},
+                        shared_roles => [],
+                          };
+                    $projects->{_hidden_data}->{ $organization_project->token }
+                      ->{shared_with}
+                      ->{ $knowed_organizations->{$organization_id}->{data}
+                          ->{organization}->{token} } = {
+                        id => $knowed_organizations->{$organization_id}
+                          ->{_hidden_data}->{organization}->{id},
+                        shared_roles => {},
+                          };
+                }
+                for
+                  my $shared_role_id ( @{ $sharing_info->{$organization_id} } )
+                {
+                    push @{
+                        $projects->{data}->{ $organization_project->token }
+                          ->{shared_with}->{
+                            $knowed_organizations->{$organization_id}->{data}
+                              ->{organization}->{token}
+                          }->{shared_roles}
+                      },
+                      $available_roles->{$shared_role_id};
+                    $projects->{_hidden_data}->{ $organization_project->token }
+                      ->{shared_with}
+                      ->{ $knowed_organizations->{$organization_id}->{data}
+                          ->{organization}->{token} }->{shared_roles}
+                      ->{$shared_role_id} = $available_roles->{$shared_role_id};
+                }
+            }
         }
         $response->{data}->{projects}         = $projects->{data};
         $response->{_hidden_data}->{projects} = $projects->{_hidden_data};

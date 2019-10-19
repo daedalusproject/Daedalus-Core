@@ -266,7 +266,119 @@ is(
 
 isnt(
     $success_admin_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
-      ->{share_info},
+      ->{shared_with},
+    undef,
+);
+
+my $success_admin_share_with_other_organization = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'expenses_watcher',
+        }
+    )
+);
+
+is( $success_admin_share_with_other_organization->code(), 200, );
+
+my $success_admin_share_with_other_organization_json =
+  decode_json( $success_admin_share_with_other_organization->content );
+
+is( $success_admin_share_with_other_organization_json->{status}, 1, );
+is(
+    $success_admin_share_with_other_organization_json->{message},
+    'Project shared.',
+);
+
+$success_admin_share_with_other_organization = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'fireman',
+        }
+    )
+);
+
+is( $success_admin_share_with_other_organization->code(), 200, );
+
+$success_admin_share_with_other_organization_json =
+  decode_json( $success_admin_share_with_other_organization->content );
+
+is( $success_admin_share_with_other_organization_json->{status}, 1, );
+is(
+    $success_admin_share_with_other_organization_json->{message},
+    'Project shared.',
+);
+
+$success_admin_share_with_other_organization = request(
+    POST "/project/share",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'organization_to_share_token' =>
+              'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3',    # Globex
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'fireman',
+        }
+    )
+);
+
+is( $success_admin_share_with_other_organization->code(), 200, );
+
+$success_admin_share_with_other_organization_json =
+  decode_json( $success_admin_share_with_other_organization->content );
+
+is( $success_admin_share_with_other_organization_json->{status}, 1, );
+is(
+    $success_admin_share_with_other_organization_json->{message},
+    'Project shared.',
+);
+
+my $success_admin_more_projects_saved = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_more_projects_saved_json =
+  decode_json( $success_admin_more_projects_saved->content );
+
+is( $success_admin_more_projects_saved_json->{status}, 1, );
+
+is( $success_admin_more_projects_saved_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_more_projects_saved_json->{data},             undef, );
+isnt( $success_admin_more_projects_saved_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_more_projects_saved_json->{data}->{projects} },
+    1, 'For the time being this organization has only one project.' );
+
+is(
+    $success_admin_more_projects_saved_json->{data}->{projects}
+      ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{name},
+    "Mega Shops e-commerce",
+);
+
+isnt(
+    $success_admin_more_projects_saved_json->{data}->{projects}
+      ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_with},
     undef,
 );
 

@@ -17,6 +17,7 @@ use base qw(Catalyst::Controller::REST);
 
 use Daedalus::Organizations::Manager;
 use Daedalus::Users::Manager;
+use Daedalus::Roles::Manager;
 
 use Data::Dumper;
 
@@ -283,7 +284,7 @@ sub check_role_name {
     $response->{status}  = 1;
 
     $role_name_check =
-      Daedalus::OrganizationGroups::Manager::check_role_existence( $c,
+      Daedalus::Roles::Manager::check_role_existence( $c,
         $role_name_candidate );
 
     if ( $role_name_check->{status} ) {
