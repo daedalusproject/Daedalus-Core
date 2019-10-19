@@ -193,6 +193,23 @@ is(
 
 is( $failed_not_organization_admin_json->{_hidden_data}, undef, );
 
+my $success_admin = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $success_admin->code(), 200, );
+
+my $success_admin_json = decode_json( $success_admin->content );
+
+is( $success_admin_json->{status},  0, );
+is( $success_admin_json->{message}, '', );
+
+is( $success_admin_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_json->{data}, undef, );
+
 done_testing();
 
 DatabaseSetUpTearDown::delete_database();

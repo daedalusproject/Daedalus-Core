@@ -433,6 +433,74 @@ sub project_GET {
     return $self->return_response( $c, $response );
 }
 
+=head2 organization_projects
+
+Gets Organization Projects Info.
+
+Only admin users are allowed to perform this action.
+
+Required data:   - Organization token
+
+=cut
+
+sub organization_projects : Path('/organization/projects') : Args(1) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 organization_projects_GET
+
+/organization/projects is a GET request
+
+=cut
+
+sub organization_projects_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master']
+                ,    # Organization member
+            },
+            required_data => {
+                organization_token => {
+                    type         => 'organization',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[0],
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
+
+        $response = Daedalus::Projects::Manager::get_organization_projects(
+            $c,
+            $organization->{_hidden_data}->{organization}->{id},
+            $user_data->{_hidden_data}->{user}->{is_super_admin}
+        );
+
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS

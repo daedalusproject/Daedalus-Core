@@ -255,7 +255,8 @@ sub check_organization_project_token {
         $required_data_name );
 
     if ( $response->{status} == 1 ) {    # Project exists
-        die Dumper($response);
+
+        #to  do
     }
 
     return $response;
