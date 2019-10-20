@@ -16,6 +16,7 @@ use Data::Dumper;
 use base qw(Daedalus::Core::Controller::REST);
 
 use Daedalus::Projects::Manager;
+use Daedalus::Organizations::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -390,13 +391,16 @@ sub show_projects : Path('/projects/show') : Args(0) : ActionClass('REST') {
 
 =cut
 
-sub show_rojects_GET {
+sub show_projects_GET {
     my ( $self, $c ) = @_;
 
     my $response;
     my $organization;
     my $user_data;
     my $project_name;
+
+    my $user_organization_groups;
+    my $user_projects = {};
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -407,8 +411,46 @@ sub show_rojects_GET {
             required_data => {}
         }
     );
+
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
+        $user_organization_groups =
+          Daedalus::Organizations::Manager::get_user_organizations_groups( $c,
+            $user_data );
+
+        for my $user_organization (
+            keys %{ $user_organization_groups->{_hidden_data}->{organizations} }
+          )
+        {
+            my $projects_shared_with_my_organization =
+              Daedalus::Projects::Manager::get_shared_projects_with_organization(
+                $c,
+                $user_organization_groups->{_hidden_data}->{organizations}
+                  ->{$user_organization}->{id}
+              );
+
+            die Dumper($projects_shared_with_my_organization);
+            for my $project (
+                keys %{
+                    $projects_shared_with_my_organization->{_hidden_data}
+                      ->{projects}
+                }
+              )
+            {
+                my $project_data =
+                  $projects_shared_with_my_organization->{_hidden_data}
+                  ->{projects}->{$project};
+                if ( keys %{ $project_data->{shared_with} } ) {
+
+                    #Check if shared groups match with user organization groups
+                    die Dumper( $project_data->{shared_with} );
+                }
+            }
+        }
     }
     return $self->return_response( $c, $response );
 }
@@ -468,7 +510,8 @@ sub organization_projects_GET {
         $user_data    = $authorization_and_validatation->{data}->{user_data};
         $organization = $authorization_and_validatation->{data}->{organization};
 
-        $response = Daedalus::Projects::Manager::get_organization_projects( $c,
+        $response =
+          Daedalus::Projects::Manager::get_organization_projects( $c,
             $organization->{_hidden_data}->{organization}->{id} );
 
     }

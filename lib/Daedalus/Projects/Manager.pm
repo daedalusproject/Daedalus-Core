@@ -420,6 +420,55 @@ sub get_organization_projects {
     return $response;
 }
 
+=head2 get_shared_projects_with_organization
+
+Returns a list of Projects shared with given organization
+
+=cut
+
+sub get_shared_projects_with_organization {
+
+    my $c               = shift;
+    my $organization_id = shift;
+
+    my $projects;
+    my $knowed_organizations;
+    my $knowed_projects;
+    my $available_roles;
+
+    my $response = {
+        data         => { projects => {} },
+        _hidden_data => { projects => {} },
+        status       => 1
+    };
+
+    # Check if already exists
+    my @projects_shared = $c->model('CoreRealms::SharedProject')->search(
+        {
+            organization_to_manage_id => $organization_id,
+        }
+    )->all;
+
+    if ( scalar @projects_shared > 0 ) {
+        $available_roles = Daedalus::Roles::Manager::list_roles_by_id($c);
+        for my $shared_project (@projects_shared) {
+            if ( !exists $knowed_organizations
+                ->{ $shared_project->organization_manager_id } )
+            {
+                $knowed_organizations
+                  ->{ $shared_project->organization_manager_id } =
+                  Daedalus::Organizations::Manager::get_organization_from_id(
+                    $c, $shared_project->organization_manager_id )
+                  ->{organization};
+            }
+        }
+        die Dumper($knowed_organizations);
+        $response->{data}->{projects}         = $projects->{data};
+        $response->{_hidden_data}->{projects} = $projects->{_hidden_data};
+    }
+    return $response;
+}
+
 =encoding utf8
 
 =head1 SEE ALSO
