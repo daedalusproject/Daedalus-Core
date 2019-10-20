@@ -96,7 +96,8 @@ sub populate_databse {
         }
     );
     $schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
-    $schema->resultset('Role')->create( { role_name => "maze_master", } );
+    my $maze_master =
+      $schema->resultset('Role')->create( { role_name => "maze_master", } );
     my $fireman =
       $schema->resultset('Role')->create( { role_name => "fireman", } );
     $schema->resultset('Role')->create( { role_name => "fireman_commando", } );
@@ -144,6 +145,13 @@ sub populate_databse {
         {
             group_id => $organization_group->id,
             role_id  => $organization_master_role->id,
+        }
+    );
+
+    $schema->resultset('OrganizationGroupRole')->create(
+        {
+            group_id => $organization_group->id,
+            role_id  => $maze_master->id,
         }
     );
 

@@ -400,7 +400,7 @@ sub show_projects_GET {
     my $project_name;
 
     my $user_organization_groups;
-    my $user_projects = {};
+    my $user_projects = { data => {}, _hidden_data => {} };
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -433,8 +433,7 @@ sub show_projects_GET {
                   ->{$user_organization}->{id}
               );
 
-            die Dumper($projects_shared_with_my_organization);
-            for my $project (
+            for my $project_token (
                 keys %{
                     $projects_shared_with_my_organization->{_hidden_data}
                       ->{projects}
@@ -443,16 +442,64 @@ sub show_projects_GET {
             {
                 my $project_data =
                   $projects_shared_with_my_organization->{_hidden_data}
-                  ->{projects}->{$project};
-                if ( keys %{ $project_data->{shared_with} } ) {
+                  ->{projects}->{$project_token};
 
-                    #Check if shared groups match with user organization groups
-                    die Dumper( $project_data->{shared_with} );
+                for my $user_organization (
+                    keys %{
+                        $user_organization_groups->{_hidden_data}
+                          ->{organizations}
+                    }
+                  )
+                {
+
+                    my $groups_data =
+                      $user_organization_groups->{_hidden_data}
+                      ->{organizations}->{$user_organization}->{groups};
+
+                    $user_projects =
+                      fill_user_project_info( $groups_data, $user_projects,
+                        $project_data, $project_token,
+                        $projects_shared_with_my_organization );
                 }
             }
         }
+        $response->{status}       = 1;
+        $response->{data}         = $user_projects->{data};
+        $response->{_hidden_data} = $user_projects->{_hidden_data};
     }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     return $self->return_response( $c, $response );
+}
+
+sub fill_user_project_info {
+
+    my $groups_data                          = shift;
+    my $user_projects                        = shift;
+    my $project_data                         = shift;
+    my $project_token                        = shift;
+    my $projects_shared_with_my_organization = shift;
+
+    for my $group ( keys %{$groups_data} ) {
+        my $group_id = $groups_data->{$group}->{id};
+
+        if (
+            any { /^$group_id$/sxm }
+            uniq @{ $project_data->{shared_groups} }
+          )
+        {
+            # User is allowed to view this project
+            $user_projects->{data}->{$project_token} =
+              $projects_shared_with_my_organization->{data}->{projects}
+              ->{$project_token};
+            $user_projects->{_hidden_data}->{$project_token} =
+              $projects_shared_with_my_organization->{_hidden_data}->{projects}
+              ->{$project_token};
+        }
+
+    }
+
+    return $user_projects;
+
 }
 
 =head2 organization_projects

@@ -135,6 +135,41 @@ sub get_project_from_token {
     return $response;
 }
 
+=head2 get_project_from_id
+
+For a given project id, return project data
+We assume project id always exists.
+=cut
+
+sub get_project_from_id {
+
+    my $c          = shift;
+    my $project_id = shift;
+
+    my $response;
+    $response->{status} = 1;
+
+    my $project =
+      $c->model('CoreRealms::Project')->find( { id => $project_id } );
+
+    $response->{project} = {
+        data => {
+            project => {
+                name  => $project->name,
+                token => $project->token,
+            },
+        },
+        _hidden_data => {
+            project => {
+                id                 => $project->id,
+                organization_owner => $project->organization_owner->id,
+            }
+        }
+    };
+
+    return $response;
+}
+
 =head2 check_shared_project_with_organization
 
 Check if project is already shared with organization
@@ -451,6 +486,7 @@ sub get_shared_projects_with_organization {
 
     if ( scalar @projects_shared > 0 ) {
         $available_roles = Daedalus::Roles::Manager::list_roles_by_id($c);
+
         for my $shared_project (@projects_shared) {
             if ( !exists $knowed_organizations
                 ->{ $shared_project->organization_manager_id } )
@@ -461,10 +497,62 @@ sub get_shared_projects_with_organization {
                     $c, $shared_project->organization_manager_id )
                   ->{organization};
             }
+            if ( !exists $knowed_projects->{ $shared_project->project_id } ) {
+                $knowed_projects->{ $shared_project->project_id } =
+                  get_project_from_id( $c, $shared_project->project_id )
+                  ->{project};
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{shared_groups} = [];
+                $knowed_projects->{ $shared_project->project_id }->{data}
+                  ->{project}->{organization_owner} =
+                  $knowed_organizations
+                  ->{ $shared_project->organization_manager_id }->{data}
+                  ->{organization};
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{organization_owner} =
+                  $knowed_organizations
+                  ->{ $shared_project->organization_manager_id }
+                  ->{_hidden_data}->{organization};
+            }
+
+            # get shared project's groups with
+
+            my @shared_groups =
+              $c->model('CoreRealms::SharedProjectGroupAssignment')
+              ->search( { shared_project_id => $shared_project->project_id } )
+              ->all;
+            for my $group (@shared_groups) {
+                my $group_id = $group->group_id;
+                if (
+                    !(
+                        any { /^$group_id$/sxm }
+                        uniq @{
+                            $knowed_projects->{ $shared_project->project_id }
+                              ->{_hidden_data}->{project}->{shared_groups}
+                        }
+                    )
+                  )
+                {
+                    push @{ $knowed_projects->{ $shared_project->project_id }
+                          ->{_hidden_data}->{project}->{shared_groups} },
+                      $group->group_id;
+
+                }
+
+            }
+
         }
-        die Dumper($knowed_organizations);
-        $response->{data}->{projects}         = $projects->{data};
-        $response->{_hidden_data}->{projects} = $projects->{_hidden_data};
+        for my $knowed_project ( keys %{$knowed_projects} ) {
+            $response->{data}->{projects}
+              ->{ $knowed_projects->{$knowed_project}->{data}->{project}
+                  ->{token} } =
+              $knowed_projects->{$knowed_project}->{data}->{project};
+            $response->{_hidden_data}->{projects}
+              ->{ $knowed_projects->{$knowed_project}->{data}->{project}
+                  ->{token} } =
+              $knowed_projects->{$knowed_project}->{_hidden_data}->{project};
+
+        }
     }
     return $response;
 }

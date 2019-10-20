@@ -335,6 +335,25 @@ my $share_arcturus_project_with_daedalus_project_maze_master = request(
 
 is( $share_arcturus_project_with_daedalus_project_maze_master->code(), 200, );
 
+my $select_group_for_arcturus_project = request(
+
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO',    # Daedalus Project
+            'shared_project_token' => $arcturus_project_token,
+            'group_token'          => '8B8hl0RNItqemTqYmv4mJgYo6GssPzG8g'
+            ,    # Daedalus Super Administrators
+        }
+      )
+
+);
+
+is( $select_group_for_arcturus_project->code(), 200, );
+
 my $share_arcturus_project_with_megashops_health_watcher = request(
     POST '/project/share',
     Content_Type  => 'application/json',
