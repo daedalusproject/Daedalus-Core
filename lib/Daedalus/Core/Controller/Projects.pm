@@ -16,6 +16,7 @@ use Data::Dumper;
 use base qw(Daedalus::Core::Controller::REST);
 
 use Daedalus::Projects::Manager;
+use Daedalus::Organizations::Manager;
 
 __PACKAGE__->config( default => 'application/json' );
 __PACKAGE__->config( json_options => { relaxed => 1 } );
@@ -369,6 +370,206 @@ sub add_group_to_share_project_POST {
         }
 
     }
+
+    return $self->return_response( $c, $response );
+}
+
+=head2 show_projects
+
+Get Project Info.
+
+=cut
+
+sub show_projects : Path('/projects/show') : Args(0) : ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 show_projects_GET
+
+/projects/show is a GET request
+
+=cut
+
+sub show_projects_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $project_name;
+
+    my $user_organization_groups;
+    my $user_projects =
+      { data => { projects => {} }, _hidden_data => { projects => {} } };
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type => 'user',
+            },
+            required_data => {}
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
+        $user_organization_groups =
+          Daedalus::Organizations::Manager::get_user_organizations_groups( $c,
+            $user_data );
+        for my $user_organization (
+            keys %{ $user_organization_groups->{_hidden_data}->{organizations} }
+          )
+        {
+            my $projects_shared_with_my_organization =
+              Daedalus::Projects::Manager::get_shared_projects_with_organization(
+                $c,
+                $user_organization_groups->{_hidden_data}->{organizations}
+                  ->{$user_organization}->{id}
+              );
+
+            for my $project_token (
+                keys %{
+                    $projects_shared_with_my_organization->{_hidden_data}
+                      ->{projects}
+                }
+              )
+            {
+                my $project_data =
+                  $projects_shared_with_my_organization->{_hidden_data}
+                  ->{projects}->{$project_token};
+
+                for my $user_organization (
+                    keys %{
+                        $user_organization_groups->{_hidden_data}
+                          ->{organizations}
+                    }
+                  )
+                {
+
+                    my $groups_data =
+                      $user_organization_groups->{_hidden_data}
+                      ->{organizations}->{$user_organization}->{groups};
+
+                    $user_projects =
+                      fill_user_project_info( $groups_data, $user_projects,
+                        $project_data, $project_token,
+                        $projects_shared_with_my_organization );
+                }
+            }
+        }
+        $response->{status} = 1;
+        $response->{data}->{projects} = $user_projects->{data}->{projects};
+        $response->{_hidden_data}->{projects} =
+          $user_projects->{_hidden_data}->{projects};
+    }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    return $self->return_response( $c, $response );
+}
+
+=head2 fill_user_project_info
+
+Fills user_projects
+
+=cut
+
+sub fill_user_project_info {
+
+    my $groups_data                          = shift;
+    my $user_projects                        = shift;
+    my $project_data                         = shift;
+    my $project_token                        = shift;
+    my $projects_shared_with_my_organization = shift;
+
+    for my $group ( keys %{$groups_data} ) {
+        my $group_id = $groups_data->{$group}->{id};
+
+        if (
+            any { /^$group_id$/sxm }
+            uniq @{ $project_data->{shared_groups} }
+          )
+        {
+            # User is allowed to view this project
+            $user_projects->{data}->{projects}->{$project_token} =
+              $projects_shared_with_my_organization->{data}->{projects}
+              ->{$project_token};
+            $user_projects->{_hidden_data}->{projects}->{$project_token} =
+              $projects_shared_with_my_organization->{_hidden_data}->{projects}
+              ->{$project_token};
+        }
+
+    }
+    return $user_projects;
+
+}
+
+=head2 organization_projects
+
+Gets Organization Projects Info.
+
+Only admin users are allowed to perform this action.
+
+Required data:   - Organization token
+
+=cut
+
+sub organization_projects : Path('/organization/projects') : Args(1) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 organization_projects_GET
+
+/organization/projects is a GET request
+
+=cut
+
+sub organization_projects_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master']
+                ,    # Organization member
+            },
+            required_data => {
+                organization_token => {
+                    type         => 'organization',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[0],
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data    = $authorization_and_validatation->{data}->{user_data};
+        $organization = $authorization_and_validatation->{data}->{organization};
+
+        $response =
+          Daedalus::Projects::Manager::get_organization_projects( $c,
+            $organization->{_hidden_data}->{organization}->{id} );
+
+    }
+
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
 
     return $self->return_response( $c, $response );
 }

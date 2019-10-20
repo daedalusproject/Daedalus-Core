@@ -96,7 +96,8 @@ sub populate_databse {
         }
     );
     $schema->resultset('Role')->create( { role_name => "expenses_watcher", } );
-    $schema->resultset('Role')->create( { role_name => "maze_master", } );
+    my $maze_master =
+      $schema->resultset('Role')->create( { role_name => "maze_master", } );
     my $fireman =
       $schema->resultset('Role')->create( { role_name => "fireman", } );
     $schema->resultset('Role')->create( { role_name => "fireman_commando", } );
@@ -144,6 +145,13 @@ sub populate_databse {
         {
             group_id => $organization_group->id,
             role_id  => $organization_master_role->id,
+        }
+    );
+
+    $schema->resultset('OrganizationGroupRole')->create(
+        {
+            group_id => $organization_group->id,
+            role_id  => $maze_master->id,
         }
     );
 
@@ -665,6 +673,77 @@ sub populate_databse {
             active     => 1,
             auth_token => $auth_token,
             token      => $user_token,
+        }
+    );
+
+    $name     = 'Hank';
+    $surname  = 'Scorpio';
+    $email    = 'hscorpio@globex.com';
+    $password = '::::Sc0rP10___:::;;;;;';
+    $api_key  = '0uIRKa8kWN9TJJU3mA3Jawer1ETbEind';
+    $auth_token =
+      'vhPMp1BPMSdsiHokuJcgEYDWEunQxgDo4AV1HR0om4Jb6TdBWrSZTW5YsPc3iTzZ';
+    $salt =
+'y2TlG6VXTHhbpLRNFCcwNJCg23p9fjVtJrnFlKQjnjBFHeZc1Gq49rXnhAIWHuZ5n7jWKdmzkOvkOdG1VEVHUuX5aVfTLW3blJU1wo5tfroRaSy8ZkSVTIRbHh8JpUOufR1VlUXgutcJPGvbxQo6qse0J6vftuyz69zBJ7yPUrF59r6KfKCWiZjHK2hY2a7oUmdgkRJFLHGEX6dwKPx99QtUYzDkV4A9pSpURyvYvoKQT05Bxq3yOdT6kw03tl6';
+    $password   = sha512_base64("$salt$password");
+    $user_token = '2yu2CRQadSjFBf3R2E57X86Yh10XX9wl';
+
+    my $hankscorpio = $schema->resultset('User')->create(
+        {
+            name       => $name,
+            surname    => $surname,
+            email      => $email,
+            api_key    => $api_key,
+            password   => $password,
+            salt       => $salt,
+            expires    => "3000-01-01",
+            active     => 1,
+            auth_token => $auth_token,
+            token      => $user_token,
+        }
+    );
+
+    my $globex = $schema->resultset('Organization')->create(
+        {
+            name  => "Globex",
+            token => "AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3"
+        }
+    );
+
+    $schema->resultset('UserOrganization')->create(
+        {
+            organization_id => $globex->id,
+            user_id         => $hankscorpio->id,
+        }
+    );
+
+    my $globex_administrators_group =
+      $schema->resultset('OrganizationGroup')->create(
+        {
+            organization_id => $globex->id,
+            group_name      => "Globex Administrators",
+            token           => "phFOW1DNnAxxw89pOuR29NYKI2WVl2VQ",
+        }
+      );
+
+    $schema->resultset('OrganizationGroupRole')->create(
+        {
+            group_id => $globex_administrators_group->id,
+            role_id  => $fireman->id,
+        }
+    );
+
+    $schema->resultset('OrganizationGroupRole')->create(
+        {
+            group_id => $globex_administrators_group->id,
+            role_id  => $organization_master_role->id,
+        }
+    );
+
+    $schema->resultset('OrganizationUsersGroup')->create(
+        {
+            group_id => $globex_administrators_group->id,
+            user_id  => $hankscorpio->id,
         }
     );
 }

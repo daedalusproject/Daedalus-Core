@@ -92,7 +92,7 @@ is( $failed_no_admin_json->{status}, 0, );
 is(
     $failed_no_admin_json->{message},
     'Invalid organization token.',
-    'Because you are dnot an admin user.'
+    'Because you are not an admin user.'
 );
 
 my $admin_success = request(
