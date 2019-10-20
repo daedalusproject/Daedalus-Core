@@ -373,29 +373,24 @@ sub add_group_to_share_project_POST {
     return $self->return_response( $c, $response );
 }
 
-=head2 project
+=head2 show_projects
 
 Get Project Info.
 
-Admin projects also are able to view project
-
-Required data:   - Organization token
-                 - Project token
-
 =cut
 
-sub project : Path('/project') : Args(2) : ActionClass('REST') {
+sub show_projects : Path('/projects/show') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
     return;
 }
 
-=head2 project_GET
+=head2 show_projects_GET
 
-/project is a GET request
+/projects/show is a GET request
 
 =cut
 
-sub project_GET {
+sub show_rojects_GET {
     my ( $self, $c ) = @_;
 
     my $response;
@@ -407,26 +402,11 @@ sub project_GET {
         $c,
         {
             auth => {
-                type               => 'organization',
-                organization_roles => [],               # Organization member
+                type => 'user',
             },
-            required_data => {
-                organization_token => {
-                    type         => 'organization',
-                    given        => 1,
-                    forbid_empty => 1,
-                    value        => $c->{request}->{arguments}[0],
-                },
-                'project_token' => {
-                    type         => "organization_project",
-                    given        => 1,
-                    forbid_empty => 1,
-                    value        => $c->{request}->{arguments}[1],
-                },
-            }
+            required_data => {}
         }
     );
-
     if ( $authorization_and_validatation->{status} == 0 ) {
         $response = $authorization_and_validatation;
     }
