@@ -90,22 +90,30 @@ my $superadmin_session_token = $superadmin_login_json->{data}->{session_token};
 my $superadmin_authorization_basic =
   MIME::Base64::encode( "session_token:$superadmin_session_token", '' );
 
-#my $success_admin = request(
-#    GET "$endpoint",
-#    Content_Type  => 'application/json',
-#    Authorization => "Basic $admin_authorization_basic",
-#);
-#
-#is( $success_admin->code(), 200, );
-#
-#my $success_admin_json = decode_json( $success_admin->content );
-#
-#is( $success_admin_json->{status}, 1, );
-#
-#is( $success_admin_json->{_hidden_data}, undef, );
-#
-#isnt( $success_admin_json->{data},             undef, );
-#isnt( $success_admin_json->{data}->{projects}, undef, );
+my $failed_invalid_authorization = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic fail$admin_authorization_basic",
+);
+
+is( $failed_invalid_authorization->code(), 400, );
+
+my $success_admin = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $success_admin->code(), 200, );
+
+my $success_admin_json = decode_json( $success_admin->content );
+
+is( $success_admin_json->{status}, 1, );
+
+is( $success_admin_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_json->{data},             undef, );
+isnt( $success_admin_json->{data}->{projects}, undef, );
 
 my $create_group_megashop_sysadmins = request(
     POST "/organization/creategroup",
@@ -335,6 +343,46 @@ my $share_arcturus_project_with_daedalus_project_maze_master = request(
 
 is( $share_arcturus_project_with_daedalus_project_maze_master->code(), 200, );
 
+my $marvin_login_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'marvin@megashops.com',
+            password => '1_HAT3_MY_L1F3',
+        }
+    )
+);
+
+is( $marvin_login_success->code(), 200, );
+
+my $marvin_login_success_json = decode_json( $marvin_login_success->content );
+
+is( $marvin_login_success_json->{status}, 1, );
+
+my $marvin_login_success_token =
+  $marvin_login_success_json->{data}->{session_token};
+
+my $marvin_authorization_basic =
+  MIME::Base64::encode( "session_token:$marvin_login_success_token", '' );
+
+my $marvin_check = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $marvin_authorization_basic",
+);
+
+is( $marvin_check->code(), 200, );
+
+my $marvin_check_json = decode_json( $marvin_check->content );
+
+is( $marvin_check_json->{status}, 1, );
+
+is( $marvin_check_json->{_hidden_data}, undef, );
+
+isnt( $marvin_check_json->{data}, undef, );
+is( keys %{ $marvin_check_json->{data}->{projects} }, 0, );
+
 my $select_group_for_arcturus_project = request(
 
     POST '/project/share/group',
@@ -353,6 +401,25 @@ my $select_group_for_arcturus_project = request(
 );
 
 is( $select_group_for_arcturus_project->code(), 200, );
+
+my $superadmin_check = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $superadmin_check->code(), 200, );
+
+my $superadmin_check_json = decode_json( $superadmin_check->content );
+
+is( $superadmin_check_json->{status}, 1, );
+
+isnt( $superadmin_check_json->{_hidden_data}, undef, );
+
+isnt( $superadmin_check_json->{data}, undef, );
+is( keys %{ $superadmin_check_json->{data}->{projects} }, 1, );
+isnt( $superadmin_check_json->{data}->{projects}->{$arcturus_project_token},
+    undef, );
 
 my $share_arcturus_project_with_megashops_health_watcher = request(
     POST '/project/share',
@@ -385,6 +452,32 @@ my $megashop_healers_group_has_access_to_arcturus_project = request(
 );
 
 is( $megashop_healers_group_has_access_to_arcturus_project->code(), 200, );
+
+$marvin_check = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $marvin_authorization_basic",
+);
+
+is( $marvin_check->code(), 200, );
+
+$marvin_check_json = decode_json( $marvin_check->content );
+
+is( $marvin_check_json->{status}, 1, );
+
+is( $marvin_check_json->{_hidden_data}, undef, );
+
+isnt( $marvin_check_json->{data}, undef, );
+is( keys %{ $marvin_check_json->{data}->{projects} }, 1, );
+is(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}->{name},
+    "Arcturus Project",
+);
+is(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+      ->{organization_owner}->{name},
+    "Globex",
+);
 
 my $share_megashops_ecommerce_project_with_megashops_health_watcher = request(
     POST '/project/share',
@@ -422,6 +515,33 @@ my $megashop_healers_group_has_access_to_megashops_ecommerce = request(
 
 is( $megashop_healers_group_has_access_to_megashops_ecommerce->code(), 200, );
 
+$marvin_check = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $marvin_authorization_basic",
+);
+
+is( $marvin_check->code(), 200, );
+
+$marvin_check_json = decode_json( $marvin_check->content );
+
+is( $marvin_check_json->{status}, 1, );
+
+is( $marvin_check_json->{_hidden_data}, undef, );
+
+isnt( $marvin_check_json->{data}, undef, );
+is( keys %{ $marvin_check_json->{data}->{projects} }, 2, );
+is(
+    $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{name},
+    "Mega Shops e-commerce",
+);
+is(
+    $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{organization_owner}->{name},
+    "Mega Shops",
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();

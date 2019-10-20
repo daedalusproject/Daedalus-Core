@@ -170,7 +170,7 @@ sub get_project_from_id {
     return $response;
 }
 
-=head2 check_shared_project_with_organization
+=head2 check_shared_project_with_organization_roles
 
 Check if project is already shared with organization
 

@@ -400,7 +400,8 @@ sub show_projects_GET {
     my $project_name;
 
     my $user_organization_groups;
-    my $user_projects = { data => {}, _hidden_data => {} };
+    my $user_projects =
+      { data => { projects => {} }, _hidden_data => { projects => {} } };
 
     my $authorization_and_validatation = $self->authorize_and_validate(
         $c,
@@ -421,7 +422,6 @@ sub show_projects_GET {
         $user_organization_groups =
           Daedalus::Organizations::Manager::get_user_organizations_groups( $c,
             $user_data );
-
         for my $user_organization (
             keys %{ $user_organization_groups->{_hidden_data}->{organizations} }
           )
@@ -463,13 +463,20 @@ sub show_projects_GET {
                 }
             }
         }
-        $response->{status}       = 1;
-        $response->{data}         = $user_projects->{data};
-        $response->{_hidden_data} = $user_projects->{_hidden_data};
+        $response->{status} = 1;
+        $response->{data}->{projects} = $user_projects->{data}->{projects};
+        $response->{_hidden_data}->{projects} =
+          $user_projects->{_hidden_data}->{projects};
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     return $self->return_response( $c, $response );
 }
+
+=head2 fill_user_project_info
+
+Fills user_projects
+
+=cut
 
 sub fill_user_project_info {
 
@@ -488,16 +495,15 @@ sub fill_user_project_info {
           )
         {
             # User is allowed to view this project
-            $user_projects->{data}->{$project_token} =
+            $user_projects->{data}->{projects}->{$project_token} =
               $projects_shared_with_my_organization->{data}->{projects}
               ->{$project_token};
-            $user_projects->{_hidden_data}->{$project_token} =
+            $user_projects->{_hidden_data}->{projects}->{$project_token} =
               $projects_shared_with_my_organization->{_hidden_data}->{projects}
               ->{$project_token};
         }
 
     }
-
     return $user_projects;
 
 }
