@@ -603,16 +603,16 @@ is(
 
 isnt(
     $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
-      ->{roles},
+      ->{shared_roles},
     undef,
 );
 
 isnt(
     $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
-      ->{groups},
+      ->{shared_groups_info},
     undef,
 );
 
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();

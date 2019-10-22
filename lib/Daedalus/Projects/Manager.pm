@@ -463,8 +463,9 @@ Returns a list of Projects shared with given organization
 
 sub get_shared_projects_with_organization {
 
-    my $c               = shift;
-    my $organization_id = shift;
+    my $c                      = shift;
+    my $organization_id        = shift;
+    my $user_organizations_ids = shift;
 
     my $projects;
     my $knowed_organizations;
@@ -507,8 +508,6 @@ sub get_shared_projects_with_organization {
                   ->{_hidden_data}->{project}->{shared_groups_info} = {};
 
                 $knowed_projects->{ $shared_project->project_id }->{data}
-                  ->{project}->{shared_groups} = {};
-                $knowed_projects->{ $shared_project->project_id }->{data}
                   ->{project}->{organization_owner} =
                   $knowed_organizations
                   ->{ $shared_project->organization_manager_id }->{data}
@@ -527,7 +526,8 @@ sub get_shared_projects_with_organization {
               ->search( { shared_project_id => $shared_project->project_id } )
               ->all;
             for my $group (@shared_groups) {
-                my $group_id = $group->group_id;
+                my $group_id              = $group->group_id;
+                my $group_organization_id = $group->group->organization_id;
                 if (
                     !(
                         any { /^$group_id$/sxm }
@@ -536,6 +536,13 @@ sub get_shared_projects_with_organization {
                               ->{_hidden_data}->{project}->{shared_groups}
                         }
                     )
+                    &&
+
+                    (
+                        any { /^$group_organization_id$/sxm }
+                        uniq @{$user_organizations_ids}
+                    )
+
                   )
                 {
                     push @{ $knowed_projects->{ $shared_project->project_id }
@@ -544,8 +551,11 @@ sub get_shared_projects_with_organization {
                     my $group_data =
                       Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
                         $c, $group->group_id );
-
                     my $group_token = ( keys %{ $group_data->{data} } )[0];
+                    my @group_users =
+                      keys %{ $group_data->{data}->{$group_token}->{users} };
+                    $group_data->{data}->{$group_token}->{users} =
+                      \@group_users;
                     $knowed_projects->{ $shared_project->project_id }
                       ->{_hidden_data}->{project}->{shared_groups_info}
                       ->{ $group->group_id } =

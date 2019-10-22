@@ -399,6 +399,8 @@ sub show_projects_GET {
     my $user_data;
     my $project_name;
 
+    my $user_organizations;
+    my $user_organizations_ids = [];
     my $user_organization_groups;
     my $user_projects =
       { data => { projects => {} }, _hidden_data => { projects => {} } };
@@ -419,6 +421,18 @@ sub show_projects_GET {
     else {
         $user_data = $authorization_and_validatation->{data}->{user_data};
 
+        $user_organizations =
+          Daedalus::Organizations::Manager::get_organizations_from_user( $c,
+            $user_data );
+
+        for my $organization (
+            keys %{ $user_organizations->{_hidden_data}->{organizations} } )
+        {
+            push @{$user_organizations_ids},
+              $user_organizations->{_hidden_data}->{organizations}
+              ->{$organization}->{id};
+        }
+
         $user_organization_groups =
           Daedalus::Organizations::Manager::get_user_organizations_groups( $c,
             $user_data );
@@ -430,7 +444,8 @@ sub show_projects_GET {
               Daedalus::Projects::Manager::get_shared_projects_with_organization(
                 $c,
                 $user_organization_groups->{_hidden_data}->{organizations}
-                  ->{$user_organization}->{id}
+                  ->{$user_organization}->{id},
+                $user_organizations_ids
               );
 
             for my $project_token (
