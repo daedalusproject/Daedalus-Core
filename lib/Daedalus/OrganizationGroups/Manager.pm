@@ -219,6 +219,7 @@ sub get_organization_group_from_token {
           render_organization_group_data( $c, $organization_group );
         $response->{data}         = $organization_group_data->{data};
         $response->{_hidden_data} = $organization_group_data->{_hidden_data};
+        $response->{status}       = 1;
     }
 
     return $response;
@@ -236,9 +237,7 @@ sub get_organization_group_from_id {
     my $organization_group_id = shift;
 
     my $response;
-    $response->{status}     = 1;
-    $response->{error_code} = $bad_request;
-    $response->{message}    = 'Invalid organization group id.';
+    $response->{status} = 1;
 
     my $organization_group = $c->model('CoreRealms::OrganizationGroup')
       ->find( { id => $organization_group_id } );
@@ -271,9 +270,7 @@ sub render_organization_group_data {
     my $users =
       Daedalus::Organizations::Manager::get_organization_group_users( $c,
         $organization_group->id );
-    $response->{status}  = 1;
-    $response->{message} = 'Organization group token is valid.';
-    $response->{data}    = {
+    $response->{data} = {
         $organization_group->token => {
             token      => $organization_group->token,
             group_name => $organization_group->group_name,
