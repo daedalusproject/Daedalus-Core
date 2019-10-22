@@ -503,6 +503,11 @@ sub get_shared_projects_with_organization {
                   ->{project};
                 $knowed_projects->{ $shared_project->project_id }
                   ->{_hidden_data}->{project}->{shared_groups} = [];
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{shared_groups_info} = {};
+
+                $knowed_projects->{ $shared_project->project_id }->{data}
+                  ->{project}->{shared_groups} = {};
                 $knowed_projects->{ $shared_project->project_id }->{data}
                   ->{project}->{organization_owner} =
                   $knowed_organizations
@@ -536,7 +541,18 @@ sub get_shared_projects_with_organization {
                     push @{ $knowed_projects->{ $shared_project->project_id }
                           ->{_hidden_data}->{project}->{shared_groups} },
                       $group->group_id;
+                    my $group_data =
+                      Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
+                        $c, $group->group_id );
 
+                    my $group_token = ( keys %{ $group_data->{data} } )[0];
+                    $knowed_projects->{ $shared_project->project_id }
+                      ->{_hidden_data}->{project}->{shared_groups_info}
+                      ->{ $group->group_id } =
+                      $group_data->{_hidden_data}->{$group_token};
+                    $knowed_projects->{ $shared_project->project_id }->{data}
+                      ->{project}->{shared_groups_info}->{$group_token} =
+                      $group_data->{data}->{$group_token};
                 }
 
             }

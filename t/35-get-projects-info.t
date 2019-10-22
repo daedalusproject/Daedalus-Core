@@ -289,6 +289,30 @@ my $hank_scorpio_login_success_token =
 my $hank_scorpio_authorization_basic =
   MIME::Base64::encode( "session_token:$hank_scorpio_login_success_token", '' );
 
+my $super_boss_login_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'superboos@bugstech.com',
+            password => '__:bugs:___Password_1234',
+        }
+    )
+);
+
+is( $super_boss_login_success->code(), 200, );
+
+my $super_boss_login_success_json =
+  decode_json( $super_boss_login_success->content );
+
+is( $super_boss_login_success_json->{status}, 1, );
+
+my $super_boss_login_success_token =
+  $super_boss_login_success_json->{data}->{session_token};
+
+my $super_boss_authorization_basic =
+  MIME::Base64::encode( "session_token:$super_boss_login_success_token", '' );
+
 my $create_arcturus_project = request(
     POST '/project/create',
     Content_Type  => 'application/json',
@@ -325,6 +349,23 @@ my $share_arcturus_project_with_megashops_project_caretaker = request(
 );
 
 is( $share_arcturus_project_with_megashops_project_caretaker->code(), 200, );
+
+my $share_arcturus_project_with_bugs_tech_health_watcher = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs techs
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'health_watcher',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_bugs_tech_health_watcher->code(), 200, );
 
 my $share_arcturus_project_with_daedalus_project_maze_master = request(
     POST '/project/share',
@@ -395,6 +436,24 @@ my $select_group_for_arcturus_project = request(
             'shared_project_token' => $arcturus_project_token,
             'group_token'          => '8B8hl0RNItqemTqYmv4mJgYo6GssPzG8g'
             ,    # Daedalus Super Administrators
+        }
+      )
+
+);
+
+is( $select_group_for_arcturus_project->code(), 200, );
+
+my $bugs_tech_select_group_for_arcturus_project = request(
+
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'   => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            'shared_project_token' => $arcturus_project_token,
+            'group_token' =>
+              '8JgKXXonBTSkxKRutW1ewC4FbmV0s6FGc',    # Bugs Tech Administrators
         }
       )
 
