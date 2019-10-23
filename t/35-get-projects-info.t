@@ -367,7 +367,24 @@ my $share_arcturus_project_with_bugs_tech_health_watcher = request(
 
 is( $share_arcturus_project_with_bugs_tech_health_watcher->code(), 200, );
 
-my $share_arcturus_project_with_daedalus_project_maze_master = request(
+my $share_arcturus_project_with_megashops_maze_master = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'maze_master',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_megashops_maze_master->code(), 200, );
+
+my $share_arcturus_project_with_daedalus_maze_master = request(
     POST '/project/share',
     Content_Type  => 'application/json',
     Authorization => "Basic $hank_scorpio_authorization_basic",
@@ -382,7 +399,7 @@ my $share_arcturus_project_with_daedalus_project_maze_master = request(
     )
 );
 
-is( $share_arcturus_project_with_daedalus_project_maze_master->code(), 200, );
+is( $share_arcturus_project_with_daedalus_maze_master->code(), 200, );
 
 my $marvin_login_success = request(
     POST '/user/login',
@@ -603,8 +620,30 @@ is(
 
 isnt(
     $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
-      ->{shared_roles},
+      ->{shared_groups_info},
     undef,
+);
+
+isnt(
+    $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{shared_groups_info}->{$megashops_healers_group_token},
+    undef,
+);
+
+is(
+    $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{shared_groups_info}->{$megashops_healers_group_token}->{group_name},
+    "Mega Shop healers",
+);
+
+is(
+    scalar @{
+        $marvin_check_json->{data}->{projects}
+          ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_groups_info}
+          ->{$megashops_healers_group_token}->{roles}
+    },
+    1,
+    "health_watcher only"
 );
 
 isnt(
@@ -613,6 +652,119 @@ isnt(
     undef,
 );
 
+isnt(
+    $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{shared_groups_info}->{$megashops_healers_group_token},
+    undef,
+);
+
+is(
+    $marvin_check_json->{data}->{projects}->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}
+      ->{shared_groups_info}->{$megashops_healers_group_token}->{group_name},
+    "Mega Shop healers",
+);
+
+is(
+    scalar @{
+        $marvin_check_json->{data}->{projects}
+          ->{oqu2eeCee2Amae6Aijo7tei5woh4jiet}->{shared_groups_info}
+          ->{$megashops_healers_group_token}->{roles}
+    },
+    1,
+    "health_watcher only"
+);
+
+is(
+    keys %{
+        $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+          ->{shared_groups_info}
+    },
+    1,
+    "megashops healers only"
+);
+
+isnt(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+      ->{shared_groups_info},
+    undef,
+);
+
+isnt(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+      ->{shared_groups_info}->{$megashops_healers_group_token},
+    undef,
+);
+
+is(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+      ->{shared_groups_info}->{$megashops_healers_group_token}->{group_name},
+    "Mega Shop healers",
+);
+
+is(
+    scalar @{
+        $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+          ->{shared_groups_info}->{$megashops_healers_group_token}->{roles}
+    },
+    1,
+    "health_watcher only"
+);
+
+my $megashop_sysadmin_group_has_access_to_arcturus_project = request(
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'   => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'shared_project_token' => $arcturus_project_token,
+            'group_token'          => $megashops_sysadmins_group_token,
+        }
+    )
+);
+
+is( $megashop_sysadmin_group_has_access_to_arcturus_project->code(), 200, );
+
+$marvin_check = request(
+    GET "$endpoint",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $marvin_authorization_basic",
+);
+
+is( $marvin_check->code(), 200, );
+
+$marvin_check_json = decode_json( $marvin_check->content );
+
+is(
+    keys %{
+        $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+          ->{shared_groups_info}
+    },
+    2,
+    "megashops healers and megashops sysadmins"
+);
+
+isnt(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+      ->{shared_groups_info}->{$megashops_sysadmins_group_token},
+    undef,
+);
+
+is(
+    $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+      ->{shared_groups_info}->{$megashops_sysadmins_group_token}->{group_name},
+    "Mega Shop Sysadmins",
+);
+
+is(
+    scalar @{
+        $marvin_check_json->{data}->{projects}->{$arcturus_project_token}
+          ->{shared_groups_info}->{$megashops_sysadmins_group_token}->{roles}
+    },
+    2,
+    "fireman and maze_master"
+);
+
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
