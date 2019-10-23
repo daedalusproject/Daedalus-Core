@@ -215,35 +215,81 @@ sub get_organization_group_from_token {
       ->find( { token => $organization_group_token } );
 
     if ($organization_group) {
-        my $roles =
-          Daedalus::Organizations::Manager::get_organization_group_roles( $c,
-            $organization_group->id );
-        my $users =
-          Daedalus::Organizations::Manager::get_organization_group_users( $c,
-            $organization_group->id );
-        $response->{status}  = 1;
-        $response->{message} = 'Organization group token is valid.';
-        $response->{data}    = {
-            $organization_group->token => {
-                token      => $organization_group->token,
-                group_name => $organization_group->group_name,
-            },
-        };
-        $response->{_hidden_data} = {
-            $organization_group->token => {
-                id              => $organization_group->id,
-                organization_id => $organization_group->organization_id
-            }
-        };
-        $response->{data}->{ $organization_group->token }->{roles} =
-          $roles->{data};
-        $response->{_hidden_data}->{ $organization_group->token }->{roles} =
-          $roles->{_hidden_data};
-        $response->{data}->{ $organization_group->token }->{users} =
-          $users->{data};
-        $response->{_hidden_data}->{ $organization_group->token }->{users} =
-          $users->{_hidden_data};
+        my $organization_group_data =
+          render_organization_group_data( $c, $organization_group );
+        $response->{data}         = $organization_group_data->{data};
+        $response->{_hidden_data} = $organization_group_data->{_hidden_data};
+        $response->{status}       = 1;
     }
+
+    return $response;
+}
+
+=head2 get_organization_group_from_id
+
+For a given organization group id, return organization group data
+
+=cut
+
+sub get_organization_group_from_id {
+
+    my $c                     = shift;
+    my $organization_group_id = shift;
+
+    my $response;
+    $response->{status} = 1;
+
+    my $organization_group = $c->model('CoreRealms::OrganizationGroup')
+      ->find( { id => $organization_group_id } );
+
+    if ($organization_group) {
+        my $organization_group_data =
+          render_organization_group_data( $c, $organization_group );
+        $response->{data}         = $organization_group_data->{data};
+        $response->{_hidden_data} = $organization_group_data->{_hidden_data};
+    }
+
+    return $response;
+}
+
+=head2 render_organization_group_data
+
+For a given organization, render its data
+
+=cut
+
+sub render_organization_group_data {
+
+    my $c                  = shift;
+    my $organization_group = shift;
+
+    my $response;
+    my $roles =
+      Daedalus::Organizations::Manager::get_organization_group_roles( $c,
+        $organization_group->id );
+    my $users =
+      Daedalus::Organizations::Manager::get_organization_group_users( $c,
+        $organization_group->id );
+    $response->{data} = {
+        $organization_group->token => {
+            token      => $organization_group->token,
+            group_name => $organization_group->group_name,
+        },
+    };
+    $response->{_hidden_data} = {
+        $organization_group->token => {
+            id              => $organization_group->id,
+            organization_id => $organization_group->organization_id
+        }
+    };
+    $response->{data}->{ $organization_group->token }->{roles} =
+      $roles->{data};
+    $response->{_hidden_data}->{ $organization_group->token }->{roles} =
+      $roles->{_hidden_data};
+    $response->{data}->{ $organization_group->token }->{users} =
+      $users->{data};
+    $response->{_hidden_data}->{ $organization_group->token }->{users} =
+      $users->{_hidden_data};
 
     return $response;
 }
