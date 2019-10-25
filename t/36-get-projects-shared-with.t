@@ -114,21 +114,111 @@ my $hank_scorpio_login_success_token =
 my $hank_scorpio_authorization_basic =
   MIME::Base64::encode( "session_token:$hank_scorpio_login_success_token", '' );
 
-my $failed_no_admin = request(
+my $failed_no_organization_token = request(
     GET $endpoint,
     Content_Type  => 'application/json',
     Authorization => "Basic $non_admin_authorization_basic",
 );
 
-is( $failed_no_admin->code(), 403, );
+is( $failed_no_organization_token->code(), 404, );
 
-my $failed_no_admin_json = decode_json( $failed_no_admin->content );
+my $failed_admin_no_organization_token = request(
+    GET $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
 
-is( $failed_no_admin_json->{status},  0, );
-is( $failed_no_admin_json->{message}, 'You are not an admin user.', );
+is( $failed_admin_no_organization_token->code(), 404, );
+
+my $failed_invalid_organization_token = request(
+    GET "$endpoint/someorganizationtoken",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_invalid_organization_token->code(), 400, );
+
+my $failed_invalid_organization_token_json =
+  decode_json( $failed_invalid_organization_token->content );
+
+is( $failed_invalid_organization_token_json->{status}, 0, );
+is(
+    $failed_invalid_organization_token_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_admin_invalid_organization_token = request(
+    GET "$endpoint/someorganizationtoken",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_invalid_organization_token->code(), 400, );
+
+my $failed_admin_invalid_organization_token_json =
+  decode_json( $failed_admin_invalid_organization_token->content );
+
+is( $failed_admin_invalid_organization_token_json->{status}, 0, );
+is(
+    $failed_admin_invalid_organization_token_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_not_your_organization = request(
+    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_not_your_organization->code(), 400, );
+
+my $failed_not_your_organization_json =
+  decode_json( $failed_not_your_organization->content );
+
+is( $failed_not_your_organization_json->{status}, 0, );
+is(
+    $failed_not_your_organization_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_admin_not_your_organization = request(
+    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $failed_admin_not_your_organization->code(), 400, );
+
+my $failed_admin_not_your_organization_json =
+  decode_json( $failed_admin_not_your_organization->content );
+
+is( $failed_admin_not_your_organization_json->{status}, 0, );
+is(
+    $failed_admin_not_your_organization_json->{message},
+    'Invalid organization token.',
+);
+
+my $failed_not_organization_admin = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $non_admin_authorization_basic",
+);
+
+is( $failed_not_organization_admin->code(), 403, );
+
+my $failed_not_organization_admin_json =
+  decode_json( $failed_not_organization_admin->content );
+
+is( $failed_not_organization_admin_json->{status}, 0, );
+is(
+    $failed_not_organization_admin_json->{message},
+'Your organization roles does not match with the following roles: organization master.',
+);
+
+is( $failed_not_organization_admin_json->{_hidden_data}, undef, );
 
 my $success_admin_with_no_projects = request(
-    GET "$endpoint",
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3",    # Globex
     Content_Type  => 'application/json',
     Authorization => "Basic $hank_scorpio_authorization_basic",
 );
@@ -150,4 +240,4 @@ is( keys %{ $success_admin_with_no_projects_json->{data}->{projects} },
 
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();
