@@ -16,6 +16,8 @@ use lib "$Bin/script";
 
 use DatabaseSetUpTearDown;
 
+use Data::Dumper;
+
 DatabaseSetUpTearDown::delete_database();
 DatabaseSetUpTearDown::create_database();
 
@@ -238,6 +240,131 @@ isnt( $success_admin_with_no_projects_json->{data}->{projects}, undef, );
 is( keys %{ $success_admin_with_no_projects_json->{data}->{projects} },
     0, 'For the time being this organization has no shred projects with it.' );
 
+my $create_arcturus_project = request(
+    POST '/project/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'name'               => 'Arcturus Project',
+        }
+    )
+);
+
+is( $create_arcturus_project->code(), 200, );
+
+my $create_arcturus_project_json =
+  decode_json( $create_arcturus_project->content );
+
+my $arcturus_project_token =
+  $create_arcturus_project_json->{data}->{project}->{token};
+
+my $share_arcturus_project_with_megashops_project_caretaker = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'project_caretaker',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_megashops_project_caretaker->code(), 200, );
+
+my $share_arcturus_project_with_bugs_tech_health_watcher = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs techs
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'health_watcher',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_bugs_tech_health_watcher->code(), 200, );
+
+my $success_admin_with_one_project = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $success_admin_with_one_project->code(), 200, );
+
+my $success_admin_with_one_project_json =
+  decode_json( $success_admin_with_one_project->content );
+
+is( $success_admin_with_one_project_json->{status}, 1, );
+
+is( $success_admin_with_one_project_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_with_one_project_json->{data},             undef, );
+isnt( $success_admin_with_one_project_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_with_one_project_json->{data}->{projects} },
+    1,
+    'For the time being this organization has only Arcturus project shared.' );
+
+isnt(
+    $success_admin_with_one_project_json->{data}->{projects}
+      ->{$arcturus_project_token}->{shared_roles},
+    undef
+);
+
+my $share_arcturus_project_with_megashops_maze_master = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'maze_master',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_megashops_maze_master->code(), 200, );
+
+my $success_admin_with_one_project_two_roles = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+is( $success_admin_with_one_project_two_roles->code(), 200, );
+
+my $success_admin_with_one_project_two_roles_json =
+  decode_json( $success_admin_with_one_project_two_roles->content );
+
+is( $success_admin_with_one_project_two_roles_json->{status}, 1, );
+
+is( $success_admin_with_one_project_two_roles->{_hidden_data}, undef, );
+
+isnt( $success_admin_with_one_project_two_roles_json->{data}, undef, );
+isnt( $success_admin_with_one_project_two_roles_json->{data}->{projects},
+    undef, );
+
+is(
+    keys %{ $success_admin_with_one_project_two_roles_json->{data}->{projects}
+    },
+    1,
+    'For the time being this organization has only Arcturus project shared.'
+);
+
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
