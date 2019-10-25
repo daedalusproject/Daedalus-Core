@@ -559,7 +559,9 @@ sub get_shared_projects_with_organization {
                     my $group_data =
                       Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
                         $c, $group->group_id );
-                    my $group_token = ( keys %{ $group_data->{data} } )[0];
+                    die Dumper($group_data);
+                    my $group_token =
+                      ( keys %{ $group_data->{data} } )[0];
                     my @group_users =
                       keys %{ $group_data->{data}->{$group_token}->{users} };
                     $group_data->{data}->{$group_token}->{users} =

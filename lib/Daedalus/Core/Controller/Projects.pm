@@ -501,9 +501,6 @@ sub fill_user_project_info {
     my $project_token                        = shift;
     my $projects_shared_with_my_organization = shift;
 
-    #die Dumper($projects_shared_with_my_organization);
-    #die Dumper($groups_data);
-
     for my $group ( keys %{$groups_data} ) {
         my $group_id = $groups_data->{$group}->{id};
 
@@ -655,7 +652,6 @@ sub get_shared_projects_GET {
         $response->{data}   = $projects_shared_with_organization->{data};
         $response->{_hidden_data} =
           $projects_shared_with_organization->{_hidden_data};
-
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     return $self->return_response( $c, $response );

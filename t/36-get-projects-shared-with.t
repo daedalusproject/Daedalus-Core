@@ -557,8 +557,15 @@ is(
 
 isnt(
     $success_admin_with_one_project_three_roles_one_group_json->{data}
-      ->{projects}->{$arcturus_project_token}->{shared_groups},
+      ->{projects}->{$arcturus_project_token}->{shared_groups_info},
     undef
+);
+
+is(
+    $success_admin_with_one_project_three_roles_one_group_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_groups_info}
+      ->{$megashops_healers_group_token}->{group_name},
+    "Mega Shop healers"
 );
 
 done_testing();
