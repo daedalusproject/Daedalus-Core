@@ -592,6 +592,66 @@ sub organization_projects_GET {
     return $self->return_response( $c, $response );
 }
 
+=head2 get_shared_projects
+
+Gets projects that has bees shared with given organization
+
+Only admin users are allowed to perform this action.
+
+Required data:   - Organization token
+
+=cut
+
+sub get_shared_projects : Path('/projects/getshared') : Args(1) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 get_shared_projects_projects_GET
+
+/projects/getshared is a GET request
+
+=cut
+
+sub get_shared_projects_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master']
+                ,    # Organization member
+            },
+            required_data => {
+                organization_token => {
+                    type         => 'organization',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[0],
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
+        $organization = $authorization_and_validatation->{data}->{organization};
+    }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS
