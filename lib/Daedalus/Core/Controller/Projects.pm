@@ -649,12 +649,13 @@ sub get_shared_projects_GET {
 
         $organization = $authorization_and_validatation->{data}->{organization};
         $projects_shared_with_organization =
-          Daedalus::Projects::Manager::get_shared_projects_with_organization_filtered_by_user(
+          Daedalus::Projects::Manager::get_shared_projects_with_organization(
             $c, $organization->{_hidden_data}->{organization}->{id} );
         $response->{status} = 1;
         $response->{data}   = $projects_shared_with_organization->{data};
         $response->{_hidden_data} =
           $projects_shared_with_organization->{_hidden_data};
+
     }
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     return $self->return_response( $c, $response );

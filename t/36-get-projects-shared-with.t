@@ -322,6 +322,14 @@ isnt(
     undef
 );
 
+is(
+    @{
+        $success_admin_with_one_project_json->{data}->{projects}
+          ->{$arcturus_project_token}->{shared_roles}
+    },
+    1
+);
+
 my $share_arcturus_project_with_megashops_maze_master = request(
     POST '/project/share',
     Content_Type  => 'application/json',
@@ -352,7 +360,7 @@ my $success_admin_with_one_project_two_roles_json =
 
 is( $success_admin_with_one_project_two_roles_json->{status}, 1, );
 
-is( $success_admin_with_one_project_two_roles->{_hidden_data}, undef, );
+is( $success_admin_with_one_project_two_roles_json->{_hidden_data}, undef, );
 
 isnt( $success_admin_with_one_project_two_roles_json->{data}, undef, );
 isnt( $success_admin_with_one_project_two_roles_json->{data}->{projects},
@@ -363,6 +371,194 @@ is(
     },
     1,
     'For the time being this organization has only Arcturus project shared.'
+);
+
+isnt(
+    $success_admin_with_one_project_two_roles_json->{data}->{projects}
+      ->{$arcturus_project_token}->{shared_roles},
+    undef
+);
+
+is(
+    @{
+        $success_admin_with_one_project_two_roles_json->{data}->{projects}
+          ->{$arcturus_project_token}->{shared_roles}
+    },
+    2
+);
+
+my $share_arcturus_project_with_megashops_health_watcher = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Megashops
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'health_watcher',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_megashops_health_watcher->code(), 200, );
+
+my $success_admin_with_one_project_three_roles = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_with_one_project_three_roles_json =
+  decode_json( $success_admin_with_one_project_three_roles->content );
+
+is( $success_admin_with_one_project_three_roles_json->{status}, 1, );
+
+is( $success_admin_with_one_project_three_roles_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_with_one_project_three_roles_json->{data}, undef, );
+isnt( $success_admin_with_one_project_three_roles_json->{data}->{projects},
+    undef, );
+
+is(
+    keys
+      %{ $success_admin_with_one_project_three_roles_json->{data}->{projects} },
+    1,
+    'For the time being this organization has only Arcturus project shared.'
+);
+
+isnt(
+    $success_admin_with_one_project_three_roles_json->{data}->{projects}
+      ->{$arcturus_project_token}->{shared_roles},
+    undef
+);
+
+is(
+    @{
+        $success_admin_with_one_project_three_roles_json->{data}->{projects}
+          ->{$arcturus_project_token}->{shared_roles}
+    },
+    3
+);
+
+my $create_group_megashop_healers = request(
+    POST "/organization/creategroup",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop healers'
+        }
+    ),
+);
+
+is( $create_group_megashop_healers->code(), 200, );
+
+my $create_group_megashop_healers_json =
+  decode_json( $create_group_megashop_healers->content );
+
+my $megashops_healers_group_token =
+  $create_group_megashop_healers_json->{data}->{organization_groups}
+  ->{group_token};
+
+my $add_health_watcher_role_to_megashop_healers_group = request(
+    POST "/organization/addroletogroup",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Megashops
+            group_token => $megashops_healers_group_token,
+            role_name   => 'health_watcher'
+        }
+    ),
+);
+
+is( $add_health_watcher_role_to_megashop_healers_group->code(), 200, );
+
+my $add_marvin_to_megashops = request(
+    POST '/organization/adduser',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+is( $add_marvin_to_megashops->code(), 200, );
+
+my $megashop_healers_group_has_access_to_arcturus_project = request(
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token'   => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'shared_project_token' => $arcturus_project_token,
+            'group_token'          => $megashops_healers_group_token,
+        }
+    )
+);
+
+is( $megashop_healers_group_has_access_to_arcturus_project->code(), 200, );
+
+my $success_admin_with_one_project_three_roles_one_group = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_with_one_project_three_roles_one_group_json =
+  decode_json( $success_admin_with_one_project_three_roles_one_group->content );
+
+is( $success_admin_with_one_project_three_roles_one_group_json->{status}, 1, );
+
+is(
+    $success_admin_with_one_project_three_roles_one_group_json->{_hidden_data},
+    undef,
+);
+
+isnt( $success_admin_with_one_project_three_roles_one_group_json->{data},
+    undef, );
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_json->{data}
+      ->{projects},
+    undef,
+);
+
+is(
+    keys %{
+        $success_admin_with_one_project_three_roles_one_group_json->{data}
+          ->{projects}
+    },
+    1,
+    'For the time being this organization has only Arcturus project shared.'
+);
+
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_roles},
+    undef
+);
+
+is(
+    @{
+        $success_admin_with_one_project_three_roles_one_group_json->{data}
+          ->{projects}->{$arcturus_project_token}->{shared_roles}
+    },
+    3
+);
+
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_groups},
+    undef
 );
 
 done_testing();

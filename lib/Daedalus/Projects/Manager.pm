@@ -470,7 +470,6 @@ sub get_shared_projects_with_organization {
     my $knowed_organizations;
     my $knowed_projects;
     my $available_roles;
-
     my $response = {
         data         => { projects => {} },
         _hidden_data => { projects => {} },
@@ -516,7 +515,23 @@ sub get_shared_projects_with_organization {
                   $knowed_organizations
                   ->{ $shared_project->organization_manager_id }
                   ->{_hidden_data}->{organization};
+
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{shared_roles} = {};
+                $knowed_projects->{ $shared_project->project_id }->{data}
+                  ->{project}->{shared_roles} = [];
             }
+
+            # Add shared roles
+            $knowed_projects->{ $shared_project->project_id }->{_hidden_data}
+              ->{project}->{shared_roles}
+              ->{ $shared_project->organization_to_manage_role_id } =
+              $available_roles
+              ->{ $shared_project->organization_to_manage_role_id };
+            push @{ $knowed_projects->{ $shared_project->project_id }->{data}
+                  ->{project}->{shared_roles} },
+              $available_roles
+              ->{ $shared_project->organization_to_manage_role_id };
 
             # get shared project's groups with
 
