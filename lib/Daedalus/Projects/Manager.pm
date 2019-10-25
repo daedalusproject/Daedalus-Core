@@ -463,6 +463,127 @@ Returns a list of Projects shared with given organization
 
 sub get_shared_projects_with_organization {
 
+    my $c               = shift;
+    my $organization_id = shift;
+
+    my $projects;
+    my $knowed_organizations;
+    my $knowed_projects;
+    my $available_roles;
+
+    my $response = {
+        data         => { projects => {} },
+        _hidden_data => { projects => {} },
+        status       => 1
+    };
+
+    # Check if already exists
+    my @projects_shared = $c->model('CoreRealms::SharedProject')->search(
+        {
+            organization_to_manage_id => $organization_id,
+        }
+    )->all;
+
+    if ( scalar @projects_shared > 0 ) {
+        $available_roles = Daedalus::Roles::Manager::list_roles_by_id($c);
+
+        for my $shared_project (@projects_shared) {
+            if ( !exists $knowed_organizations
+                ->{ $shared_project->organization_manager_id } )
+            {
+                $knowed_organizations
+                  ->{ $shared_project->organization_manager_id } =
+                  Daedalus::Organizations::Manager::get_organization_from_id(
+                    $c, $shared_project->organization_manager_id )
+                  ->{organization};
+            }
+            if ( !exists $knowed_projects->{ $shared_project->project_id } ) {
+                $knowed_projects->{ $shared_project->project_id } =
+                  get_project_from_id( $c, $shared_project->project_id )
+                  ->{project};
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{shared_groups} = [];
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{shared_groups_info} = {};
+
+                $knowed_projects->{ $shared_project->project_id }->{data}
+                  ->{project}->{organization_owner} =
+                  $knowed_organizations
+                  ->{ $shared_project->organization_manager_id }->{data}
+                  ->{organization};
+                $knowed_projects->{ $shared_project->project_id }
+                  ->{_hidden_data}->{project}->{organization_owner} =
+                  $knowed_organizations
+                  ->{ $shared_project->organization_manager_id }
+                  ->{_hidden_data}->{organization};
+            }
+
+            # get shared project's groups with
+
+            my @shared_groups =
+              $c->model('CoreRealms::SharedProjectGroupAssignment')
+              ->search( { shared_project_id => $shared_project->project_id } )
+              ->all;
+            for my $group (@shared_groups) {
+                my $group_id              = $group->group_id;
+                my $group_organization_id = $group->group->organization_id;
+                if (
+                    !(
+                        any { /^$group_id$/sxm }
+                        uniq @{
+                            $knowed_projects->{ $shared_project->project_id }
+                              ->{_hidden_data}->{project}->{shared_groups}
+                        }
+                    )
+
+                  )
+                {
+                    push @{ $knowed_projects->{ $shared_project->project_id }
+                          ->{_hidden_data}->{project}->{shared_groups} },
+                      $group->group_id;
+                    my $group_data =
+                      Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
+                        $c, $group->group_id );
+                    my $group_token = ( keys %{ $group_data->{data} } )[0];
+                    my @group_users =
+                      keys %{ $group_data->{data}->{$group_token}->{users} };
+                    $group_data->{data}->{$group_token}->{users} =
+                      \@group_users;
+                    $knowed_projects->{ $shared_project->project_id }
+                      ->{_hidden_data}->{project}->{shared_groups_info}
+                      ->{ $group->group_id } =
+                      $group_data->{_hidden_data}->{$group_token};
+                    $knowed_projects->{ $shared_project->project_id }->{data}
+                      ->{project}->{shared_groups_info}->{$group_token} =
+                      $group_data->{data}->{$group_token};
+                }
+
+            }
+
+        }
+        for my $knowed_project ( keys %{$knowed_projects} ) {
+            $response->{data}->{projects}
+              ->{ $knowed_projects->{$knowed_project}->{data}->{project}
+                  ->{token} } =
+              $knowed_projects->{$knowed_project}->{data}->{project};
+            $response->{_hidden_data}->{projects}
+              ->{ $knowed_projects->{$knowed_project}->{data}->{project}
+                  ->{token} } =
+              $knowed_projects->{$knowed_project}->{_hidden_data}->{project};
+
+        }
+    }
+    return $response;
+}
+
+=head2 get_shared_projects_with_organization_filtered_by_user
+
+Returns a list of Projects shared with given organization
+
+=cut
+
+sub get_shared_projects_with_organization_filtered_by_user {
+
     my $c                      = shift;
     my $organization_id        = shift;
     my $user_organizations_ids = shift;
