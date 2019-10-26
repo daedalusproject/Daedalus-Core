@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-22) unstable; urgency=low
+
+  * Show project sharing relations
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Sat, 26 Oct 2019 23:43:00 +0200
+
 libdaedalus-core-perl (0.01-21) unstable; urgency=low
 
   * Add project sharing and manage groups allowed to manage groups

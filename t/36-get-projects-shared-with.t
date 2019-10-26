@@ -116,6 +116,30 @@ my $hank_scorpio_login_success_token =
 my $hank_scorpio_authorization_basic =
   MIME::Base64::encode( "session_token:$hank_scorpio_login_success_token", '' );
 
+my $super_boss_login_success = request(
+    POST '/user/login',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+        {
+            'e-mail' => 'superboos@bugstech.com',
+            password => '__:bugs:___Password_1234',
+        }
+    )
+);
+
+is( $super_boss_login_success->code(), 200, );
+
+my $super_boss_login_success_json =
+  decode_json( $super_boss_login_success->content );
+
+is( $super_boss_login_success_json->{status}, 1, );
+
+my $super_boss_login_success_token =
+  $super_boss_login_success_json->{data}->{session_token};
+
+my $super_boss_authorization_basic =
+  MIME::Base64::encode( "session_token:$super_boss_login_success_token", '' );
+
 my $failed_no_organization_token = request(
     GET $endpoint,
     Content_Type  => 'application/json',
@@ -714,6 +738,171 @@ my $megashop_healers_group_has_access_to_megashops_ecommerce = request(
 
 is( $megashop_healers_group_has_access_to_megashops_ecommerce->code(), 200, );
 
+my $create_group_megashop_sysadmins = request(
+    POST "/organization/creategroup",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => 'Mega Shop Sysadmins'
+        }
+    ),
+);
+
+is( $create_group_megashop_sysadmins->code(), 200, );
+
+my $create_group_megashop_sysadmins_json =
+  decode_json( $create_group_megashop_sysadmins->content );
+
+my $megashops_sysadmins_group_token =
+  $create_group_megashop_sysadmins_json->{data}->{organization_groups}
+  ->{group_token};
+
+my $add_fireman_role_to_megashop_sysadmins_group = request(
+    POST "/organization/addroletogroup",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Megashops
+            group_token => $megashops_sysadmins_group_token,
+            role_name   => 'fireman'
+        }
+    ),
+);
+
+is( $add_fireman_role_to_megashop_sysadmins_group->code(), 200, );
+
+my $add_maze_master_role_to_megashop_sysadmins_group = request(
+    POST "/organization/addroletogroup",
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Megashops
+            group_token => $megashops_sysadmins_group_token,
+            role_name   => 'maze_master'
+        }
+    ),
+);
+
+is( $add_maze_master_role_to_megashop_sysadmins_group->code(), 200, );
+
+my $add_noadmin_to_megashop_sysadmins_group = request(
+    POST '/organization/addusertogroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_token        => $megashops_sysadmins_group_token,
+            user_token =>
+              '03QimYFYtn2O2c0WvkOhUuN4c8gJKOkt',    # noadmin@megashops.com
+        }
+    ),
+);
+
+is( $add_noadmin_to_megashop_sysadmins_group->code(), 200, );
+
+my $share_bugs_ecommerce_project_with_megashops_maze_master = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs Tech
+            'organization_to_share_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Mega shops
+            'project_token' =>
+              'igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj',    # Bugs e-commerce
+            'role_name' => 'maze_master',
+        }
+    )
+);
+
+is( $share_bugs_ecommerce_project_with_megashops_maze_master->code(), 200, );
+my $megashop_sysadmins_group_has_access_to_bugs_ecommerce = request(
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'shared_project_token' =>
+              'igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj',    # Bugs e-commerce
+            'group_token' => $megashops_sysadmins_group_token,
+        }
+    )
+);
+
+is( $megashop_sysadmins_group_has_access_to_bugs_ecommerce->code(), 200, );
+
+my $success_admin_with_three_projects = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_with_three_projects_json =
+  decode_json( $success_admin_with_three_projects->content );
+
+is( $success_admin_with_three_projects_json->{status}, 1, );
+
+is( $success_admin_with_three_projects_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_with_three_projects_json->{data},             undef, );
+isnt( $success_admin_with_three_projects_json->{data}->{projects}, undef, );
+
+is( keys %{ $success_admin_with_three_projects_json->{data}->{projects} }, 3, );
+
+isnt(
+    $success_admin_with_three_projects_json->{data}->{projects}
+      ->{igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj}->{shared_roles},
+    undef
+);
+
+is(
+    @{
+        $success_admin_with_three_projects_json->{data}->{projects}
+          ->{igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj}->{shared_roles}
+    },
+    1
+);
+
+isnt(
+    $success_admin_with_three_projects_json->{data}->{projects}
+      ->{igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj}->{shared_groups_info},
+    undef
+);
+
+is(
+    $success_admin_with_three_projects_json->{data}->{projects}
+      ->{igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj}->{shared_groups_info}
+      ->{$megashops_sysadmins_group_token}->{group_name},
+    "Mega Shop Sysadmins"
+);
+
+is(
+    keys %{
+        $success_admin_with_three_projects_json->{data}->{projects}
+          ->{igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj}->{shared_groups_info}
+          ->{$megashops_sysadmins_group_token}->{users}
+    },
+    1
+);
+
+is(
+    $success_admin_with_three_projects_json->{data}->{projects}
+      ->{igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj}->{shared_groups_info}
+      ->{$megashops_sysadmins_group_token}->{users}->{'noadmin@megashops.com'}
+      ->{name},
+    "No Admin"
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();
