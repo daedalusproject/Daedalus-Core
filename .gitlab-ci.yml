@@ -71,6 +71,10 @@ cover:
     dependencies:
     - perlcritic
     - integration_tests
+    artifacts:
+        paths:
+        - cover_db
+        expire_in: 20 minutes
     tags:
     - kubernetes
 

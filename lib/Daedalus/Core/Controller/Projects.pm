@@ -441,7 +441,7 @@ sub show_projects_GET {
           )
         {
             my $projects_shared_with_my_organization =
-              Daedalus::Projects::Manager::get_shared_projects_with_organization(
+              Daedalus::Projects::Manager::get_shared_projects_with_organization_filtered_by_user(
                 $c,
                 $user_organization_groups->{_hidden_data}->{organizations}
                   ->{$user_organization}->{id},
@@ -500,9 +500,6 @@ sub fill_user_project_info {
     my $project_data                         = shift;
     my $project_token                        = shift;
     my $projects_shared_with_my_organization = shift;
-
-    #die Dumper($projects_shared_with_my_organization);
-    #die Dumper($groups_data);
 
     for my $group ( keys %{$groups_data} ) {
         my $group_id = $groups_data->{$group}->{id};
@@ -589,6 +586,74 @@ sub organization_projects_GET {
 
     $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
 
+    return $self->return_response( $c, $response );
+}
+
+=head2 get_shared_projects
+
+Gets projects that has bees shared with given organization
+
+Only admin users are allowed to perform this action.
+
+Required data:   - Organization token
+
+=cut
+
+sub get_shared_projects : Path('/projects/getshared') : Args(1) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 get_shared_projects_projects_GET
+
+/projects/getshared is a GET request
+
+=cut
+
+sub get_shared_projects_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $projects_shared_with_organization;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master']
+                ,    # Organization member
+            },
+            required_data => {
+                organization_token => {
+                    type         => 'organization',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[0],
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $user_data = $authorization_and_validatation->{data}->{user_data};
+
+        $organization = $authorization_and_validatation->{data}->{organization};
+        $projects_shared_with_organization =
+          Daedalus::Projects::Manager::get_shared_projects_with_organization(
+            $c, $organization->{_hidden_data}->{organization}->{id} );
+        $response->{status} = 1;
+        $response->{data}   = $projects_shared_with_organization->{data};
+        $response->{_hidden_data} =
+          $projects_shared_with_organization->{_hidden_data};
+    }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
     return $self->return_response( $c, $response );
 }
 

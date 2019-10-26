@@ -242,12 +242,10 @@ sub get_organization_group_from_id {
     my $organization_group = $c->model('CoreRealms::OrganizationGroup')
       ->find( { id => $organization_group_id } );
 
-    if ($organization_group) {
-        my $organization_group_data =
-          render_organization_group_data( $c, $organization_group );
-        $response->{data}         = $organization_group_data->{data};
-        $response->{_hidden_data} = $organization_group_data->{_hidden_data};
-    }
+    my $organization_group_data =
+      render_organization_group_data( $c, $organization_group );
+    $response->{data}         = $organization_group_data->{data};
+    $response->{_hidden_data} = $organization_group_data->{_hidden_data};
 
     return $response;
 }
