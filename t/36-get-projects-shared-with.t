@@ -568,6 +568,152 @@ is(
     "Mega Shop healers"
 );
 
+is(
+    keys %{
+        $success_admin_with_one_project_three_roles_one_group_json->{data}
+          ->{projects}->{$arcturus_project_token}->{shared_groups_info}
+          ->{$megashops_healers_group_token}->{users}
+    },
+    0
+);
+
+my $add_marvin_to_megashop_healers_group = request(
+    POST '/organization/addusertogroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_token        => $megashops_healers_group_token,
+            user_token =>
+              'bBRVZCmo2vAQjjSLXGBiz324Qya4h3pC',    # marvin@megashops.com
+        }
+    ),
+);
+
+is( $add_marvin_to_megashop_healers_group->code(), 200, );
+
+my $success_admin_with_one_project_three_roles_one_group_one_user = request(
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+);
+
+my $success_admin_with_one_project_three_roles_one_group_one_user_json =
+  decode_json(
+    $success_admin_with_one_project_three_roles_one_group_one_user->content );
+
+is(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json
+      ->{status},
+    1,
+);
+
+is(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json
+      ->{_hidden_data},
+    undef,
+);
+
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json->{data},
+    undef,
+);
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json->{data}
+      ->{projects},
+    undef,
+);
+
+is(
+    keys %{
+        $success_admin_with_one_project_three_roles_one_group_one_user_json
+          ->{data}->{projects}
+    },
+    1,
+    'For the time being this organization has only Arcturus project shared.'
+);
+
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_roles},
+    undef
+);
+
+is(
+    @{
+        $success_admin_with_one_project_three_roles_one_group_one_user_json
+          ->{data}->{projects}->{$arcturus_project_token}->{shared_roles}
+    },
+    3
+);
+
+isnt(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_groups_info},
+    undef
+);
+
+is(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_groups_info}
+      ->{$megashops_healers_group_token}->{group_name},
+    "Mega Shop healers"
+);
+
+is(
+    keys %{
+        $success_admin_with_one_project_three_roles_one_group_one_user_json
+          ->{data}->{projects}->{$arcturus_project_token}->{shared_groups_info}
+          ->{$megashops_healers_group_token}->{users}
+    },
+    1
+);
+
+is(
+    $success_admin_with_one_project_three_roles_one_group_one_user_json->{data}
+      ->{projects}->{$arcturus_project_token}->{shared_groups_info}
+      ->{$megashops_healers_group_token}->{users}->{'marvin@megashops.com'}
+      ->{name},
+    "Marvin"
+);
+
+my $share_megashops_ecommerce_project_with_megashops_health_watcher = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Megashops
+            'organization_to_share_token' =>
+              'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',    # Megashops
+            'project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'role_name' => 'health_watcher',
+        }
+    )
+);
+
+is( $share_megashops_ecommerce_project_with_megashops_health_watcher->code(),
+    200, );
+
+my $megashop_healers_group_has_access_to_megashops_ecommerce = request(
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            'shared_project_token' =>
+              'oqu2eeCee2Amae6Aijo7tei5woh4jiet',    # Mega Shops e-commerce
+            'group_token' => $megashops_healers_group_token,
+        }
+    )
+);
+
+is( $megashop_healers_group_has_access_to_megashops_ecommerce->code(), 200, );
+
 done_testing();
 
 #DatabaseSetUpTearDown::delete_database();
