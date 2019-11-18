@@ -99,6 +99,8 @@ spec:
         volumeMounts:
         - name: rabbitmq-config
           mountPath: /etc/rabbitmq/
+      securityContext:
+        allowPrivilegeEscalation: false
       volumes:
         - name: rabbitmq-config
           configMap:
