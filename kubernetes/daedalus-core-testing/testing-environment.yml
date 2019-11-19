@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: daedalusproject/base_redis_server:201906021138
+        image: daedalusproject/base_redis_server:201911191854
         command: ["redis-server"]
         args: ["--protected-mode no"]
         resources:
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: rabbitmq
-        image: daedalusproject/base_rabbitmq_server:201906021138
+        image: daedalusproject/base_rabbitmq_server:201911191854
         env:
         - name: RABBITMQ_ENABLED_PLUGINS_FILE
           value: /etc/rabbitmq/enabled_plugins
@@ -99,6 +99,8 @@ spec:
         volumeMounts:
         - name: rabbitmq-config
           mountPath: /etc/rabbitmq/
+        securityContext:
+          allowPrivilegeEscalation: false
       volumes:
         - name: rabbitmq-config
           configMap:
