@@ -81,3 +81,9 @@ Deploy Gitlab Runner
 ```bash
 /usr/local/bin/helm install gitlab-daedalus-core-deployer  --namespace daedalus-core -f values.yaml gitlab/gitlab-runner
 ```
+
+Create tls secret:
+```bash
+kubectl create secret tls daedalus-core-develop-cert --key daedalus-project.io.key --cert daedalus-project.io.pem -n daedalus-core-develop
+```
+
