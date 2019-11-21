@@ -317,8 +317,9 @@ is( $add_user_success->code(), 200, );
 #
 my $add_user_success_json = decode_json( $add_user_success->content );
 
-is( $add_user_success_json->{status},  1, );
-is( $add_user_success_json->{message}, 'User has been registered.', );
+is( $add_user_success_json->{status}, 1, );
+is( $add_user_success_json->{message}, 'User has been added to organization.',
+);
 
 is( $add_user_success_json->{_hidden_data}, undef, );
 
@@ -507,8 +508,11 @@ is( $add_user_success_superuser->code(), 200, );
 my $add_user_success_superuser_json =
   decode_json( $add_user_success_superuser->content );
 
-is( $add_user_success_superuser_json->{status},  1, );
-is( $add_user_success_superuser_json->{message}, 'User has been registered.', );
+is( $add_user_success_superuser_json->{status}, 1, );
+is(
+    $add_user_success_superuser_json->{message},
+    'User has been added to organization.',
+);
 
 isnt( $add_user_success_superuser_json->{_hidden_data}, undef, );
 
