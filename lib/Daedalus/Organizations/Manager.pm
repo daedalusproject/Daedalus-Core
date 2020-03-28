@@ -316,7 +316,7 @@ sub add_user_to_organization {
         );
 
         $response->{status}  = 1;
-        $response->{message} = "User has been registered.";
+        $response->{message} = "User has been added to organization.";
     }
 
     return $response;
