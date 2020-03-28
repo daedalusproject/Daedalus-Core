@@ -1,4 +1,4 @@
-FROM daedalusproject/base_develop:202003281621
+FROM daedalusproject/base_develop:202003281622
 
 ARG CORE_VERSION
 
