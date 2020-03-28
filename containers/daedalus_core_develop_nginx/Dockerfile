@@ -1,4 +1,4 @@
-FROM daedalusproject/base_nginx_daedalus_light:201905230353
+FROM daedalusproject/base_nginx_daedalus_light:202003281621
 MAINTAINER Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
 
 COPY containers/daedalus_core_develop_nginx/nginx/vhost /etc/nginx/sites-enabled/default
