@@ -10,7 +10,7 @@ stages:
 
 perlcritic:
     stage: lint
-    image: daedalusproject/base_perl_utils:201911191854
+    image: daedalusproject/base_perl_utils:202003281005
     script:
         - perlcritic --cruel lib
     tags:
@@ -18,7 +18,7 @@ perlcritic:
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:201911191854
+    image: daedalusproject/base_daedaluscore:202003281005
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -46,7 +46,7 @@ integration_tests:
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:201911191854
+    image: daedalusproject/base_daedaluscore:202003281005
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -80,7 +80,7 @@ cover:
 
 create_package:
     stage: package
-    image: daedalusproject/base_deb_perl_builder:201911191854
+    image: daedalusproject/base_deb_perl_builder:202003281005
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
         - mkdir package
@@ -96,14 +96,12 @@ create_package:
 
 upload_package_to_testing_repo:
     stage: update_repo
-    image: daedalusproject/base_curl:201911191854
+    image: daedalusproject/base_curl:202003281005
     script:
-        - SNAPSHOTDATE=$(date +%G%m%d%k%M%S)
         - PACKAGE=$(ls package)
         - curl -X POST -F file=@package/$PACKAGE http://repo.daedalus-project.io:8000/api/files/daedalus-core || exit 1
         - curl -X POST http://repo.daedalus-project.io:8000/api/repos/daedalus-project-testing/file/daedalus-core || exit 1
-        - "curl -X POST -H 'Content-Type: application/json' --data '{\"Name\":\"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}' http://repo.daedalus-project.io:8000/api/repos/daedalus-project-testing/snapshots || exit 1"
-        - "curl -X PUT -H 'Content-Type: application/json' --data '{\"Snapshots\": [{\"Component\": \"testing\", \"Name\": \"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}]}' http://repo.daedalus-project.io:8000/api/publish/:./bionic || exit 1"
+        - "curl -X PUT -H 'Content-Type: application/json' http://repo.daedalus-project.io:8000/api/publish/:./bionic --data '{}' || exit 1"
     artifacts:
         paths:
         - package
@@ -117,7 +115,7 @@ upload_package_to_testing_repo:
 
 create_develop_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201911191854
+    image: daedalusproject/base_docker:202003281005
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop
@@ -143,7 +141,7 @@ create_develop_docker_image:
 
 create_develop_nginx_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201911191854
+    image: daedalusproject/base_docker:202003281005
     script:
         - echo "set_real_ip_from  $KUBE_NETWORK;" > realip.conf
         - echo "real_ip_header    X-Forwarded-For;" >> realip.conf
@@ -172,7 +170,7 @@ create_develop_nginx_docker_image:
 
 decrypt_develop_private_key:
     stage: private_key
-    image: daedalusproject/base_openssl:201911191854
+    image: daedalusproject/base_openssl:202003281005
     script:
         - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
         - mkdir secret_key
@@ -188,7 +186,7 @@ decrypt_develop_private_key:
 
 develop_environment:
     stage: deploy
-    image: daedalusproject/base_kubectl:201911191854
+    image: daedalusproject/base_kubectl:202003281005
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - mv secret_key/daedalus_core_rsa_key kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
