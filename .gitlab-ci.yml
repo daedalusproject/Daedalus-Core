@@ -18,7 +18,7 @@ perlcritic:
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:202003281005
+	image: daedalusproject/base_daedaluscore:latest
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
