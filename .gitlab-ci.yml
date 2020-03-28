@@ -28,6 +28,8 @@ integration_tests:
         - delete_env_and_configs
         - create_env_and_configs
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
+        - apt-get update
+        - apt-get install -y libdbd-sqlite3-perl
     script:
         - perl --version
         - perl Makefile.PL
