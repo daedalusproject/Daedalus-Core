@@ -1,3 +1,57 @@
+libdaedalus-core-perl (0.01-24) unstable; urgency=low
+
+  * Get projects shared with admin organizations
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Mon, 30 Mar 2020 20:55:00 +0100
+
+libdaedalus-core-perl (0.01-23) unstable; urgency=low
+
+  * Minor fixes
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Sat, 28 Mar 2020 20:02:00 +0100
+
+libdaedalus-core-perl (0.01-22) unstable; urgency=low
+
+  * Show project sharing relations
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Sat, 26 Oct 2019 23:43:00 +0200
+
+libdaedalus-core-perl (0.01-21) unstable; urgency=low
+
+  * Add project sharing and manage groups allowed to manage groups
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Sun, 13 Oct 2019 22:32:00 +0200
+
+libdaedalus-core-perl (0.01-20) unstable; urgency=low
+
+  * Check too large inputs
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 14 Jul 2019 16:36:00 +0200
+
+libdaedalus-core-perl (0.01-19) unstable; urgency=low
+
+  * Chomp input strings.
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Thu, 12 Jul 2019 06:18:00 +0200
+
+libdaedalus-core-perl (0.01-18) unstable; urgency=low
+
+  * Some fields cannot be empty.
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Thu, 11 Jul 2019 07:40:00 +0000
+
+libdaedalus-core-perl (0.01-17) unstable; urgency=low
+
+  * Create projects.
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Wed, 10 Jul 2019 06:33:00 +0000
+
+libdaedalus-core-perl (0.01-16) unstable; urgency=low
+
+  * Add libconst-fast-perl as dependence.
+
+ -- Álvaro castellano vela <alvaro.castellano.vela@gmail.com>  Tue, 27 may 2019 06:34:00 +0000
+
 libdaedalus-core-perl (0.01-15) unstable; urgency=low
 
   * Close mysql conection after test_mysql.

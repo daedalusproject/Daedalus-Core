@@ -1,12 +1,16 @@
 package Daedalus::Core::Controller::Users;
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
 use namespace::autoclean;
 use JSON::XS;
 use DateTime;
-use Data::Dumper;
+use Daedalus::Utils::Constants qw(
+  $bad_request
+  $long_random_string_length
+);
 
 use base qw(Daedalus::Core::Controller::REST);
 
@@ -17,17 +21,29 @@ __PACKAGE__->config( json_options => { relaxed => 1 } );
 
 BEGIN { extends 'Daedalus::Core::Controller::REST' }
 
+our $VERSION = '0.01';
+
 =head1 NAME
 
-Daedalus::Core::Controller::REST - Catalyst Controller
+Daedalus::Core::Controller::Users - Catalyst Controller
+
+=head1 SYNOPSIS
+
+Daedalus::Core Users Controller.
 
 =head1 DESCRIPTION
 
-Daedalus::Core REST Controller.
+Daedalus::Core /user endpoint controller
 
-=head1 METHODS
+=head1 SEE ALSO
 
-=cut
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
 
 =head2 begin
 
@@ -37,6 +53,7 @@ Users Controller begin
 
 sub begin : ActionClass('Deserialize') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 login
@@ -49,7 +66,7 @@ Data required:
 =cut
 
 sub login : Path('/user/login') : Args(0) :
-  ActionClass('REST') { my ( $self, $c ) = @_; }
+  ActionClass('REST') { my ( $self, $c ) = @_; return; }
 
 =head2 login_POST
 
@@ -88,7 +105,7 @@ sub login_POST {
         $response = Daedalus::Users::Manager::auth_user( $c, $required_data );
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 im_admin
@@ -99,6 +116,7 @@ Check if logged user is Admin
 
 sub im_admin : Path('/user/imadmin') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 im_admin_GET
@@ -123,7 +141,7 @@ sub im_admin_GET {
         $response->{message} = "You are an admin user.";
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 register_new_user
@@ -136,6 +154,7 @@ Required data:   - New user e-mail   - New user Name   - New user Surname
 
 sub register_new_user : Path('/user/register') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 register_new_user_POST
@@ -159,16 +178,28 @@ sub register_new_user_POST {
             },
             required_data => {
                 'e-mail' => {
-                    type     => "e-mail",
-                    required => 1,
+                    type                           => "e-mail",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "email",
                 },
                 name => {
-                    type     => "string",
-                    required => 1,
+                    type                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "name",
                 },
                 surname => {
-                    type     => "string",
-                    required => 1,
+                    type                           => "string",
+                    required                       => 1,
+                    forbid_empty                   => 1,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "surname",
                 },
             }
         }
@@ -184,7 +215,7 @@ sub register_new_user_POST {
         $response =
           Daedalus::Users::Manager::register_new_user( $c, $user_data,
             $required_data );
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
     }
@@ -201,6 +232,7 @@ Admin users are able to view which users has been registered by them.
 sub show_registered_users : Path('/user/showregistered') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_registered_users_GET
@@ -236,7 +268,7 @@ sub show_registered_users_GET {
           $user_data->{_hidden_data}->{user};
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 confirm_register
@@ -249,6 +281,7 @@ Password is needed too.
 
 sub confirm_register : Path('/user/confirm') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 confirm_register_POST
@@ -270,8 +303,11 @@ sub confirm_register_POST {
                     required => 1,
                 },
                 password => {
-                    type     => "string",
-                    required => 0,
+                    type                           => "string",
+                    required                       => 0,
+                    associated_model               => "CoreRealms",
+                    associated_model_source        => "User",
+                    associated_model_source_column => "password",
                 },
             }
         }
@@ -284,7 +320,7 @@ sub confirm_register_POST {
             $authorization_and_validatation->{data}->{required_data} );
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_inactive_users
@@ -296,6 +332,7 @@ Admin users are allowed to watch which users registered by them still inactive.
 sub show_inactive_users : Path('/user/showinactive') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2  show_inactive_users_GET
@@ -328,10 +365,10 @@ sub show_inactive_users_GET {
           Daedalus::Users::Manager::show_inactive_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_active_users
@@ -343,6 +380,7 @@ Admin users are allowed to watch which users registered who have confirmed their
 sub show_active_users : Path('/user/showactive') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_active_users_GET
@@ -376,10 +414,10 @@ sub show_active_users_GET {
           Daedalus::Users::Manager::show_active_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 show_orphan_users
@@ -391,6 +429,7 @@ Admin users are allowed to list their registered users who has no organization
 sub show_orphan_users : Path('/user/showorphan') : Args(0) :
   ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 show_orphan_users_GET
@@ -424,10 +463,10 @@ sub show_orphan_users_GET {
           Daedalus::Users::Manager::show_orphan_users( $c, $user_data );
         $response->{_hidden_data}->{user} =
           $user_data->{_hidden_data}->{user};
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 remove_user
@@ -440,6 +479,7 @@ Data required:   - Target user token
 
 sub remove_user : Path('/user/remove') : Args(1) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 remove_user_DELETE
@@ -454,8 +494,6 @@ sub remove_user_DELETE {
 
     my $response;
     my $user_data;
-
-    my $organization;
 
     my $target_user;
 
@@ -490,7 +528,7 @@ sub remove_user_DELETE {
         $user_data = $authorization_and_validatation->{data}->{user_data};
         $target_user =
           $authorization_and_validatation->{data}->{'registered_user_token'};
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
         $response->{status}     = 0;
         $response->{message} =
 "Requested user does not exists or it has not been registered by you.";
@@ -520,7 +558,7 @@ sub remove_user_DELETE {
         }
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 user_data
@@ -531,6 +569,7 @@ Manages user data
 
 sub user_data : Path('/user') : Args(0) : ActionClass('REST') {
     my ( $self, $c ) = @_;
+    return;
 }
 
 =head2 user_data_GET
@@ -561,7 +600,7 @@ sub user_data_GET {
         delete( $response->{_hidden_data}->{user}->{api_key} );
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =head2 user_data_PUT
@@ -578,27 +617,40 @@ sub user_data_PUT {
 
     my $relative_exp         = $c->config->{authTokenConfig}->{relative_exp};
     my $data_to_update       = {};
-    my $data_to_update_names = "";
+    my $data_to_update_names = q{};
 
     my $password_check;
     my $valid_update = 1;
 
     my $required_data = {
         name => {
-            type     => 'string',
-            required => 0,
+            type                           => 'string',
+            required                       => 0,
+            forbid_empty                   => 1,
+            associated_model               => "CoreRealms",
+            associated_model_source        => "User",
+            associated_model_source_column => "name",
         },
         surname => {
-            type     => "string",
-            required => 0,
+            type                           => "string",
+            required                       => 0,
+            forbid_empty                   => 1,
+            associated_model               => "CoreRealms",
+            associated_model_source        => "User",
+            associated_model_source_column => "surname",
         },
         phone => {
-            type     => "phone",
-            required => 0,
+            type         => "phone",
+            required     => 0,
+            forbid_empty => 1,
         },
         password => {
-            type     => "password",
-            required => 0,
+            type                           => "password",
+            required                       => 0,
+            forbid_empty                   => 1,
+            associated_model               => "CoreRealms",
+            associated_model_source        => "User",
+            associated_model_source_column => "password",
         },
     };
 
@@ -629,7 +681,7 @@ sub user_data_PUT {
             }
         }
 
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
         $response->{status}     = 1;
 
         if ( exists $data_to_update->{password} ) {
@@ -644,7 +696,8 @@ sub user_data_PUT {
                 $c->cache->set( $user_data->{_hidden_data}->{user}->{id},
                     DateTime->now->epoch, $relative_exp );
                 $data_to_update->{salt} =
-                  Daedalus::Utils::Crypt::generate_random_string(256);
+                  Daedalus::Utils::Crypt::generate_random_string(
+                    $long_random_string_length);
                 $data_to_update->{password} =
                   Daedalus::Utils::Crypt::hash_password(
                     $data_to_update->{password},
@@ -654,18 +707,38 @@ sub user_data_PUT {
         if ($valid_update) {
             Daedalus::Users::Manager::update_user_data( $c, $user_data,
                 $data_to_update );
-            $data_to_update_names =~ s/^\s+|\s+$//g;
-            $data_to_update_names =~ s/,$//g;
-            $response->{message} = "Data updated: $data_to_update_names."
-              unless ( $data_to_update_names eq "" );
-
+            $data_to_update_names =~ s/^\s+|\s+$//smxg;
+            $data_to_update_names =~ s/,$//smxg;
+            if ( $data_to_update_names ne q{} ) {
+                $response->{message} = "Data updated: $data_to_update_names.";
+            }
         }
     }
 
-    $self->return_response( $c, $response );
+    return $self->return_response( $c, $response );
 }
 
 =encoding utf8
+
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=cut
 
 =head1 AUTHOR
 

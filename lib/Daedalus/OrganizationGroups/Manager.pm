@@ -8,51 +8,33 @@ Daedalus::OrganizationGroups::Manager
 
 =cut
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
+use List::MoreUtils qw(any uniq);
 
 use Daedalus::Organizations::Manager;
-use Data::Dumper;
+use Daedalus::Utils::Constants qw(
+  $bad_request
+);
 
 use namespace::clean -except => 'meta';
 
-=head1 NAME
+our $VERSION = '0.01';
 
-Daedalus::OrganizationGroups::Manager
+=head1 SYNOPSIS
 
-=cut
+Daedalus Organization Groups Manager
+
 
 =head1 DESCRIPTION
 
 Daedalus Organization Groups Manager
 
-=head1 METHODS
+=head1 SUBROUTINES/METHODS
 
 =cut
-
-=head2 count_roles
-
-Counts how many roles have "role_name" assigned
-
-=cut
-
-sub count_roles {
-
-    my $c         = shift;
-    my $groups    = shift;
-    my $role_name = shift;
-
-    my $count = 0;
-
-    for my $group_name ( keys %{$groups} ) {
-        if ( grep( /^$role_name$/, @{ $groups->{$group_name}->{roles} } ) ) {
-            $count = $count + 1;
-        }
-    }
-
-    return $count;
-}
 
 =head2 count_organization_admins
 
@@ -71,7 +53,11 @@ sub count_organization_admins {
     my @groups_with_selected_role;
 
     for my $group_name ( keys %{$groups} ) {
-        if ( grep( /^$role_name$/, @{ $groups->{$group_name}->{roles} } ) ) {
+        if (
+            any { /^$role_name$/sxm }
+            uniq @{ $groups->{$group_name}->{roles} }
+          )
+        {
             push @groups_with_selected_role, $group_name;
         }
     }
@@ -105,7 +91,7 @@ sub remove_user_from_organization_group {
     )->delete();
 
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Required user has been removed from organization group.';
 
@@ -135,11 +121,6 @@ sub user_match_role {
 
     for my $group_name ( keys %{ $response->{organization_groups}->{data} } ) {
         if (
-    #            grep( /^$user_email$/,
-    #                @{
-    #                    $response->{organization_groups}->{data}->{$group_name}
-    #                      ->{users}
-    #                } )
             exists(
                 $response->{organization_groups}->{data}->{$group_name}
                   ->{users}->{$user_email}
@@ -186,7 +167,9 @@ sub remove_organization_group {
         }
     );
 
-    $roles_to_remove->delete() if ($roles_to_remove);
+    if ($roles_to_remove) {
+        $roles_to_remove->delete();
+    }
 
     my $users_to_remove =
       $c->model('CoreRealms::OrganizationUsersGroup')->find(
@@ -195,7 +178,9 @@ sub remove_organization_group {
         }
       );
 
-    $users_to_remove->delete() if ($users_to_remove);
+    if ($users_to_remove) {
+        $users_to_remove->delete();
+    }
 
     $c->model('CoreRealms::OrganizationGroup')->find(
         {
@@ -203,7 +188,7 @@ sub remove_organization_group {
         }
     )->delete();
 
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{status}     = 1;
     $response->{message} = 'Selected group has been removed from organization.';
 
@@ -223,45 +208,114 @@ sub get_organization_group_from_token {
 
     my $response;
     $response->{status}     = 0;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message}    = 'Invalid organization group token.';
 
     my $organization_group = $c->model('CoreRealms::OrganizationGroup')
       ->find( { token => $organization_group_token } );
 
     if ($organization_group) {
-        my $roles =
-          Daedalus::Organizations::Manager::get_organization_group_roles( $c,
-            $organization_group->id );
-        my $users =
-          Daedalus::Organizations::Manager::get_organization_group_users( $c,
-            $organization_group->id );
-        $response->{status}  = 1;
-        $response->{message} = 'Organization group token is valid.';
-        $response->{data}    = {
-            $organization_group->token => {
-                token      => $organization_group->token,
-                group_name => $organization_group->group_name,
-            },
-        };
-        $response->{_hidden_data} = {
-            $organization_group->token => {
-                id              => $organization_group->id,
-                organization_id => $organization_group->organization_id
-            }
-        };
-        $response->{data}->{ $organization_group->token }->{roles} =
-          $roles->{data};
-        $response->{_hidden_data}->{ $organization_group->token }->{roles} =
-          $roles->{_hidden_data};
-        $response->{data}->{ $organization_group->token }->{users} =
-          $users->{data};
-        $response->{_hidden_data}->{ $organization_group->token }->{users} =
-          $users->{_hidden_data};
+        my $organization_group_data =
+          render_organization_group_data( $c, $organization_group );
+        $response->{data}         = $organization_group_data->{data};
+        $response->{_hidden_data} = $organization_group_data->{_hidden_data};
+        $response->{status}       = 1;
     }
 
     return $response;
 }
+
+=head2 get_organization_group_from_id
+
+For a given organization group id, return organization group data
+
+=cut
+
+sub get_organization_group_from_id {
+
+    my $c                     = shift;
+    my $organization_group_id = shift;
+
+    my $response;
+    $response->{status} = 1;
+
+    my $organization_group = $c->model('CoreRealms::OrganizationGroup')
+      ->find( { id => $organization_group_id } );
+
+    my $organization_group_data =
+      render_organization_group_data( $c, $organization_group );
+    $response->{data}         = $organization_group_data->{data};
+    $response->{_hidden_data} = $organization_group_data->{_hidden_data};
+
+    return $response;
+}
+
+=head2 render_organization_group_data
+
+For a given organization, render its data
+
+=cut
+
+sub render_organization_group_data {
+
+    my $c                  = shift;
+    my $organization_group = shift;
+
+    my $response;
+    my $roles =
+      Daedalus::Organizations::Manager::get_organization_group_roles( $c,
+        $organization_group->id );
+    my $users =
+      Daedalus::Organizations::Manager::get_organization_group_users( $c,
+        $organization_group->id );
+    $response->{data} = {
+        $organization_group->token => {
+            token      => $organization_group->token,
+            group_name => $organization_group->group_name,
+        },
+    };
+    $response->{_hidden_data} = {
+        $organization_group->token => {
+            id              => $organization_group->id,
+            organization_id => $organization_group->organization_id
+        }
+    };
+    $response->{data}->{ $organization_group->token }->{roles} =
+      $roles->{data};
+    $response->{_hidden_data}->{ $organization_group->token }->{roles} =
+      $roles->{_hidden_data};
+    $response->{data}->{ $organization_group->token }->{users} =
+      $users->{data};
+    $response->{_hidden_data}->{ $organization_group->token }->{users} =
+      $users->{_hidden_data};
+
+    return $response;
+}
+
+=encoding utf8
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 

@@ -1,4 +1,4 @@
-package Daedalus::Core::Schema::CoreRealms::Result::Project;
+package Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment;
 use utf8;
 
 # Created by DBIx::Class::Schema::Loader
@@ -6,7 +6,7 @@ use utf8;
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::Project
+Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment
 
 =cut
 
@@ -30,149 +30,117 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<projects>
+=head1 TABLE: C<shared_project_group_assignment>
 
 =cut
 
-__PACKAGE__->table("projects");
+__PACKAGE__->table("shared_project_group_assignment");
 
 =head1 ACCESSORS
 
-=head2 id
+=head2 shared_project_id
 
   data_type: 'bigint'
   extra: {unsigned => 1}
   is_auto_increment: 1
+  is_foreign_key: 1
   is_nullable: 0
 
-=head2 name
-
-  data_type: 'varchar'
-  default_value: (empty string)
-  is_nullable: 0
-  size: 200
-
-=head2 created_at
-
-  data_type: 'datetime'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 organization_owner
+=head2 group_id
 
   data_type: 'bigint'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 token
+=head2 created_at
 
-  data_type: 'varchar'
-  default_value: (empty string)
-  is_nullable: 0
-  size: 32
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  is_nullable: 1
 
 =cut
 
 __PACKAGE__->add_columns(
-    "id",
+    "shared_project_id",
     {
         data_type         => "bigint",
         extra             => { unsigned => 1 },
         is_auto_increment => 1,
+        is_foreign_key    => 1,
         is_nullable       => 0,
     },
-    "name",
-    {
-        data_type     => "varchar",
-        default_value => q{},
-        is_nullable   => 0,
-        size          => 200
-    },
-    "created_at",
-    {
-        data_type                 => "datetime",
-        datetime_undef_if_invalid => 1,
-        is_nullable               => 0,
-    },
-    "organization_owner",
+    "group_id",
     {
         data_type      => "bigint",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
     },
-    "token",
+    "created_at",
     {
-        data_type     => "varchar",
-        default_value => q{},
-        is_nullable   => 0,
-        size          => 32
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 1,
     },
 );
 
-=head1 PRIMARY KEY
-
-=over 4
-
-=item * L</id>
-
-=back
-
-=cut
-
-__PACKAGE__->set_primary_key("id");
-
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<token_index>
+=head2 C<shared_project_id>
 
 =over 4
 
-=item * L</token>
+=item * L</shared_project_id>
+
+=item * L</group_id>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint( "token_index", ["token"] );
+__PACKAGE__->add_unique_constraint( "shared_project_id",
+    [ "shared_project_id", "group_id" ] );
 
 =head1 RELATIONS
 
-=head2 organization_owner
+=head2 group
 
 Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization|Organization>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup|OrganizationGroup>
 
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization_owner",
-    "Daedalus::Core::Schema::CoreRealms::Result::Organization",
-    { id            => "organization_owner" },
-    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
+    "group",
+    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup",
+    { id            => "group_id" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-=head2 shared_projects
+=head2 shared_project
 
-Type: has_many
+Type: belongs_to
 
 Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProject|SharedProject>
 
 =cut
 
-__PACKAGE__->has_many(
-    "shared_projects",
+__PACKAGE__->belongs_to(
+    "shared_project",
     "Daedalus::Core::Schema::CoreRealms::Result::SharedProject",
-    { "foreign.project_id" => "self.id" },
-    { cascade_copy         => 0, cascade_delete => 0 },
+    { id            => "shared_project_id" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:AlBBnODYZ62EQ6qCObU0xQ
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ur2LWKZiQnHXHP1IqfX7Zg
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
 
 __PACKAGE__->add_columns(
     'created_at',
@@ -182,6 +150,7 @@ __PACKAGE__->add_columns(
         set_on_update => 0
     }
 );
+
 __PACKAGE__->meta->make_immutable;
 
 our $VERSION = '0.01';

@@ -8,20 +8,28 @@ Daedalus::Organizations::Manager
 
 =cut
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
 
 use Daedalus::Utils::Crypt;
-use Data::Dumper;
+use List::MoreUtils qw(any uniq);
+use Daedalus::Utils::Constants qw(
+  $bad_request
+  $forbidden
+  $organization_token_length
+  $organization_group_token_length
+);
 
 use namespace::clean -except => 'meta';
 
-=head1 NAME
+our $VERSION = '0.01';
 
-Daedalus::Organizations::Manager
+=head1 SYNOPSIS
 
-=cut
+Daedalus Users Manager
+
 
 =head1 DESCRIPTION
 
@@ -60,10 +68,10 @@ sub create_organization {
         push @organization_names, $user_organization->organization()->name;
     }
 
-    if ( grep( /^$request_organization_name$/, @organization_names ) ) {
+    if ( any { /^$request_organization_name$/sxm } uniq @organization_names ) {
         $response = {
             status     => 0,
-            error_code => 400,
+            error_code => $bad_request,
             message    => 'Duplicated organization name.',
         };
 
@@ -78,7 +86,9 @@ sub create_organization {
         # Create Organization
 
         my $organization_token =
-          Daedalus::Utils::Crypt::generate_random_string(32);
+          Daedalus::Utils::Crypt::generate_random_string(
+            $organization_token_length);
+
         my $organization = $c->model('CoreRealms::Organization')->create(
             {
                 name  => $request_organization_name,
@@ -97,7 +107,8 @@ sub create_organization {
 
         # Create an organization admin group
         my $organization_admin_group_token =
-          Daedalus::Utils::Crypt::generate_random_string(32);
+          Daedalus::Utils::Crypt::generate_random_string(
+            $organization_group_token_length);
 
         my $organization_group =
           $c->model('CoreRealms::OrganizationGroup')->create(
@@ -131,6 +142,7 @@ sub create_organization {
             data    => {
                 organization => {
                     organization_token => $organization->token,
+                    name               => $request_organization_name,
                 },
             },
             _hidden_data => {
@@ -171,15 +183,14 @@ sub get_organizations_from_user {
     my @user_organizations = $c->model('CoreRealms::UserOrganization')
       ->search( { user_id => $user_id } )->all();
 
-    my @organizations_names;
-    my %organizations;
-
     if ( $short_key eq 'token' ) {
         for my $user_organization (@user_organizations) {
             my $organization = $c->model('CoreRealms::Organization')
               ->find( { id => $user_organization->organization_id } );
-            $response->{data}->{organizations}->{ $organization->token } =
-              { name => $organization->name, token => $organization->token };
+            $response->{data}->{organizations}->{ $organization->token } = {
+                name  => $organization->name,
+                token => $organization->token
+            };
             $response->{_hidden_data}->{organizations}->{ $organization->token }
               = { id => $organization->id };
         }
@@ -189,8 +200,10 @@ sub get_organizations_from_user {
         for my $user_organization (@user_organizations) {
             my $organization = $c->model('CoreRealms::Organization')
               ->find( { id => $user_organization->organization_id } );
-            $response->{data}->{organizations}->{ $organization->name } =
-              { name => $organization->name, token => $organization->token };
+            $response->{data}->{organizations}->{ $organization->name } = {
+                name  => $organization->name,
+                token => $organization->token
+            };
             $response->{_hidden_data}->{organizations}->{ $organization->name }
               = { id => $organization->id };
         }
@@ -212,7 +225,7 @@ sub get_organization_from_token {
 
     my $response;
     $response->{status}     = 0;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message}    = 'Invalid organization token.';
 
     my $organization = $c->model('CoreRealms::Organization')
@@ -235,6 +248,39 @@ sub get_organization_from_token {
     return $response;
 }
 
+=head2 get_organization_from_id
+
+For a given organization id, return organization data
+
+This function assumes that id always exists
+
+=cut
+
+sub get_organization_from_id {
+
+    my $c               = shift;
+    my $organization_id = shift;
+
+    my $response;
+    $response->{status} = 1;
+
+    my $organization =
+      $c->model('CoreRealms::Organization')->find( { id => $organization_id } );
+
+    $response->{status}       = 1;
+    $response->{organization} = {
+        data => {
+            organization => {
+                name  => $organization->name,
+                token => $organization->token,
+            },
+        },
+        _hidden_data => { organization => { id => $organization->id } }
+    };
+
+    return $response;
+}
+
 =head2 add_user_to_organization
 
 Adds user to organization token
@@ -252,7 +298,8 @@ sub add_user_to_organization {
     my $user_organizations =
       get_organizations_from_user( $c, $user_data, 'token' );
 
-    my $organization_token = $organizaion_data->{data}->{organization}->{token};
+    my $organization_token =
+      $organizaion_data->{data}->{organization}->{token};
 
     if ( $user_organizations->{data}->{organizations}->{$organization_token} ) {
         $response->{status}  = 0;
@@ -269,7 +316,7 @@ sub add_user_to_organization {
         );
 
         $response->{status}  = 1;
-        $response->{message} = "User has been registered.";
+        $response->{message} = "User has been added to organization.";
     }
 
     return $response;
@@ -350,8 +397,10 @@ sub get_organization_groups {
         my $roles = get_organization_group_roles( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name } =
           { roles => $roles->{data} };
-        $response->{_hidden_data}->{ $organization_group->group_name } =
-          { id => $organization_group->id, roles => $roles->{_hidden_data} };
+        $response->{_hidden_data}->{ $organization_group->group_name } = {
+            id    => $organization_group->id,
+            roles => $roles->{_hidden_data}
+        };
         my $users = get_organization_group_users( $c, $organization_group->id );
         $response->{data}->{ $organization_group->group_name }->{users} =
           $users->{data};
@@ -390,15 +439,6 @@ sub get_user_organizations_groups {
 
         for my $organization_group ( keys %{ $organization_groups->{data} } ) {
 
-    #            if (
-    #                !(
-    #                    grep /^$user_email$/,
-    #                    @{
-    #                        $organization_groups->{data}->{$organization_group}
-    #                          ->{users}
-    #                    }
-    #                )
-    #              )
             if (
                 !exists(
                     $organization_groups->{data}->{$organization_group}
@@ -446,12 +486,6 @@ sub get_user_organization_groups {
 
     for my $organization_group ( keys %{ $organization_groups->{data} } ) {
         if (
-#            !(
-#                grep /^$user_email$/,
-#                @{
-#                    $organization_groups->{data}->{$organization_group}->{users}
-#                }
-#            )
             !exists(
                 $organization_groups->{data}->{$organization_group}->{users}
                   ->{$user_email}
@@ -465,7 +499,8 @@ sub get_user_organization_groups {
         }
     }
 
-    $user_organization_groups->{data}->{groups} = $organization_groups->{data};
+    $user_organization_groups->{data}->{groups} =
+      $organization_groups->{data};
     $user_organization_groups->{_hidden_data}->{groups} =
       $organization_groups->{_hidden_data};
 
@@ -487,7 +522,8 @@ sub create_organization_group {
     my $organization_group;
 
     my $organization_group_token =
-      Daedalus::Utils::Crypt::generate_random_string(32);
+      Daedalus::Utils::Crypt::generate_random_string(
+        $organization_group_token_length);
 
     $organization_group = $c->model('CoreRealms::OrganizationGroup')->create(
         {
@@ -498,7 +534,7 @@ sub create_organization_group {
     );
 
     $response->{status}                      = 1;
-    $response->{error_code}                  = 400;
+    $response->{error_code}                  = $bad_request;
     $response->{data}->{organization_groups} = {
         "group_name"  => $organization_group->group_name,
         "group_token" => $organization_group->token
@@ -508,27 +544,6 @@ sub create_organization_group {
     $response->{message} = "Organization group has been created.";
 
     return $response;
-}
-
-=head2 list_roles
-
-Lists available roles
-
-=cut
-
-sub list_roles {
-    my $c = shift;
-
-    my $roles = { data => [], _hidden_data => {} };
-
-    my @available_roles = $c->model('CoreRealms::Role')
-      ->search( { role_name => { 'not in' => ['daedalus_manager'] } } )->all;
-
-    for my $role (@available_roles) {
-        push @{ $roles->{data} }, $role->role_name;
-        $roles->{_hidden_data}->{ $role->role_name } = { id => $role->id };
-    }
-    return $roles;
 }
 
 =head2 add_role_to_organization_group
@@ -550,7 +565,7 @@ sub add_role_to_organization_group {
         }
     );
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Selected role has been added to organization group.';
     $response->{_hidden_data}->{organization_group_role}->{id} =
@@ -578,7 +593,7 @@ sub remove_role_from_organization_group {
         }
     )->delete();
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Selected role has been removed from organization group.';
 
@@ -607,12 +622,40 @@ sub add_user_to_organization_group {
         }
     );
     $response->{status}     = 1;
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     $response->{message} =
       'Required user has been added to organization group.';
 
     return $response;
 }
+
+=encoding utf8
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+
+If APP_TEST env is enabled, Core reads its configuration from t/ folder, by default config files we be read rom /etc/daedalus-core folder.
+
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 

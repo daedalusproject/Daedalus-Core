@@ -1,6 +1,5 @@
-use utf8;
-
 package Daedalus::Core::Schema::CoreRealms::Result::Role;
+use utf8;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
@@ -23,15 +22,13 @@ extends 'DBIx::Class::Core';
 
 =over 4
 
-=item * L<DBIx::Class::InflateColumn::DateTime>
-
-=item * L<DBIx::Class::TimeStamp>
+=item * L<DBIx::Class::InflateColumn::DateTime|DateTime>
 
 =back
 
 =cut
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp" );
+__PACKAGE__->load_components("InflateColumn::DateTime");
 
 =head1 TABLE: C<roles>
 
@@ -74,7 +71,7 @@ __PACKAGE__->add_columns(
     "role_name",
     {
         data_type     => "varchar",
-        default_value => "",
+        default_value => q{},
         is_nullable   => 0,
         size          => 20
     },
@@ -118,7 +115,7 @@ __PACKAGE__->add_unique_constraint( "unique_role_name", ["role_name"] );
 
 Type: has_many
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole|OrganizationGroupRole>
 
 =cut
 
@@ -129,8 +126,23 @@ __PACKAGE__->has_many(
     { cascade_copy      => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-01-26 10:35:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+VchFIjx60SPXJGVBMT/zA
+=head2 shared_projects
+
+Type: has_many
+
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProject|SharedProject>
+
+=cut
+
+__PACKAGE__->has_many(
+    "shared_projects",
+    "Daedalus::Core::Schema::CoreRealms::Result::SharedProject",
+    { "foreign.organization_to_manage_role_id" => "self.id" },
+    { cascade_copy                             => 0, cascade_delete => 0 },
+);
+
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zzeRuXoJBxZQToNm9tfBuw
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
@@ -145,4 +157,37 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->meta->make_immutable;
+
+our $VERSION = '0.01';
+
+=encoding utf8
+
+=head1 SYNOPSIS
+=head1 DESCRIPTION
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+=head1 DEPENDENCIES
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
+
+=head1 AUTHOR
+
+Álvaro Castellano Vela, alvaro.castellano.vela@gmail.com,,
+
+=cut
+
 1;

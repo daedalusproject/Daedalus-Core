@@ -1,4 +1,6 @@
 package Daedalus::Core;
+
+use 5.026_001;
 use Moose;
 use namespace::autoclean;
 use Cache::Redis;
@@ -68,15 +70,37 @@ Daedalus::Core - Catalyst based application
 
 =head1 SYNOPSIS
 
-    script/daedalus_core_server.pl
+Base library.
 
 =head1 DESCRIPTION
 
-[enter your description here]
+Base library where configuration is loaded.
 
 =head1 SEE ALSO
 
-L<Daedalus::Core::Controller::Root>, L<Catalyst>
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+
+If APP_TEST env is enabled, Core reads its configuration from t/ folder, by default config files we be read rom /etc/daedalus-core folder.
+
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 

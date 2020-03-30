@@ -8,6 +8,7 @@ Daedalus::Core::Users::Manager
 
 =cut
 
+use 5.026_001;
 use strict;
 use warnings;
 use Moose;
@@ -15,15 +16,22 @@ use Moose;
 use Email::Valid;
 use Daedalus::Utils::Crypt;
 use Daedalus::Messages::Manager qw(notify_new_user);
-use Data::Dumper;
+use Daedalus::Utils::Constants qw(
+  $bad_request
+  $forbidden
+  $api_key_length
+  $auth_token_length
+  $long_random_string_length
+  $user_token_length
+);
 
 use namespace::clean -except => 'meta';
 
-=head1 NAME
+our $VERSION = '0.01';
 
-Daedalus::Users::Manager
+=head1 SYNOPSIS
 
-=cut
+Daedalus Users Manager
 
 =head1 DESCRIPTION
 
@@ -156,7 +164,7 @@ sub get_user_from_session_token {
 
     my $response = {
         status  => 0,
-        message => "",
+        message => q{},
     };
     my $token_data;
     my $user;
@@ -175,7 +183,7 @@ sub get_user_from_session_token {
             $session_token );
         if ( $token_data->{status} != 1 ) {
             $response->{status} = 0;
-            if ( $token_data->{message} =~ m/invalid/ ) {
+            if ( $token_data->{message} =~ /invalid/ms ) {
                 $response->{message} = "Session token invalid.";
             }
             else {
@@ -198,7 +206,7 @@ sub get_user_from_session_token {
         }
     }
 
-    $response->{error_code} = 400;
+    $response->{error_code} = $bad_request;
     return $response;
 }
 
@@ -216,10 +224,10 @@ sub is_admin_from_session_token {
 
     if ( $user->{status} == 0 ) {
         $response = $user;
-        $response->{error_code} = 400;
+        $response->{error_code} = $bad_request;
     }
     else {
-        $response->{error_code} = 403;
+        $response->{error_code} = $forbidden;
         if ( $user->{data}->{data}->{user}->{is_admin} ) {
             $response->{status} = 1;
             $response->{data}   = $user->{data};
@@ -248,7 +256,7 @@ sub auth_user {
     my $response;
     my $user_data;
 
-    $response->{error_code} = 403;
+    $response->{error_code} = $forbidden;
 
     # Get user from model
     my $user = get_user_from_email( $c, $required_data->{'e-mail'} );
@@ -318,7 +326,7 @@ sub is_admin_of_any_organization {
         my $group_id    = $user_group->group_id;
         my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
           ->search( { group_id => $group_id } )->all();
-        my $roles = "";
+        my $roles = q{};
         foreach (@roles_array) {
 
             if ( $_->role_id == $organization_master_role_id ) {
@@ -385,7 +393,7 @@ sub is_super_admin {
         my $group_id    = $user_group->group_id;
         my @roles_array = $c->model('CoreRealms::OrganizationGroupRole')
           ->search( { group_id => $group_id } )->all();
-        my $roles = "";
+        my $roles = q{};
         foreach (@roles_array) {
 
             if ( $_->role_id == $daedalus_manager_role_id ) {
@@ -413,7 +421,7 @@ sub register_new_user {
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
-    my $response = { status => 1, message => "" };
+    my $response = { status => 1, message => q{} };
 
     my $user_model = $c->model('CoreRealms::User');
     my $user =
@@ -426,11 +434,16 @@ sub register_new_user {
     else {
         #
         # Create a user
-        my $api_key    = Daedalus::Utils::Crypt::generate_random_string(32);
-        my $auth_token = Daedalus::Utils::Crypt::generate_random_string(63);
-        my $salt       = Daedalus::Utils::Crypt::generate_random_string(256);
-        my $password   = Daedalus::Utils::Crypt::generate_random_string(256);
-        my $user_token = Daedalus::Utils::Crypt::generate_random_string(32);
+        my $api_key =
+          Daedalus::Utils::Crypt::generate_random_string($api_key_length);
+        my $auth_token =
+          Daedalus::Utils::Crypt::generate_random_string($auth_token_length);
+        my $salt = Daedalus::Utils::Crypt::generate_random_string(
+            $long_random_string_length);
+        my $password = Daedalus::Utils::Crypt::generate_random_string(
+            $long_random_string_length);
+        my $user_token =
+          Daedalus::Utils::Crypt::generate_random_string($user_token_length);
         $password = Daedalus::Utils::Crypt::hash_password( $password, $salt );
 
         my $registered_user = $user_model->create(
@@ -464,7 +477,6 @@ sub register_new_user {
 
         $response->{_hidden_data} = {
             new_user => {
-                'e-mail'   => $registered_user->email,
                 auth_token => $registered_user->auth_token,
                 id         => $registered_user->id,
             },
@@ -472,7 +484,10 @@ sub register_new_user {
 
         $response->{data} = {
             new_user => {
-                token => $registered_user->token,
+                token    => $registered_user->token,
+                name     => $registered_user->name,
+                'e-mail' => $registered_user->email,
+                surname  => $registered_user->surname,
             },
         };
 
@@ -504,7 +519,7 @@ sub show_registered_users {
 
     my $registrator_user_id = $admin_user_data->{_hidden_data}->{user}->{id};
 
-    my $response = { status => 1, message => "" };
+    my $response = { status => 1, message => q{} };
 
     my $user_model = $c->model('CoreRealms::RegisteredUser');
 
@@ -571,10 +586,10 @@ sub confirm_registration {
     my $response = {
         status     => 0,
         message    => 'Invalid Auth Token.',
-        error_code => 400
+        error_code => $bad_request
     };
     my $auth_token = $required_data->{auth_token};
-    if ( length($auth_token) == 63 ) {    # auth token lenght
+    if ( length($auth_token) == $auth_token_length ) {    # auth token lenght
 
         #find user
         my $user_model = $c->model('CoreRealms::User');
@@ -595,9 +610,11 @@ sub confirm_registration {
                 else {
                     # Password is valid
                     my $new_auth_token =
-                      Daedalus::Utils::Crypt::generate_random_string(64);
+                      Daedalus::Utils::Crypt::generate_random_string(
+                        $auth_token_length);
                     my $new_salt =
-                      Daedalus::Utils::Crypt::generate_random_string(256);
+                      Daedalus::Utils::Crypt::generate_random_string(
+                        $long_random_string_length);
                     $password =
                       Daedalus::Utils::Crypt::hash_password( $password,
                         $new_salt );
@@ -634,14 +651,14 @@ sub show_active_users {
     my $registered_users_respose =
       show_registered_users( $c, $admin_user_data );
 
-    my $response;
+    my $response = {};
 
     my $registered_users_data =
       $registered_users_respose->{data}->{registered_users};
 
     my @active_user_email =
       map { $registered_users_data->{$_}->{active} == 1 ? ($_) : () }
-      keys %$registered_users_data;
+      keys %{$registered_users_data};
 
     $response = {
         status       => 1,
@@ -681,7 +698,7 @@ sub show_inactive_users {
 
     my @inactive_user_email =
       map { $registered_users_data->{$_}->{active} == 0 ? ($_) : () }
-      keys %$registered_users_data;
+      keys %{$registered_users_data};
 
     $response = {
         status       => 1,
@@ -778,7 +795,7 @@ sub show_orphan_users {
     my $registered_users_hidden_data =
       $registered_users_respose->{_hidden_data}->{registered_users};
 
-    for my $user_email ( keys %$registered_users_hidden_data ) {
+    for my $user_email ( keys %{$registered_users_hidden_data} ) {
         if ( $registered_users_data->{$user_email}->{active} == 1 ) {
             if (
                 scalar(
@@ -815,6 +832,8 @@ sub remove_user {
     my $c         = shift;
     my $user_data = shift;
 
+    my $response = { status => 1, };
+
     my $user_id = $user_data->{_hidden_data}->{user}->{id};
 
     my $user_group = $c->model('CoreRealms::OrganizationUsersGroup')->find(
@@ -823,7 +842,13 @@ sub remove_user {
         }
     );
 
-    $user_group->delete() if ($user_group);
+    if ($user_group) {
+        $user_group->delete();
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $user_organization = $c->model('CoreRealms::UserOrganization')->find(
         {
@@ -831,7 +856,14 @@ sub remove_user {
         }
     );
 
-    $user_organization->delete() if ($user_organization);
+    if ($user_organization) {
+
+        $user_organization->delete();
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $registrator_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
@@ -841,8 +873,13 @@ sub remove_user {
 
     #Daedalus-Core admin becomes registrator
 
-    $registrator_user->update( { registrator_user => 1 } )
-      if ($registrator_user);
+    if ($registrator_user) {
+        $registrator_user->update( { registrator_user => 1 } );
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $registered_user = $c->model('CoreRealms::RegisteredUser')->find(
         {
@@ -850,13 +887,21 @@ sub remove_user {
         }
     );
 
-    $registered_user->delete() if ($registered_user);
+    if ($registered_user) {
+        $registered_user->delete();
+    }
+
+    #else{
+    #Write some log
+    #}
 
     my $user = $c->model('CoreRealms::User')->find(
         {
             id => $user_id
         }
     )->delete();
+
+    return $response;
 
 }
 
@@ -871,15 +916,44 @@ sub update_user_data {
     my $user_data      = shift;
     my $data_to_update = shift;
 
+    my $response = { status => 1, };
+
     $c->model('CoreRealms::User')->find(
         {
             id => $user_data->{_hidden_data}->{user}->{id},
         }
     )->update($data_to_update);
 
+    return $response;
 }
 
 =encoding utf8
+
+=head1 SEE ALSO
+
+L<https://docs.daedalus-project.io/|Daedalus Project Docs>
+
+=head1 VERSION
+
+$VERSION
+
+=head1 SUBROUTINES/METHODS
+=head1 DIAGNOSTICS
+=head1 CONFIGURATION AND ENVIRONMENT
+
+If APP_TEST env is enabled, Core reads its configuration from t/ folder, by default config files we be read rom /etc/daedalus-core folder.
+
+=head1 DEPENDENCIES
+
+See debian/control
+
+=head1 INCOMPATIBILITIES
+=head1 BUGS AND LIMITATIONS
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+
+Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
 =head1 AUTHOR
 

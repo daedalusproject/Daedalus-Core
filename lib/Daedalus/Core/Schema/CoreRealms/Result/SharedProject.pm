@@ -1,4 +1,4 @@
-package Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup;
+package Daedalus::Core::Schema::CoreRealms::Result::SharedProject;
 use utf8;
 
 # Created by DBIx::Class::Schema::Loader
@@ -6,7 +6,7 @@ use utf8;
 
 =head1 NAME
 
-Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroup
+Daedalus::Core::Schema::CoreRealms::Result::SharedProject
 
 =cut
 
@@ -30,13 +30,52 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<organization_groups>
+=head1 TABLE: C<shared_projects>
 
 =cut
 
-__PACKAGE__->table("organization_groups");
+__PACKAGE__->table("shared_projects");
 
 =head1 ACCESSORS
+
+=head2 organization_to_manage_id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 created_at
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  is_nullable: 0
+
+=head2 organization_to_manage_role_id
+
+  data_type: 'integer'
+  extra: {unsigned => 1}
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 project_id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 organization_manager_id
+
+  data_type: 'bigint'
+  extra: {unsigned => 1}
+  is_nullable: 0
+
+=head2 deleted
+
+  data_type: 'tinyint'
+  default_value: 0
+  is_nullable: 1
 
 =head2 id
 
@@ -45,56 +84,15 @@ __PACKAGE__->table("organization_groups");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 organization_id
-
-  data_type: 'bigint'
-  extra: {unsigned => 1}
-  is_foreign_key: 1
-  is_nullable: 0
-
-=head2 group_name
-
-  data_type: 'varchar'
-  default_value: (empty string)
-  is_nullable: 0
-  size: 255
-
-=head2 created_at
-
-  data_type: 'datetime'
-  datetime_undef_if_invalid: 1
-  is_nullable: 0
-
-=head2 token
-
-  data_type: 'varchar'
-  default_value: (empty string)
-  is_nullable: 0
-  size: 32
-
 =cut
 
 __PACKAGE__->add_columns(
-    "id",
-    {
-        data_type         => "bigint",
-        extra             => { unsigned => 1 },
-        is_auto_increment => 1,
-        is_nullable       => 0,
-    },
-    "organization_id",
+    "organization_to_manage_id",
     {
         data_type      => "bigint",
         extra          => { unsigned => 1 },
         is_foreign_key => 1,
         is_nullable    => 0,
-    },
-    "group_name",
-    {
-        data_type     => "varchar",
-        default_value => q{},
-        is_nullable   => 0,
-        size          => 255
     },
     "created_at",
     {
@@ -102,12 +100,30 @@ __PACKAGE__->add_columns(
         datetime_undef_if_invalid => 1,
         is_nullable               => 0,
     },
-    "token",
+    "organization_to_manage_role_id",
     {
-        data_type     => "varchar",
-        default_value => q{},
-        is_nullable   => 0,
-        size          => 32
+        data_type      => "integer",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
+    },
+    "project_id",
+    {
+        data_type      => "bigint",
+        extra          => { unsigned => 1 },
+        is_foreign_key => 1,
+        is_nullable    => 0,
+    },
+    "organization_manager_id",
+    { data_type => "bigint", extra => { unsigned => 1 }, is_nullable => 0 },
+    "deleted",
+    { data_type => "tinyint", default_value => 0, is_nullable => 1 },
+    "id",
+    {
+        data_type         => "bigint",
+        extra             => { unsigned => 1 },
+        is_auto_increment => 1,
+        is_nullable       => 0,
     },
 );
 
@@ -123,23 +139,9 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<unique_token>
-
-=over 4
-
-=item * L</token>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint( "unique_token", ["token"] );
-
 =head1 RELATIONS
 
-=head2 organization
+=head2 organization_to_manage
 
 Type: belongs_to
 
@@ -148,40 +150,40 @@ Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Organization|Organ
 =cut
 
 __PACKAGE__->belongs_to(
-    "organization",
+    "organization_to_manage",
     "Daedalus::Core::Schema::CoreRealms::Result::Organization",
-    { id            => "organization_id" },
-    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
+    { id            => "organization_to_manage_id" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-=head2 organization_group_roles
+=head2 organization_to_manage_role
 
-Type: has_many
+Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole|OrganizationGroupRole>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Role|Role>
 
 =cut
 
-__PACKAGE__->has_many(
-    "organization_group_roles",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationGroupRole",
-    { "foreign.group_id" => "self.id" },
-    { cascade_copy       => 0, cascade_delete => 0 },
+__PACKAGE__->belongs_to(
+    "organization_to_manage_role",
+    "Daedalus::Core::Schema::CoreRealms::Result::Role",
+    { id            => "organization_to_manage_role_id" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
-=head2 organization_users_groups
+=head2 project
 
-Type: has_many
+Type: belongs_to
 
-Related object: L<Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup|OrganizationUsersGroup>
+Related object: L<Daedalus::Core::Schema::CoreRealms::Result::Project|Project>
 
 =cut
 
-__PACKAGE__->has_many(
-    "organization_users_groups",
-    "Daedalus::Core::Schema::CoreRealms::Result::OrganizationUsersGroup",
-    { "foreign.group_id" => "self.id" },
-    { cascade_copy       => 0, cascade_delete => 0 },
+__PACKAGE__->belongs_to(
+    "project",
+    "Daedalus::Core::Schema::CoreRealms::Result::Project",
+    { id            => "project_id" },
+    { is_deferrable => 1, on_delete => "NO ACTION", on_update => "CASCADE" },
 );
 
 =head2 shared_project_group_assignments
@@ -195,14 +197,15 @@ Related object: L<Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroup
 __PACKAGE__->has_many(
     "shared_project_group_assignments",
     "Daedalus::Core::Schema::CoreRealms::Result::SharedProjectGroupAssignment",
-    { "foreign.group_id" => "self.id" },
-    { cascade_copy       => 0, cascade_delete => 0 },
+    { "foreign.shared_project_id" => "self.id" },
+    { cascade_copy                => 0, cascade_delete => 0 },
 );
 
 # Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+wsiHXF2LhpTIIuEI4jgWQ
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/vvHsDGc3WvbAKIpeWvDQQ
 
-__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp", "Core" );
+__PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
+    "Validation", "Core" );
 
 __PACKAGE__->add_columns(
     'created_at',
@@ -212,6 +215,7 @@ __PACKAGE__->add_columns(
         set_on_update => 0
     }
 );
+
 __PACKAGE__->meta->make_immutable;
 
 our $VERSION = '0.01';

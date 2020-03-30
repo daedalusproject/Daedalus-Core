@@ -1,14 +1,24 @@
 stages:
+    - lint
     - test
     - coverage
     - package
     - update_repo
     - docker_image
+    - private_key
     - deploy
+
+perlcritic:
+    stage: lint
+    image: daedalusproject/base_perl_utils:202003281621
+    script:
+        - perlcritic --cruel lib
+    tags:
+    - docker_build
 
 integration_tests:
     stage: test
-    image: daedalusproject/base_daedaluscore:201905230353
+    image: daedalusproject/base_daedaluscore:202003281621
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -20,7 +30,6 @@ integration_tests:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
         - perl --version
-        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - make test
@@ -30,12 +39,14 @@ integration_tests:
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
         - delete_env_and_configs
+    dependencies:
+    - perlcritic
     tags:
     - kubernetes
 
 cover:
     stage: coverage
-    image: daedalusproject/base_daedaluscore:201905230353
+    image: daedalusproject/base_daedaluscore:202003281621
     before_script:
         - declare -a -g REQUIRED_VARIABLES
         - REQUIRED_VARIABLES=( 'ENV_TYPE' 'KUBERNETES_URL' 'KUBERNETES_TESTING_USER_NAME' 'KUBERNETES_TESTING_USER_TOKEN' 'KUBERNETES_CLUSTER_CRT')
@@ -47,11 +58,9 @@ cover:
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
     script:
         - perl --version
-        - cd t && cpanm --quiet --installdeps --notest . && cd ..
         - perl Makefile.PL
         - make
         - cover -test
-        - cover -report codecov
     coverage: /Total\s+.+\s(\d+\.\d+?)$/
     after_script:
         - declare -a -g REQUIRED_VARIABLES
@@ -59,12 +68,19 @@ cover:
         - ENV_TYPE="testing"
         - source utils/create_environment.sh
         - delete_env_and_configs
+    dependencies:
+    - perlcritic
+    - integration_tests
+    artifacts:
+        paths:
+        - cover_db
+        expire_in: 20 minutes
     tags:
     - kubernetes
 
 create_package:
     stage: package
-    image: daedalusproject/base_deb_perl_builder:201905230353
+    image: daedalusproject/base_deb_perl_builder:202003281621
     script:
         - DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -uc -b
         - mkdir package
@@ -73,19 +89,19 @@ create_package:
         paths:
         - package
         expire_in: 5 minutes
+    dependencies:
+    - integration_tests
     tags:
     - docker_build
 
 upload_package_to_testing_repo:
     stage: update_repo
-    image: daedalusproject/base_curl:201905230353
+    image: daedalusproject/base_curl:202003281621
     script:
-        - SNAPSHOTDATE=$(date +%G%m%d%k%M%S)
         - PACKAGE=$(ls package)
         - curl -X POST -F file=@package/$PACKAGE http://repo.daedalus-project.io:8000/api/files/daedalus-core || exit 1
         - curl -X POST http://repo.daedalus-project.io:8000/api/repos/daedalus-project-testing/file/daedalus-core || exit 1
-        - "curl -X POST -H 'Content-Type: application/json' --data '{\"Name\":\"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}' http://repo.daedalus-project.io:8000/api/repos/daedalus-project-testing/snapshots || exit 1"
-        - "curl -X PUT -H 'Content-Type: application/json' --data '{\"Snapshots\": [{\"Component\": \"testing\", \"Name\": \"daedalus-project-testing-'\"$SNAPSHOTDATE\"'\"}]}' http://repo.daedalus-project.io:8000/api/publish/:./bionic || exit 1"
+        - "curl -X PUT -H 'Content-Type: application/json' http://repo.daedalus-project.io:8000/api/publish/:./bionic --data '{}' || exit 1"
     artifacts:
         paths:
         - package
@@ -94,10 +110,12 @@ upload_package_to_testing_repo:
     - create_package
     tags:
     - docker_build
+    only:
+    - /^develop$/
 
 create_develop_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201905230353
+    image: daedalusproject/base_docker:202003281621
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
         - IMAGENAME=daedalus_core_develop
@@ -113,12 +131,17 @@ create_develop_docker_image:
         - docker stop "${IMAGENAME}"
         - docker rm "${IMAGENAME}"
         - docker rmi "${IMAGENAME}"
+    dependencies:
+    - create_package
+    - upload_package_to_testing_repo
     tags:
     - docker_build
+    only:
+    - /^develop$/
 
 create_develop_nginx_docker_image:
     stage: docker_image
-    image: daedalusproject/base_docker:201905230353
+    image: daedalusproject/base_docker:202003281621
     script:
         - echo "set_real_ip_from  $KUBE_NETWORK;" > realip.conf
         - echo "real_ip_header    X-Forwarded-For;" >> realip.conf
@@ -137,15 +160,36 @@ create_develop_nginx_docker_image:
         - docker stop "${IMAGENAME}"
         - docker rm "${IMAGENAME}"
         - docker rmi "${IMAGENAME}"
+    dependencies:
+    - create_package
+    - upload_package_to_testing_repo
     tags:
     - docker_build
+    only:
+    - /^develop$/
+
+decrypt_develop_private_key:
+    stage: private_key
+    image: daedalusproject/base_openssl:202003281621
+    script:
+        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
+        - mkdir secret_key
+        - mv kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key secret_key/daedalus_core_rsa_key
+    artifacts:
+        paths:
+        - secret_key
+        expire_in: 5 minutes
+    tags:
+    - docker_build
+    only:
+    - /^develop$/
 
 develop_environment:
     stage: deploy
-    image: daedalusproject/base_kubectl:201905230353
+    image: daedalusproject/base_kubectl:202003281621
     script:
         - PKG_VERSION=$(head -n 1 debian/changelog  | grep -oh "[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\+")
-        - openssl enc  -aes-256-cbc -a -k "$OPENSSL_CRYPT_KEY" -d -in kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc -out kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
+        - mv secret_key/daedalus_core_rsa_key kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key
         - rm -f kubernetes/config/daedalus-core/secrets/daedalus_core_rsa_key.enc
         - sed -i -e "s/__PKG_VERSION__/$PKG_VERSION/g" kubernetes/daedalus-core-develop/develop-environment.yml
         - declare -a -g REQUIRED_VARIABLES
@@ -156,5 +200,13 @@ develop_environment:
         - delete_env_and_configs
         - create_env_and_configs
         - bash utils/test_redis.sh $REDIS_SERVICE 5 15
+    dependencies:
+    - create_package
+    - upload_package_to_testing_repo
+    - create_develop_docker_image
+    - create_develop_nginx_docker_image
+    - decrypt_develop_private_key
     tags:
     - kubernetes
+    only:
+    - /^develop$/

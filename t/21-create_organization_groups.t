@@ -93,7 +93,7 @@ is( $failed_no_admin_json->{status}, 0, );
 is(
     $failed_no_admin_json->{message},
     'Invalid organization token.',
-    "Actually your aer not and admin user but API is not going to tell you."
+    "Actually your are not an admin user but API is not going to tell you."
 );
 
 my $admin_success = request(
@@ -187,6 +187,29 @@ is( $failed_invalid_organization_data_json->{status}, 0, );
 is(
     $failed_invalid_organization_data_json->{message},
     'Invalid organization token.',
+);
+
+my $create_group_fail_empty_group = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name         => ''
+        }
+    ),
+);
+
+is( $create_group_fail_empty_group->code(), 400, );
+
+my $create_group_fail_empty_group_json =
+  decode_json( $create_group_fail_empty_group->content );
+
+is( $create_group_fail_empty_group_json->{status}, 0, );
+is(
+    $create_group_fail_empty_group_json->{message},
+    'group_name field is empty.',
 );
 
 my $create_group_success = request(
@@ -449,7 +472,29 @@ is(
     'For the time being Mega Shop SuperSysadmins has no roles'
 );
 
-# Check groups
+my $create_group_name_too_large = request(
+    POST $endpoint,
+    Content_Type  => 'application/json',
+    Authorization => "Basic $admin_authorization_basic",    #Megashops token
+    Content       => encode_json(
+        {
+            organization_token => 'ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf',
+            group_name =>
+'eiyeex4Weng3quohgh7Geijaeghohngai4cu8ov0Eiwohrei0caimeumuFeo8ieWe7Ohmaiteingielei4Geibahp5haik2aeG6AhsuX8sa1aipheojohtai2IefaeShu1oosh6feiJ2oo1iuchuf7eeSoo7chaime7ahne0oa5hoh3uqu0peel9yio8queiPaelehah6aiquaeda9aiquee1Fee2soo0queephuHaishu8Aish0zahhiesehai1'
+        }
+    ),
+);
+
+is( $create_group_name_too_large->code(), 400, );
+
+my $create_group_name_too_large_json =
+  decode_json( $create_group_name_too_large->content );
+
+is( $create_group_name_too_large_json->{status}, 0, );
+is(
+    $create_group_name_too_large_json->{message},
+    "'group_name' value is too large. Maximun number of characters is 255.",
+);
 
 done_testing();
 
