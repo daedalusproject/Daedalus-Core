@@ -300,7 +300,7 @@ sub add_group_to_shared_project {
     if ($check_share_project) {
         $response->{status} = 0;
         $response->{message} =
-          'This group has already been aded to this shared project.';
+          'This group has already been added to this shared project.';
     }
     else {
         # Add group
