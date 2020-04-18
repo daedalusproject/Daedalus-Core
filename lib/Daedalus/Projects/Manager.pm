@@ -733,7 +733,6 @@ sub get_users_allowed_to_manage_project {
     my $organization_owner_id = shift;
     my $project_id            = shift;
 
-    my $response;
     my $response = {
         data         => { users => {} },
         _hidden_data => { users => {} },
