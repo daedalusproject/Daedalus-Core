@@ -721,6 +721,35 @@ sub get_shared_projects_with_organization_filtered_by_user {
     return $response;
 }
 
+=head2 get_users_allowed_to_manage_project
+
+Returns users allowed to manage project
+
+=cut
+
+sub get_users_allowed_to_manage_project {
+
+    my $c                     = shift;
+    my $organization_owner_id = shift;
+    my $project_id            = shift;
+
+    my $response;
+    my $response = {
+        data         => { users => {} },
+        _hidden_data => { users => {} },
+        status       => 1
+    };
+
+    my @shared_project_info = $c->model('CoreRealms::SharedProject')->search(
+        {
+            organization_manager_id => $organization_owner_id,
+            project_id              => $project_id,
+        }
+    )->all();
+
+    return $response;
+}
+
 =encoding utf8
 
 =head1 SEE ALSO

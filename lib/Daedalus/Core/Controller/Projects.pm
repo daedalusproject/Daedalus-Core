@@ -739,7 +739,13 @@ sub get_shared_project_users_GET {
             }
         }
         else {
-            $response->{status} = 1;
+            $response =
+              Daedalus::Projects::Manager::get_users_allowed_to_manage_project(
+                $c,
+                $data->{project}->{_hidden_data}->{project}
+                  ->{organization_owner},
+                $data->{project}->{_hidden_data}->{project}->{id}
+              );
         }
 
     }
