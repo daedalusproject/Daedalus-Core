@@ -156,42 +156,41 @@ my $failed_admin_no_organization_token = request(
 
 is( $failed_admin_no_organization_token->code(), 404, );
 
-my $failed_invalid_organization_token = request(
+my $failed_invalid_organization_token_no_project_token = request(
     GET "$endpoint/someorganizationtoken",
     Content_Type  => 'application/json',
     Authorization => "Basic $non_admin_authorization_basic",
 );
 
-is( $failed_invalid_organization_token->code(), 400, );
+is( $failed_invalid_organization_token_no_project_token->code(), 404, );
 
-my $failed_invalid_organization_token_json =
-  decode_json( $failed_invalid_organization_token->content );
-
-is( $failed_invalid_organization_token_json->{status}, 0, );
-is(
-    $failed_invalid_organization_token_json->{message},
-    'Invalid organization token.',
-);
-
-my $failed_admin_invalid_organization_token = request(
-    GET "$endpoint/someorganizationtoken",
+my $failed_admin_invalid_organization_token_invalid_project_token = request(
+    GET "$endpoint/someorganizationtoken/invalidprojecttoken",
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
 
-is( $failed_admin_invalid_organization_token->code(), 400, );
+is( $failed_admin_invalid_organization_token_invalid_project_token->code(),
+    400, );
 
-my $failed_admin_invalid_organization_token_json =
-  decode_json( $failed_admin_invalid_organization_token->content );
+my $failed_admin_invalid_organization_token_invalid_project_token_json =
+  decode_json(
+    $failed_admin_invalid_organization_token_invalid_project_token->content );
 
-is( $failed_admin_invalid_organization_token_json->{status}, 0, );
 is(
-    $failed_admin_invalid_organization_token_json->{message},
+    $failed_admin_invalid_organization_token_invalid_project_token_json
+      ->{status},
+    0,
+);
+is(
+    $failed_admin_invalid_organization_token_invalid_project_token_json
+      ->{message},
     'Invalid organization token.',
 );
 
 my $failed_not_your_organization = request(
-    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
+    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW/invalidprojecttoken"
+    ,    # Bugs Techs
     Content_Type  => 'application/json',
     Authorization => "Basic $non_admin_authorization_basic",
 );
@@ -208,7 +207,8 @@ is(
 );
 
 my $failed_admin_not_your_organization = request(
-    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW",    # Bugs Techs
+    GET "$endpoint/cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW/invalidprojecttoken"
+    ,    # Bugs Techs
     Content_Type  => 'application/json',
     Authorization => "Basic $admin_authorization_basic",
 );
@@ -225,7 +225,8 @@ is(
 );
 
 my $failed_not_organization_admin = request(
-    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf",    # Mega shops
+    GET "$endpoint/ljMPXvVHZZQTbXsaXWA2kgSWzL942Puf/invalidprojecttoken"
+    ,    # Mega shops
     Content_Type  => 'application/json',
     Authorization => "Basic $non_admin_authorization_basic",
 );
@@ -243,27 +244,106 @@ is(
 
 is( $failed_not_organization_admin_json->{_hidden_data}, undef, );
 
-my $success_admin_with_no_projects = request(
-    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3",    # Globex
+my $invalid_organization_project = request(
+    GET
+      "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/invalidprojecttoken", # Globex
     Content_Type  => 'application/json',
     Authorization => "Basic $hank_scorpio_authorization_basic",
 );
 
-is( $success_admin_with_no_projects->code(), 200, );
+is( $invalid_organization_project->code(), 400, );
 
-my $success_admin_with_no_projects_json =
-  decode_json( $success_admin_with_no_projects->content );
+my $invalid_organization_project_json =
+  decode_json( $invalid_organization_project->content );
 
-is( $success_admin_with_no_projects_json->{status}, 1, );
+is( $invalid_organization_project_json->{status}, 0, );
 
-is( $success_admin_with_no_projects_json->{_hidden_data}, undef, );
+is( $invalid_organization_project_json->{message}, 'Invalid project_token.', );
 
-isnt( $success_admin_with_no_projects_json->{data},          undef, );
-isnt( $success_admin_with_no_projects_json->{data}->{users}, undef, );
+my $create_arcturus_project = request(
+    POST '/project/create',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'name'               => 'Arcturus Project',
+        }
+    )
+);
 
-is( keys %{ $success_admin_with_no_projects_json->{data}->{users} },
+is( $create_arcturus_project->code(), 200, );
+
+my $create_arcturus_project_json =
+  decode_json( $create_arcturus_project->content );
+
+my $arcturus_project_token =
+  $create_arcturus_project_json->{data}->{project}->{token};
+
+my $invalid_not_your_organization_project = request(
+    GET
+"$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj"
+    ,    # Globex # Bugs e-commerce
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $invalid_not_your_organization_project->code(), 400, );
+
+my $invalid_not_your_organization_project_json =
+  decode_json( $invalid_not_your_organization_project->content );
+
+is( $invalid_not_your_organization_project_json->{status}, 0, );
+
+is(
+    $invalid_not_your_organization_project_json->{message},
+    'Invalid project token.',
+);
+
+my $invalid_not_your_organization_project_super_admin = request(
+    GET
+"$endpoint/FrFM2p5vUb2FpQ0Sl9v0MXvJnb4OxNzO/igcSJAryn0ZoK7tns9StDJwU4mi1Wcpj"
+    ,    # Globex # Bugs e-commerce
+    Content_Type  => 'application/json',
+    Authorization => "Basic $superadmin_authorization_basic",
+);
+
+is( $invalid_not_your_organization_project_super_admin->code(), 400, );
+
+my $invalid_not_your_organization_project_super_admin_json =
+  decode_json( $invalid_not_your_organization_project_super_admin->content );
+
+is( $invalid_not_your_organization_project_super_admin_json->{status}, 0, );
+
+is(
+    $invalid_not_your_organization_project_super_admin_json->{message},
+    'Project does not belong to this organization.',
+);
+
+my $success_admin_with_no_users = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/$arcturus_project_token"
+    ,    # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_with_no_users->code(), 200, );
+
+my $success_admin_with_no_users_json =
+  decode_json( $success_admin_with_no_users->content );
+
+is( $success_admin_with_no_users_json->{message}, undef, );
+
+is( $success_admin_with_no_users_json->{status}, 1, );
+
+is( $success_admin_with_no_users_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_with_no_users_json->{data},          undef, );
+isnt( $success_admin_with_no_users_json->{data}->{users}, undef, );
+
+is( keys %{ $success_admin_with_no_users_json->{data}->{users} },
     0, 'For the time being this organization has no shared projects with it.' );
 
 done_testing();
 
-DatabaseSetUpTearDown::delete_database();
+#DatabaseSetUpTearDown::delete_database();
