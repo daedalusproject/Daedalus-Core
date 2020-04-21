@@ -344,6 +344,108 @@ isnt( $success_admin_with_no_users_json->{data}->{users}, undef, );
 is( keys %{ $success_admin_with_no_users_json->{data}->{users} },
     0, 'For the time being this organization has no shared projects with it.' );
 
+my $share_arcturus_project_with_bugs_tech_health_watcher = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs tech
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'health_watcher',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_bugs_tech_health_watcher->code(), 200, );
+
+my $success_admin_still_no_users = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/$arcturus_project_token"
+    ,                                                # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_still_no_users->code(), 200, );
+
+my $success_admin_still_no_users_json =
+  decode_json( $success_admin_still_no_users->content );
+
+is( $success_admin_still_no_users_json->{message}, undef, );
+
+is( $success_admin_still_no_users_json->{status}, 1, );
+
+is( $success_admin_still_no_users_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_still_no_users_json->{data},          undef, );
+isnt( $success_admin_still_no_users_json->{data}->{users}, undef, );
+
+is( keys %{ $success_admin_still_no_users_json->{data}->{users} },
+    0, 'For the time being this organization has no shared projects with it.' );
+
+my $share_arcturus_project_with_bugs_tech_fireman = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs tech
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'fireman',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_bugs_tech_health_watcher->code(), 200, );
+
+my $allow_bugs_administrators_to_manage_arcturus_project = request(
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs tech
+            'shared_project_token' => $arcturus_project_token,
+            'group_token' =>
+              '8JgKXXonBTSkxKRutW1ewC4FbmV0s6FGc',    # Bugs Tech Administrators
+        }
+    )
+);
+
+is( $allow_bugs_administrators_to_manage_arcturus_project->code(), 200, );
+
+my $allow_bugs_administrators_to_manage_arcturus_project_json =
+  decode_json( $allow_bugs_administrators_to_manage_arcturus_project->content );
+
+my $success_admin_three_users = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/$arcturus_project_token"
+    ,                                                 # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_three_users->code(), 200, );
+
+my $success_admin_three_users_json =
+  decode_json( $success_admin_three_users->content );
+
+is( $success_admin_three_users_json->{message}, undef, );
+
+is( $success_admin_three_users_json->{status}, 1, );
+
+is( $success_admin_three_users_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_three_users_json->{data},          undef, );
+isnt( $success_admin_three_users_json->{data}->{users}, undef, );
+
+is( keys %{ $success_admin_three_users_json->{data}->{users} },
+    3, 'For the time being this project is managed y three users.' );
+
 done_testing();
 
 #DatabaseSetUpTearDown::delete_database();
