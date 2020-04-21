@@ -741,50 +741,50 @@ sub get_users_allowed_to_manage_project {
         status       => 1
     };
 
-    my @shared_project_groups =
-      $c->model('CoreRealms::SharedProjectGroupAssignment')->search(
-        {
-            shared_project_id => $project_id,
-        }
-    )->all();
-
-    if ( scalar @shared_project_groups > 0 ) {
-
-        my @allowed_users;
-        my @allowed_organizations;
-        my $allowed_organizations_info = {};
-
-        my @shared_projects = $c->model('CoreRealms::SharedProject')->search(
-            {
-                project_id              => $project_id,
-                organization_manager_id => $organization_owner_id,
-            }
-        )->all();
-
-        for my $shared_project (@shared_projects) {
-            die Dumper( $shared_project->organization_to_manage() );
-        }
-
-        #Daedalus::Organizations::Manager::get_organization_from_id
-        for my $shared_organization_group_data (@shared_project_groups) {
-            my $group_data =
-              Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
-                $c, $shared_organization_group_data->group_id );
-            my @organiztion_token_array = keys %{ $group_data->{data} };
-            my $organiztion_token       = $organiztion_token_array[0];
-
-            die Dumper( $group_data->{_hidden_data}->{$organiztion_token} );
-            for my $user_email (
-                keys %{ $group_data->{data}->{$organiztion_token}->{users} } )
-            {
-                die Dumper($user_email);
-            }
-
-            die Dumper($group_data);
-        }
-    }
-
-    die Dumper( \@shared_project_groups );
+#    my @shared_project_groups =
+#      $c->model('CoreRealms::SharedProjectGroupAssignment')->search(
+#        {
+#            shared_project_id => $project_id,
+#        }
+#    )->all();
+#
+#    if ( scalar @shared_project_groups > 0 ) {
+#
+#        my @allowed_users;
+#        my @allowed_organizations;
+#        my $allowed_organizations_info = {};
+#
+#        my @shared_projects = $c->model('CoreRealms::SharedProject')->search(
+#            {
+#                project_id              => $project_id,
+#                organization_manager_id => $organization_owner_id,
+#            }
+#        )->all();
+#
+#        for my $shared_project (@shared_projects) {
+#            die Dumper( $shared_project->organization_to_manage() );
+#        }
+#
+#        #Daedalus::Organizations::Manager::get_organization_from_id
+#        for my $shared_organization_group_data (@shared_project_groups) {
+#            my $group_data =
+#              Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
+#                $c, $shared_organization_group_data->group_id );
+#            my @organiztion_token_array = keys %{ $group_data->{data} };
+#            my $organiztion_token       = $organiztion_token_array[0];
+#
+#            die Dumper( $group_data->{_hidden_data}->{$organiztion_token} );
+#            for my $user_email (
+#                keys %{ $group_data->{data}->{$organiztion_token}->{users} } )
+#            {
+#                die Dumper($user_email);
+#            }
+#
+#            die Dumper($group_data);
+#        }
+#    }
+#
+#    die Dumper( \@shared_project_groups );
 
     return $response;
 }

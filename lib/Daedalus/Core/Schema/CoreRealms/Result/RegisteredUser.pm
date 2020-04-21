@@ -129,8 +129,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uii9ZQQ4yZmws2EkZcOrNA
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2020-04-21 21:12:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:S8qvXFYjhna7w+P2QwAOvg
 #
 __PACKAGE__->load_components( "InflateColumn::DateTime", "TimeStamp",
     "Validation", "Core" );
@@ -168,7 +168,7 @@ $VERSION
 =head1 BUGS AND LIMITATIONS
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+Copyright 2018-2020 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
 
 Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
