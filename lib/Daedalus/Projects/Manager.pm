@@ -784,7 +784,10 @@ sub get_users_allowed_to_manage_project {
             my $group_data =
               Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
                 $c, $shared_organization_group_data->group_id );
-            die Dumper( $shared_organization_group_data->group()->group_name );
+
+    #       die Dumper( $shared_organization_group_data->group()->organization()
+    #            ->name );
+    #      die Dumper( $shared_organization_group_data->group()->group_name );
             my @organiztion_token_array = keys %{ $group_data->{data} };
             my $organiztion_token       = $organiztion_token_array[0];
 
@@ -810,9 +813,23 @@ sub get_users_allowed_to_manage_project {
                         'e-mail' =>
                           $group_data->{data}->{$organiztion_token}->{users}
                           ->{$user_email}->{'e-mail'},
+                        'organizations' => {},
                     };
+                    $response->{data}->{users}->{$user_email}->{organizations}
+                      = {
+                        $shared_organization_group_data->group()
+                          ->organization()->name => {
+                            'groups' => [
+                                $shared_organization_group_data->group()
+                                  ->group_name
+                            ]
+                          }
+                      };
 
                     #              die Dumper($group_data);
+                }
+                else {
+                    #User is already n the list
                 }
 
             }
