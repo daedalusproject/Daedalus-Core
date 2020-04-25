@@ -446,6 +446,61 @@ isnt( $success_admin_three_users_json->{data}->{users}, undef, );
 is( keys %{ $success_admin_three_users_json->{data}->{users} },
     3, 'For the time being this project is managed y three users.' );
 
+isnt(
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'},
+    undef, 'This user is present'
+);
+
+is(
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{name},
+    "Ultra", 'User name is present'
+);
+
+is(
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{surname},
+    "Boos", 'User surname is present'
+);
+
+is(
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'e-mail'},
+    'ultraboos@bugstech.com', 'User e-mail is present'
+);
+
+isnt(
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'organizations'},
+    undef, 'Allowed user belongs to one organization at least.'
+);
+
+is(
+    keys %{
+        $success_admin_three_users_json->{data}->{users}
+          ->{'ultraboos@bugstech.com'}->{'organizations'}
+    },
+    1,
+    'This user belongs only to one organization.'
+);
+
+is(
+
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}->{groups},
+    undef,
+    'There are no group info in this endpoint'
+);
+
+isnt(
+
+    $success_admin_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}->{roles},
+    undef,
+    'There is at least one role for each user.'
+);
+
 done_testing();
 
 #DatabaseSetUpTearDown::delete_database();
