@@ -501,6 +501,112 @@ isnt(
     'There is at least one role for each user.'
 );
 
+is(
+
+    @{
+        $success_admin_three_users_json->{data}->{users}
+          ->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}
+          ->{roles}
+    }[0],
+    'fireman'
+);
+
+my $add_health_watcher_role_to_bugs_administrators = request(
+    POST '/organization/addroletogroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs tech
+            'group_token' =>
+              '8JgKXXonBTSkxKRutW1ewC4FbmV0s6FGc',    # Bugs Tech Administrators
+            role_name => 'health_watcher'
+        }
+    )
+);
+
+is( $add_health_watcher_role_to_bugs_administrators->code(), 200, );
+
+my $success_admin_still_three_users = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/$arcturus_project_token"
+    ,                                                 # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_still_three_users->code(), 200, );
+
+my $success_admin_still_three_users_json =
+  decode_json( $success_admin_still_three_users->content );
+
+is( $success_admin_still_three_users_json->{message}, undef, );
+
+is( $success_admin_still_three_users_json->{status}, 1, );
+
+is( $success_admin_still_three_users_json->{_hidden_data}, undef, );
+
+isnt( $success_admin_still_three_users_json->{data},          undef, );
+isnt( $success_admin_still_three_users_json->{data}->{users}, undef, );
+
+is( keys %{ $success_admin_still_three_users_json->{data}->{users} },
+    3, 'For the time being this project is managed y three users.' );
+
+is(
+    $success_admin_still_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{surname},
+    "Boos", 'User surname is present'
+);
+
+is(
+    $success_admin_still_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'e-mail'},
+    'ultraboos@bugstech.com', 'User e-mail is present'
+);
+
+isnt(
+    $success_admin_still_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'organizations'},
+    undef, 'Allowed user belongs to one organization at least.'
+);
+
+is(
+    keys %{
+        $success_admin_still_three_users_json->{data}->{users}
+          ->{'ultraboos@bugstech.com'}->{'organizations'}
+    },
+    1,
+    'This user belongs only to one organization.'
+);
+
+is(
+
+    $success_admin_still_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}->{groups},
+    undef,
+    'There are no group info in this endpoint'
+);
+
+isnt(
+
+    $success_admin_still_three_users_json->{data}->{users}
+      ->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}->{roles},
+    undef,
+    'There is at least one role for each user.'
+);
+
+is(
+    scalar @{
+
+        $success_admin_still_three_users_json->{data}->{users}
+          ->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}
+          ->{roles}
+
+    },
+    2,
+    'There are two roles, fireman and health_watcher'
+);
+
 done_testing();
 
-#DatabaseSetUpTearDown::delete_database();
+DatabaseSetUpTearDown::delete_database();
