@@ -766,17 +766,20 @@ sub get_users_allowed_to_manage_project {
 
         # Every user belongs to at least one organization
         # we need to gather all organization info including roles
+        my $times = 0;
         for my $shared_project (@shared_projects) {
+            $times++;
+            my $organization_id = $shared_project->organization_to_manage()->id;
+
             if (
                 !(
-                    any { /^$shared_project->organization_to_manage()->id$/sxm }
+                    any { /^$organization_id$/sxm }
                     uniq @allowed_organizations
                 )
 
               )
             {
-                push @allowed_organizations,
-                  $shared_project->organization_to_manage()->id;
+                push @allowed_organizations, $organization_id;
                 $allowed_organizations_info
                   ->{ $shared_project->organization_to_manage()->id } = {
                     name  => $shared_project->organization_to_manage()->name,
@@ -787,7 +790,12 @@ sub get_users_allowed_to_manage_project {
                   };
             }
             else {
-                # There are more roles shared
+                push @{ $allowed_organizations_info
+                      ->{ $shared_project->organization_to_manage()->id }
+                      ->{roles} },
+                  $shared_project->organization_to_manage_role()->role_name
+
+                  # There are more roles shared
             }
 
         }
