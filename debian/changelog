@@ -1,3 +1,9 @@
+libdaedalus-core-perl (0.01-24) unstable; urgency=low
+
+  * Get projects shared with admin organizations
+
+ -- Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>  Mon, 30 Mar 2020 20:55:00 +0100
+
 libdaedalus-core-perl (0.01-23) unstable; urgency=low
 
   * Minor fixes

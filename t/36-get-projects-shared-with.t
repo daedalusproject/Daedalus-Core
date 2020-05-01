@@ -262,7 +262,7 @@ isnt( $success_admin_with_no_projects_json->{data},             undef, );
 isnt( $success_admin_with_no_projects_json->{data}->{projects}, undef, );
 
 is( keys %{ $success_admin_with_no_projects_json->{data}->{projects} },
-    0, 'For the time being this organization has no shred projects with it.' );
+    0, 'For the time being this organization has no shared projects with it.' );
 
 my $create_arcturus_project = request(
     POST '/project/create',

@@ -657,6 +657,102 @@ sub get_shared_projects_GET {
     return $self->return_response( $c, $response );
 }
 
+=head2 get_shared_project_users
+
+Gets users allowed to manage shared project specifying role levels of each user
+
+Only admin users are allowed to perform this action.
+
+Required data: project token
+
+=cut
+
+sub get_shared_project_users : Path('/project/users') : Args(2) :
+  ActionClass('REST') {
+    my ( $self, $c ) = @_;
+    return;
+}
+
+=head2 get_shared_project_users_GET
+
+/project/users is a GET request
+
+=cut
+
+sub get_shared_project_users_GET {
+    my ( $self, $c ) = @_;
+
+    my $response;
+    my $organization;
+    my $user_data;
+    my $projects_shared_with_organization;
+    my $data;
+    my $is_super_admin;
+
+    my $authorization_and_validatation = $self->authorize_and_validate(
+        $c,
+        {
+            auth => {
+                type               => 'organization',
+                organization_roles => ['organization_master']
+                ,    # Organization member
+            },
+            required_data => {
+                organization_token => {
+                    type         => 'organization',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[0],
+                },
+                project_token => {
+                    type         => 'project',
+                    given        => 1,
+                    forbid_empty => 1,
+                    value        => $c->{request}->{arguments}[1],
+                },
+            }
+        }
+    );
+
+    if ( $authorization_and_validatation->{status} == 0 ) {
+        $response = $authorization_and_validatation;
+    }
+    else {
+        $data      = $authorization_and_validatation->{data};
+        $user_data = $data->{user_data};
+
+        $is_super_admin =
+          $data->{user_data}->{_hidden_data}->{user}->{is_super_admin};
+
+        # Check Project organization owner is organization
+        if ( $data->{organization}->{_hidden_data}->{organization}->{id} ne
+            $data->{project}->{_hidden_data}->{project}->{organization_owner} )
+        {
+            $response->{status}     = 0;
+            $response->{error_code} = $bad_request;
+            if ( $is_super_admin == 0 ) {
+                $response->{message} = "Invalid project token.";
+            }
+            else {
+                $response->{message} =
+                  'Project does not belong to this organization.';
+            }
+        }
+        else {
+            $response =
+              Daedalus::Projects::Manager::get_users_allowed_to_manage_project(
+                $c,
+                $data->{project}->{_hidden_data}->{project}
+                  ->{organization_owner},
+                $data->{project}->{_hidden_data}->{project}->{id}
+              );
+        }
+
+    }
+    $response->{_hidden_data}->{user} = $user_data->{_hidden_data}->{user};
+    return $self->return_response( $c, $response );
+}
+
 =encoding utf8
 
 =head1 DIAGNOSTICS
@@ -669,7 +765,7 @@ See debian/control
 =head1 BUGS AND LIMITATIONS
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+Copyright 2018-2020 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
 
 Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 

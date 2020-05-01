@@ -134,8 +134,8 @@ __PACKAGE__->belongs_to(
     { is_deferrable => 1, on_delete => "RESTRICT", on_update => "CASCADE" },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07048 @ 2019-10-13 21:23:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ur2LWKZiQnHXHP1IqfX7Zg
+# Created by DBIx::Class::Schema::Loader v0.07048 @ 2020-04-21 21:12:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+8Gkou/Kk8h+1PNG4oDyWw
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
@@ -175,7 +175,7 @@ $VERSION
 =head1 BUGS AND LIMITATIONS
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+Copyright 2018-2020 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
 
 Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 

@@ -627,7 +627,7 @@ my $failed_group_token_already_added_json =
 
 is( $failed_group_token_already_added_json->{status}, 0, );
 is( $failed_group_token_already_added_json->{message},
-    'This group has already been aded to this shared project.', "" );
+    'This group has already been added to this shared project.', "" );
 
 my $superadmin_add_bugs_project = request(
     POST "/project/share",

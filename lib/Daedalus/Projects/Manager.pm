@@ -16,6 +16,8 @@ use Moose;
 use Daedalus::Utils::Crypt;
 use List::MoreUtils qw(any uniq);
 use Daedalus::Roles::Manager;
+use Daedalus::OrganizationGroups::Manager;
+use Daedalus::Organizations::Manager;
 use Daedalus::Utils::Constants qw(
   $bad_request
   $project_token_length
@@ -300,7 +302,7 @@ sub add_group_to_shared_project {
     if ($check_share_project) {
         $response->{status} = 0;
         $response->{message} =
-          'This group has already been aded to this shared project.';
+          'This group has already been added to this shared project.';
     }
     else {
         # Add group
@@ -721,6 +723,172 @@ sub get_shared_projects_with_organization_filtered_by_user {
     return $response;
 }
 
+=head2 get_users_allowed_to_manage_project
+
+Returns users allowed to manage project
+
+=cut
+
+sub get_users_allowed_to_manage_project {
+
+    my $c                     = shift;
+    my $organization_owner_id = shift;
+    my $project_id            = shift;
+
+    my $response = {
+        data         => { users => {} },
+        _hidden_data => { users => {} },
+        status       => 1
+    };
+
+    # Get all groups that have permissions on this project
+    my @shared_project_groups =
+      $c->model('CoreRealms::SharedProjectGroupAssignment')->search(
+        {
+            shared_project_id => $project_id,
+        }
+    )->all();
+
+    if ( scalar @shared_project_groups > 0 ) {
+
+        # There are at least one group, time to gather users info
+
+        my @allowed_users;
+        my @allowed_organizations;
+        my $allowed_organizations_info = {};
+
+        my @shared_projects = $c->model('CoreRealms::SharedProject')->search(
+            {
+                project_id              => $project_id,
+                organization_manager_id => $organization_owner_id,
+            }
+        )->all();
+
+        # Every user belongs to at least one organization
+        # we need to gather all organization info including roles
+        my $times = 0;
+        for my $shared_project (@shared_projects) {
+            $times++;
+            my $organization_id = $shared_project->organization_to_manage()->id;
+
+            if (
+                !(
+                    any { /^$organization_id$/sxm }
+                    uniq @allowed_organizations
+                )
+
+              )
+            {
+                push @allowed_organizations, $organization_id;
+                $allowed_organizations_info
+                  ->{ $shared_project->organization_to_manage()->id } = {
+                    name  => $shared_project->organization_to_manage()->name,
+                    roles => [
+                        $shared_project->organization_to_manage_role()
+                          ->role_name
+                    ]
+                  };
+            }
+            else {
+                # There are more roles shared
+                push @{ $allowed_organizations_info
+                      ->{ $shared_project->organization_to_manage()->id }
+                      ->{roles} },
+                  $shared_project->organization_to_manage_role()->role_name;
+
+            }
+
+        }
+
+        # Time to gather user info
+        for my $shared_organization_group_data (@shared_project_groups) {
+            my $group_data =
+              Daedalus::OrganizationGroups::Manager::get_organization_group_from_id(
+                $c, $shared_organization_group_data->group_id );
+
+            my @group_token_array = keys %{ $group_data->{data} };
+            my $group_token       = $group_token_array[0];
+            my @group_roles = @{ $group_data->{data}->{$group_token}->{roles} };
+            for my $user_email (
+                keys %{ $group_data->{data}->{$group_token}->{users} } )
+            {
+                if (
+                    !(
+                        any { /^$user_email$/sxm }
+                        uniq @allowed_users
+                    )
+
+                  )
+                {
+                    # First time this user is seen
+                    push @allowed_users, $user_email;
+                    $response->{data}->{users}->{$user_email} = {
+                        name => $group_data->{data}->{$group_token}->{users}
+                          ->{$user_email}->{name},
+                        surname =>
+                          $group_data->{data}->{$group_token}->{users}
+                          ->{$user_email}->{surname},
+                        'e-mail' =>
+                          $group_data->{data}->{$group_token}->{users}
+                          ->{$user_email}->{'e-mail'},
+                        'organizations' => {},
+                    };
+                    $response->{data}->{users}->{$user_email}->{organizations}
+                      = {
+                        $shared_organization_group_data->group()
+                          ->organization()->name => {
+                            'roles' => []
+                          }
+                      };
+
+                }
+
+                for my $allowed_role (
+                    @{
+                        $allowed_organizations_info->{
+                            $shared_organization_group_data->group()
+                              ->organization()->id
+                        }->{roles}
+                    }
+                  )
+                {
+                    # Roles are inserted one once
+                    if (
+                        !(
+                            any { /^$allowed_role$/sxm }
+                            uniq @{
+                                $response->{data}->{users}->{$user_email}
+                                  ->{organizations}->{
+                                    $shared_organization_group_data->group()
+                                      ->organization()->name
+                                  }->{roles}
+                            }
+                        )
+                        && ( any { /^$allowed_role$/sxm } uniq @group_roles )
+
+                      )
+                    {
+                        push @{
+                            $response->{data}->{users}->{$user_email}
+                              ->{organizations}->{
+                                $shared_organization_group_data->group()
+                                  ->organization()->name
+                              }->{roles}
+                          },
+                          $allowed_role;
+
+                    }
+
+                }
+
+            }
+
+        }
+    }
+
+    return $response;
+}
+
 =encoding utf8
 
 =head1 SEE ALSO
@@ -745,7 +913,7 @@ See debian/control
 =head1 BUGS AND LIMITATIONS
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018-2019 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
+Copyright 2018-2020 Álvaro Castellano Vela <alvaro.castellano.vela@gmail.com>
 
 Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved. This file is offered as-is, without any warranty.
 
