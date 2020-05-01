@@ -790,17 +790,15 @@ sub get_users_allowed_to_manage_project {
                   };
             }
             else {
+                # There are more roles shared
                 push @{ $allowed_organizations_info
                       ->{ $shared_project->organization_to_manage()->id }
                       ->{roles} },
-                  $shared_project->organization_to_manage_role()->role_name
+                  $shared_project->organization_to_manage_role()->role_name;
 
-                  # There are more roles shared
             }
 
         }
-
-        #        die Dumper($allowed_organizations_info);
 
         # Time to gather user info
         for my $shared_organization_group_data (@shared_project_groups) {
@@ -845,23 +843,6 @@ sub get_users_allowed_to_manage_project {
 
                 }
 
-                #     else {
-                #User is already n the list
-                #        die "already";
-                #   }
-
-                # Add roles of organization group if they are shared
-                #die Dumper($group_data);
-
-                #die Dumper($organiztion_token);
-
-                #die Dumper(
-                #    $allowed_organizations_info->{
-                #        $shared_organization_group_data->group()
-                #          ->organization()->id
-                #    }->{roles}
-                #);
-
                 for my $allowed_role (
                     @{
                         $allowed_organizations_info->{
@@ -898,19 +879,13 @@ sub get_users_allowed_to_manage_project {
 
                     }
 
-                    #else {
-                    #                die "-..-";
-                    #}
-
                 }
 
             }
 
-            #       die Dumper( \@allowed_users );
         }
     }
 
-    #die Dumper( \@shared_project_groups );
     return $response;
 }
 
