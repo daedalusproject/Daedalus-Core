@@ -690,6 +690,358 @@ is(
     'There are two roles: fireman and health_watcher'
 );
 
+my $create_group_firemen_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            group_name         => 'Bugs tech firemen'
+        }
+    ),
+);
+
+is( $create_group_firemen_group_success->code(), 200, );
+
+my $create_group_firemen_group_success_json =
+  decode_json( $create_group_firemen_group_success->content );
+
+is( $create_group_firemen_group_success_json->{status}, 1, );
+is(
+    $create_group_firemen_group_success_json->{message},
+    'Organization group has been created.',
+);
+
+my $bugs_tech_firemen_group_token =
+  $create_group_firemen_group_success_json->{data}->{organization_groups}
+  ->{group_token};
+
+my $create_group_maze_master_group_success = request(
+    POST '/organization/creategroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            group_name         => 'Maze Masters'
+        }
+    ),
+);
+
+is( $create_group_maze_master_group_success->code(), 200, );
+
+my $create_group_maze_master_group_success_json =
+  decode_json( $create_group_maze_master_group_success->content );
+
+is( $create_group_maze_master_group_success_json->{status}, 1, );
+is(
+    $create_group_maze_master_group_success_json->{message},
+    'Organization group has been created.',
+);
+
+my $bugs_tech_maze_master_group_token =
+  $create_group_maze_master_group_success_json->{data}->{organization_groups}
+  ->{group_token};
+
+my $add_superboss_to_firemen_group = request(
+    POST '/organization/addusertogroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            group_token        => $bugs_tech_firemen_group_token,
+            user_token         => 'tqqZW1Xrjw6BAUJo6Y5WqQzBJenxOY9X'
+        }
+    ),
+);
+
+is( $add_superboss_to_firemen_group->code(), 200, );
+
+my $add_fireman_role_to_firemen_group = request(
+    POST '/organization/addroletogroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            group_token        => $bugs_tech_firemen_group_token,
+            role_name          => 'fireman'
+        }
+    ),
+);
+
+is( $add_fireman_role_to_firemen_group->code(), 200, );
+
+my $allow_fireaman_group_to_manage_arcturus_project = request(
+    POST '/project/share/group',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs tech
+            'shared_project_token' => $arcturus_project_token,
+            'group_token'          => $bugs_tech_firemen_group_token,
+        }
+    )
+);
+
+is( $allow_fireaman_group_to_manage_arcturus_project->code(), 200, );
+
+my $success_admin_still_three_users_two_roles_after_suplicates_role = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/$arcturus_project_token"
+    ,                                                # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_still_three_users_two_roles_after_suplicates_role->code(),
+    200, );
+
+my $success_admin_still_three_users_two_roles_after_suplicates_role_json =
+  decode_json(
+    $success_admin_still_three_users_two_roles_after_suplicates_role->content );
+
+is(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{message},
+    undef,
+);
+
+is(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{status},
+    1,
+);
+
+is(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{_hidden_data},
+    undef,
+);
+
+isnt(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data},
+    undef,
+);
+isnt(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data}->{users},
+    undef,
+);
+
+is(
+    keys %{
+        $success_admin_still_three_users_two_roles_after_suplicates_role_json
+          ->{data}->{users}
+    },
+    3,
+    'For the time being this project is managed y three users.'
+);
+
+is(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data}->{users}->{'ultraboos@bugstech.com'}->{surname},
+    "Boos", 'User surname is present'
+);
+
+is(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data}->{users}->{'ultraboos@bugstech.com'}->{'e-mail'},
+    'ultraboos@bugstech.com', 'User e-mail is present'
+);
+
+isnt(
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data}->{users}->{'ultraboos@bugstech.com'}->{'organizations'},
+    undef, 'Allowed user belongs to one organization at least.'
+);
+
+is(
+    keys %{
+        $success_admin_still_three_users_two_roles_after_suplicates_role_json
+          ->{data}->{users}->{'ultraboos@bugstech.com'}->{'organizations'}
+    },
+    1,
+    'This user belongs only to one organization.'
+);
+
+is(
+
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data}->{users}->{'ultraboos@bugstech.com'}->{'organizations'}
+      ->{"Bugs Tech"}->{groups},
+    undef,
+    'There are no group info in this endpoint'
+);
+
+isnt(
+
+    $success_admin_still_three_users_two_roles_after_suplicates_role_json
+      ->{data}->{users}->{'ultraboos@bugstech.com'}->{'organizations'}
+      ->{"Bugs Tech"}->{roles},
+    undef,
+    'There is at least one role for each user.'
+);
+
+is(
+    scalar @{
+
+        $success_admin_still_three_users_two_roles_after_suplicates_role_json
+          ->{data}->{users}->{'ultraboos@bugstech.com'}->{'organizations'}
+          ->{"Bugs Tech"}->{roles}
+
+    },
+    2,
+    'There are two roles: fireman and health_watcher'
+);
+
+my $share_arcturus_project_with_bugs_tech_maze_master = request(
+    POST '/project/share',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+    Content       => encode_json(
+        {
+            'organization_token' => 'AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3', # Globex
+            'organization_to_share_token' =>
+              'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',    # Bugs tech
+            'project_token' => $arcturus_project_token,
+            'role_name'     => 'maze_master',
+        }
+    )
+);
+
+is( $share_arcturus_project_with_bugs_tech_maze_master->code(), 200, );
+
+my $add_maze_master_role_to_firemen_group = request(
+    POST '/organization/addroletogroup',
+    Content_Type  => 'application/json',
+    Authorization => "Basic $super_boss_authorization_basic",
+    Content       => encode_json(
+        {
+            organization_token => 'cnYXfKLhTIgYxX7zHZLYjEAL1k8UhtvW',
+            group_token        => $bugs_tech_firemen_group_token,
+            role_name          => 'maze_master'
+        }
+    ),
+);
+
+is( $add_maze_master_role_to_firemen_group->code(), 200, );
+
+my $success_admin_still_three_users_two_roles_but_superboss = request(
+    GET "$endpoint/AUDBO7LQvpFciDhfuApGkVbpYQqJVFV3/$arcturus_project_token"
+    ,    # Globex
+    Content_Type  => 'application/json',
+    Authorization => "Basic $hank_scorpio_authorization_basic",
+);
+
+is( $success_admin_still_three_users_two_roles_but_superboss->code(), 200, );
+
+my $success_admin_still_three_users_two_roles_but_superboss_json =
+  decode_json(
+    $success_admin_still_three_users_two_roles_but_superboss->content );
+
+is( $success_admin_still_three_users_two_roles_but_superboss_json->{message},
+    undef, );
+
+is( $success_admin_still_three_users_two_roles_but_superboss_json->{status}, 1,
+);
+
+is(
+    $success_admin_still_three_users_two_roles_but_superboss_json
+      ->{_hidden_data},
+    undef,
+);
+
+isnt( $success_admin_still_three_users_two_roles_but_superboss_json->{data},
+    undef, );
+isnt(
+    $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+      ->{users},
+    undef,
+);
+
+is(
+    keys %{
+        $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+          ->{users}
+    },
+    3,
+    'For the time being this project is managed y three users.'
+);
+
+is(
+    $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+      ->{users}->{'ultraboos@bugstech.com'}->{surname},
+    "Boos", 'User surname is present'
+);
+
+is(
+    $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+      ->{users}->{'ultraboos@bugstech.com'}->{'e-mail'},
+    'ultraboos@bugstech.com', 'User e-mail is present'
+);
+
+isnt(
+    $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+      ->{users}->{'ultraboos@bugstech.com'}->{'organizations'},
+    undef, 'Allowed user belongs to one organization at least.'
+);
+
+is(
+    keys %{
+        $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+          ->{users}->{'ultraboos@bugstech.com'}->{'organizations'}
+    },
+    1,
+    'This user belongs only to one organization.'
+);
+
+is(
+
+    $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+      ->{users}->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}
+      ->{groups},
+    undef,
+    'There are no group info in this endpoint'
+);
+
+isnt(
+
+    $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+      ->{users}->{'ultraboos@bugstech.com'}->{'organizations'}->{"Bugs Tech"}
+      ->{roles},
+    undef,
+    'There is at least one role for each user.'
+);
+
+is(
+    scalar @{
+
+        $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+          ->{users}->{'ultraboos@bugstech.com'}->{'organizations'}
+          ->{"Bugs Tech"}->{roles}
+
+    },
+    2,
+    'There are two roles: fireman and health_watcher'
+);
+
+is(
+    scalar @{
+
+        $success_admin_still_three_users_two_roles_but_superboss_json->{data}
+          ->{users}->{'superboos@bugstech.com'}->{'organizations'}
+          ->{"Bugs Tech"}->{roles}
+
+    },
+    3,
+    'There are three roles: fireman, health_watcher and maze_master'
+);
+
 done_testing();
 
 #DatabaseSetUpTearDown::delete_database();

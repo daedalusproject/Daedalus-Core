@@ -844,9 +844,11 @@ sub get_users_allowed_to_manage_project {
                       };
 
                 }
-                else {
-                    #User is already n the list
-                }
+
+                #     else {
+                #User is already n the list
+                #        die "already";
+                #   }
 
                 # Add roles of organization group if they are shared
                 #die Dumper($group_data);
@@ -869,8 +871,7 @@ sub get_users_allowed_to_manage_project {
                     }
                   )
                 {
-                    #die Dumper($allowed_role);
-
+                    # Roles are inserted one once
                     if (
                         !(
                             any { /^$allowed_role$/sxm }
@@ -894,6 +895,9 @@ sub get_users_allowed_to_manage_project {
                           },
                           $allowed_role;
 
+                    }
+                    else {
+                        #                die "-..-";
                     }
 
                 }
