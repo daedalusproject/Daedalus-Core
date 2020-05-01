@@ -810,7 +810,7 @@ sub get_users_allowed_to_manage_project {
 
             my @group_token_array = keys %{ $group_data->{data} };
             my $group_token       = $group_token_array[0];
-
+            my @group_roles = @{ $group_data->{data}->{$group_token}->{roles} };
             for my $user_email (
                 keys %{ $group_data->{data}->{$group_token}->{users} } )
             {
@@ -883,6 +883,7 @@ sub get_users_allowed_to_manage_project {
                                   }->{roles}
                             }
                         )
+                        && ( any { /^$allowed_role$/sxm } uniq @group_roles )
 
                       )
                     {
@@ -896,9 +897,10 @@ sub get_users_allowed_to_manage_project {
                           $allowed_role;
 
                     }
-                    else {
-                        #                die "-..-";
-                    }
+
+                    #else {
+                    #                die "-..-";
+                    #}
 
                 }
 
